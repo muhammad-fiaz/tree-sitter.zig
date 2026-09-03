@@ -1,0 +1,8 @@
+# grammar: expression
+# name: trailing growth
+---source---
+1 + 2
+---edit---
+5 5 6
+---source---
+1 + 22

@@ -1,0 +1,86 @@
+name: Bug report
+description: Report a reproducible problem in tree-sitter.zig
+title: "[bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Fill in everything below so the issue can be reproduced.
+        Current stable: `0.0.1` (Zig `0.16.0` exactly).
+  - type: input
+    id: version
+    attributes:
+      label: tree-sitter.zig version
+      description: Tag, commit, or output of `zig build --help` context (e.g. 0.0.1, main@abc123)
+      placeholder: "0.0.1"
+    validations:
+      required: true
+  - type: input
+    id: zig-version
+    attributes:
+      label: Zig version (`zig version`)
+      description: Must be 0.16.0 for supported reports
+      placeholder: "0.16.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - Windows
+        - macOS
+    validations:
+      required: true
+  - type: dropdown
+    id: arch
+    attributes:
+      label: Architecture
+      options:
+        - x86_64
+        - x86
+        - ARM64
+        - Other (specify below)
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Actual behavior, including error output or assertion text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: Expected tree, output, or API behavior
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: Smallest Zig snippet, input source, language used, and `zig build` command
+      value: |
+        ```zig
+        // minimal snippet using @import("treesitter")
+        ```
+        Input source:
+        ```text
+        1 + 2
+        ```
+        Command: `zig build test`
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I ran `zig build test` on a clean checkout
+          required: false
+        - label: I tested with Zig 0.16.0 exactly
+          required: false

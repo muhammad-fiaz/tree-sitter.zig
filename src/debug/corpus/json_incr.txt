@@ -1,0 +1,8 @@
+# grammar: json
+# name: key growth
+---source---
+{"a": 1}
+---edit---
+2 2 3
+---source---
+{"ab": 1}

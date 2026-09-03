@@ -1,0 +1,6 @@
+# grammar: sexp
+# name: empty list
+---source---
+()
+---sexp---
+(program (items (expression "(" ")")))

@@ -1,0 +1,33 @@
+name: Help wanted
+description: Ask for help using tree-sitter.zig
+title: "[help]: "
+labels: ["question"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: tree-sitter.zig version
+      placeholder: "0.0.1"
+    validations:
+      required: true
+  - type: input
+    id: zig-version
+    attributes:
+      label: Zig version (`zig version`)
+      placeholder: "0.16.0"
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to do?
+      description: Goal, API used, and docs pages already read
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: Code and output
+      description: Minimal snippet plus actual vs expected output
+    validations:
+      required: true

@@ -1,0 +1,6 @@
+# grammar: json
+# name: trailing comma error
+---source---
+{"a": 1,}
+---sexp---
+(program "{" (members (pair (string "\"a\"") ":" (value (number "1")))) "," (ERROR "}") (MISSING string) (MISSING :) (value (MISSING string)))

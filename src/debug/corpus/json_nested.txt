@@ -1,0 +1,6 @@
+# grammar: json
+# name: nested values
+---source---
+{"o": {"x": [1, 2.5]}, "s": "a\nb"}
+---sexp---
+(program (value (object "{" (members (members (pair (string "\"o\"") ":" (value (object "{" (members (pair (string "\"x\"") ":" (value (array "[" (elements (elements (value (number "1"))) "," (value (number "2.5"))) "]")))) "}")))) "," (pair (string "\"s\"") ":" (value (string "\"a\\nb\"")))) "}")))

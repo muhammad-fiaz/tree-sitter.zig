@@ -1,0 +1,6 @@
+# grammar: expression
+# name: empty input
+---source---
+
+---sexp---
+(program (expression (term (factor (MISSING identifier)))))

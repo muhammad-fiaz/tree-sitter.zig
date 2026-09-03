@@ -1,0 +1,8 @@
+# grammar: outline
+# name: header with items
+---source---
+# Title
+- one
+- two
+---sexp---
+(program (blocks (block (header "# Title") "\n" (items (items (item "- one" "\n")) (item "- two" "")))))

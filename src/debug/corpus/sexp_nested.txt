@@ -1,0 +1,6 @@
+# grammar: sexp
+# name: nested lists with alias
+---source---
+(add 1 (mul 2 3))
+---sexp---
+(program (items (expression "(" (sequence (items (items (expression (atom (identifier "add")))) (expression (atom (number "1")))) (expression "(" (sequence (items (items (expression (atom (identifier "mul")))) (expression (atom (number "2")))) (expression (atom (number "3")))) ")")) ")")))

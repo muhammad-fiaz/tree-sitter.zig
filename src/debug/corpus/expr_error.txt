@@ -1,0 +1,6 @@
+# grammar: expression
+# name: error recovery
+---source---
+1 + * 2
+---sexp---
+(program (expression (expression (term (factor (number "1")))) "+" (ERROR "* 2") (term (factor (number "2")))))

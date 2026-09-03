@@ -1,0 +1,8 @@
+# grammar: expression
+# name: leading replacement
+---source---
+alpha + beta * gamma
+---edit---
+0 5 5
+---source---
+ALPHA + beta * gamma

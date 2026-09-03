@@ -1,0 +1,24 @@
+{
+  "name": "tree-sitter.zig",
+  "short_name": "tree-sitter.zig",
+  "description": "A native Zig implementation of the Tree-sitter parsing runtime with incremental parsing, structural queries, error recovery, and explicit allocator control.",
+  "start_url": "/tree-sitter.zig/",
+  "scope": "/tree-sitter.zig/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2f7d4f",
+  "icons": [
+    {
+      "src": "/tree-sitter.zig/logo.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/tree-sitter.zig/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

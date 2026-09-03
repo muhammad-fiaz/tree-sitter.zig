@@ -1,0 +1,6 @@
+# grammar: expression
+# name: parens
+---source---
+(1 + 2) * x
+---sexp---
+(program (expression (term (term (factor "(" (expression (expression (term (factor (number "1")))) "+" (term (factor (number "2")))) ")")) "*" (factor (identifier "x")))))

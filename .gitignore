@@ -1,0 +1,58 @@
+# Zig build outputs
+.zig-cache/
+zig-out/
+
+# Compiled artifacts (in case they ever land outside zig-out/)
+*.o
+*.a
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.pdb
+*.lib
+*.exp
+
+# VitePress build outputs
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+docs/.vitepress/.temp/
+
+# Node modules and npm debris (docs site)
+node_modules/
+docs/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+
+# Generic distribution folders
+dist/
+build/
+coverage/
+.nyc_output/
+
+# OS artifacts
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Logs and editor state
+*.log
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+
+# Test and fuzz scratch output
+*.profdata
+test-results/

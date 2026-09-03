@@ -1,0 +1,34 @@
+name: Documentation issue
+description: Report inaccurate, missing, or confusing docs
+title: "[docs]: "
+labels: ["documentation"]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page URL or path
+      description: e.g. /guide/incremental-parsing or docs/guide/queries.md
+      placeholder: "/guide/queries"
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: What is wrong or missing?
+      description: Quote the inaccurate text and state what src/ actually does
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested fix
+      description: Corrected text, signature, or example (must match src/)
+    validations:
+      required: false
+  - type: checkboxes
+    id: accuracy
+    attributes:
+      label: Accuracy
+      options:
+        - label: I checked the claim against the implementation in src/
+          required: true

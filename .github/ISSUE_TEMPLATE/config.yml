@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://muhammad-fiaz.github.io/tree-sitter.zig/
+    about: Read the guides, API reference, and FAQ first
+  - name: Security
+    url: https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/CONTRIBUTING.md
+    about: Please report suspected vulnerabilities privately via the contribution channels

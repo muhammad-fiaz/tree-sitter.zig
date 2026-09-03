@@ -1,0 +1,6 @@
+# grammar: json
+# name: empty containers
+---source---
+[{}, []]
+---sexp---
+(program (value (array "[" (elements (elements (value (object "{" "}"))) "," (value (array "[" "]"))) "]")))

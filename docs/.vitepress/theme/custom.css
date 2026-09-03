@@ -1,0 +1,206 @@
+:root {
+  --vp-c-brand-1: #2f7d4f;
+  --vp-c-brand-2: #3c9963;
+  --vp-c-brand-3: #257045;
+  --vp-c-brand-soft: rgba(47, 125, 79, 0.14);
+  --vp-font-family-base: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --vp-font-family-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+  --ts-radius: 10px;
+  --ts-border: 1px solid var(--vp-c-divider);
+}
+
+.dark {
+  --vp-c-brand-1: #4cc38a;
+  --vp-c-brand-2: #3aa876;
+  --vp-c-brand-3: #63d6a4;
+  --vp-c-brand-soft: rgba(76, 195, 138, 0.16);
+}
+
+.ts-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  font-size: 0.82rem;
+  color: var(--vp-c-text-2);
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.ts-breadcrumbs a {
+  color: var(--vp-c-text-2);
+  text-decoration: none;
+}
+
+.ts-breadcrumbs a:hover,
+.ts-breadcrumbs a:focus-visible {
+  color: var(--vp-c-brand-1);
+  text-decoration: underline;
+}
+
+.ts-breadcrumbs [aria-current="page"] {
+  color: var(--vp-c-text-1);
+  font-weight: 600;
+}
+
+.ts-card {
+  border: var(--ts-border);
+  border-radius: var(--ts-radius);
+  padding: 1rem 1.1rem;
+  margin: 1rem 0;
+  background: var(--vp-c-bg-soft);
+}
+
+.ts-card h4 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+}
+
+.ts-card p {
+  margin: 0.3rem 0;
+  font-size: 0.92rem;
+}
+
+.ts-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+  margin: 1.2rem 0;
+}
+
+.ts-output {
+  border: var(--ts-border);
+  border-radius: var(--ts-radius);
+  background: var(--vp-code-block-bg);
+  padding: 0.9rem 1rem;
+  margin: 0.8rem 0;
+  overflow-x: auto;
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.84rem;
+  line-height: 1.55;
+  white-space: pre;
+}
+
+.ts-output-title {
+  font-family: var(--vp-font-family-base);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-2);
+  margin-bottom: 0.5rem;
+}
+
+.ts-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.8rem 0;
+}
+
+.ts-badge {
+  display: inline-block;
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+  white-space: nowrap;
+}
+
+.ts-badge.solid {
+  background: var(--vp-c-brand-1);
+  color: #fff;
+}
+
+.ts-table-wrap {
+  overflow-x: auto;
+  margin: 1rem 0;
+  border: var(--ts-border);
+  border-radius: var(--ts-radius);
+}
+
+.ts-table-wrap table {
+  margin: 0;
+  min-width: 560px;
+}
+
+.ts-memory-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 1rem 0;
+}
+
+.ts-memory-flow .step {
+  border: var(--ts-border);
+  border-radius: 8px;
+  padding: 0.55rem 0.8rem;
+  background: var(--vp-c-bg-soft);
+  font-size: 0.9rem;
+}
+
+.ts-memory-flow .arrow {
+  text-align: center;
+  color: var(--vp-c-brand-1);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ts-ad {
+  margin: 1.5rem 0;
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ts-code-tabs .tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: -1px;
+  flex-wrap: wrap;
+}
+
+.ts-code-tabs .tabs button {
+  border: var(--ts-border);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-2);
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.ts-code-tabs .tabs button[aria-selected="true"] {
+  color: var(--vp-c-brand-1);
+  font-weight: 700;
+  background: var(--vp-code-block-bg);
+}
+
+.ts-code-tabs button:focus-visible,
+.ts-breadcrumbs a:focus-visible,
+.ts-card a:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .ts-breadcrumbs {
+    font-size: 0.76rem;
+  }
+  .ts-output {
+    font-size: 0.78rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

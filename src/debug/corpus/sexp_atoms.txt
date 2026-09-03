@@ -1,0 +1,6 @@
+# grammar: sexp
+# name: bare atoms
+---source---
+foo 42
+---sexp---
+(program (items (items (expression (atom (identifier "foo")))) (expression (atom (number "42")))))

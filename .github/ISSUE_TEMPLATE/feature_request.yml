@@ -1,0 +1,55 @@
+name: Feature request
+description: Suggest an enhancement for tree-sitter.zig
+title: "[feat]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Proposals must be implementable in native Zig (stdlib only, Zig 0.16.0)
+        with inline tests and documentation. Upstream Tree-sitter is a
+        behavioral reference, not a dependency.
+  - type: input
+    id: version
+    attributes:
+      label: tree-sitter.zig version
+      placeholder: "0.0.1"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What can you not do today with the actual API in src/?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API or behavior
+      description: Concrete Zig signatures, ownership, and allocator behavior
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds with the current API
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Parser / lexer
+        - Tree / Node / Cursor
+        - Queries
+        - Languages / scanners
+        - Input / Unicode
+        - Memory / allocators
+        - Docs
+        - Tooling (bench, fuzz, conformance)
+        - Other
+    validations:
+      required: true

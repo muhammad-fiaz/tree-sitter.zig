@@ -1,0 +1,9 @@
+# grammar: outline
+# name: nested blocks
+---source---
+# Title
+  # Sub
+  - deep
+- two
+---sexp---
+(program (blocks (block (header "# Title") "\n" (body "  " (items (block (header "# Sub") "\n" (items (item "- deep" "\n")))) "") (items (item "- two" "")))))

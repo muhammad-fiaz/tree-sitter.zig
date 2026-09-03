@@ -1,0 +1,6 @@
+# grammar: expression
+# name: precedence
+---source---
+1 + 2 * 3
+---sexp---
+(program (expression (expression (term (factor (number "1")))) "+" (term (term (factor (number "2"))) "*" (factor (number "3")))))

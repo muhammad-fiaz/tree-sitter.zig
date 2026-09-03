@@ -1,0 +1,6 @@
+# grammar: expression
+# name: missing token
+---source---
+(1 + 2
+---sexp---
+(program (expression (term (factor "(" (expression (expression (term (factor (number "1")))) "+" (term (factor (number "2")))) (MISSING ))))))

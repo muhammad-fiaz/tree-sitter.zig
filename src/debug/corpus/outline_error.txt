@@ -1,0 +1,6 @@
+# grammar: outline
+# name: orphan item error
+---source---
+- orphan
+---sexp---
+(program (ERROR "- orphan") (blocks (block (MISSING header) (MISSING newline))))
