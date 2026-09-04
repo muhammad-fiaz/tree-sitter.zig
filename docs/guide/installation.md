@@ -10,47 +10,40 @@ description: Install tree-sitter.zig 0.0.1 — Zig fetch (stable), manual config
 
 - The four ways to add `tree-sitter.zig` **0.0.1** (current stable) to your project.
 - How to install the latest development snapshot.
+- How to wire the module into your `build.zig`.
 
-## Method 1: Zig Fetch (Recommended Stable)
+## Method 1: Zig Fetch (Recommended)
+
+Latest Stable Release (v0.0.1)
 
 ```sh
 zig fetch --save https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.1.tar.gz
 ```
 
-This records the dependency and its hash in your `build.zig.zon`, then import it in `build.zig`:
+::: warning
+tree-sitter.zig requires Zig 0.16.0 exactly. New projects should use Zig 0.16.0 with tree-sitter.zig v0.0.1.
+:::
 
-```zig
-const treesitter = b.dependency("treesitter", .{
-    .target = target,
-    .optimize = optimize,
-});
-exe.root_module.addImport("treesitter", treesitter.module("treesitter"));
-```
+## Method 2: Zig Fetch (Latest / in development)
 
-## Method 2: Manual Configuration
-
-Add this to your `build.zig.zon` (replace `...` with the real hash — run `zig build` once and copy it from the error message):
-
-```zig
-.dependencies = .{
-    .treesitter = .{
-        .url = "https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.1.tar.gz",
-        .hash = "...",
-    },
-},
-```
-
-Then wire the module exactly as in Method 1.
-
-## Development builds
-
-For the latest `main` snapshot instead of stable:
+Use this for the latest in-development version from the `main` branch:
 
 ```sh
 zig fetch --save git+https://github.com/muhammad-fiaz/tree-sitter.zig.git
 ```
 
-## Method 3: Building from Source
+## Method 3: Manual build.zig.zon Configuration
+
+```zig
+.dependencies = .{
+    .treesitter = .{
+        .url = "https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.1.tar.gz",
+        .hash = "...", // Run `zig fetch --save <url>` to generate the hash.
+    },
+},
+```
+
+## Method 4: Local Source Checkout
 
 ```sh
 git clone https://github.com/muhammad-fiaz/tree-sitter.zig.git
@@ -59,11 +52,31 @@ zig build
 zig build test
 ```
 
+To use a local checkout from another project:
+
+```zig
+.dependencies = .{
+    .treesitter = .{
+        .path = "../tree-sitter.zig",
+    },
+},
+```
+
+## Wire into build.zig
+
+```zig
+const treesitter_dep = b.dependency("treesitter", .{
+    .target = target,
+    .optimize = optimize,
+});
+exe.root_module.addImport("treesitter", treesitter_dep.module("treesitter"));
+```
+
 Useful commands:
 
 ```sh
 zig build test       # full test suite
-zig build examples   # all eight runnable examples
+zig build examples   # all runnable examples
 zig build bench      # benchmark (add -Doptimize=ReleaseFast)
 zig build docs       # native Zig autodoc into zig-out/docs
 ```
@@ -73,7 +86,7 @@ zig build docs       # native Zig autodoc into zig-out/docs
 Release archives (`.tar.gz` source snapshots such as `0.0.1.tar.gz`) are published on the [Releases page](https://github.com/muhammad-fiaz/tree-sitter.zig/releases). To vendor manually, extract the archive and expose its `src/treesitter.zig` as a module:
 
 ```zig
-const treesitter_mod = b.addModule("treesitter", .{
+const treesitter_mod = b.createModule(.{
     .root_source_file = b.path("vendor/tree-sitter.zig-0.0.1/src/treesitter.zig"),
     .target = target,
     .optimize = optimize,

@@ -12,7 +12,7 @@ src/memory/                 allocator model, ownership, refcount, arena (+ tests
 src/parser/                 LR engine, stack, actions, reduce, recovery (+ tests)
 src/lexer/                  lexer, modes, chunk input, UTF-8, external (+ tests)
 src/tree/                   pool, nodes, cursor, edits, changed ranges, sexp (+ tests)
-src/language/               Language model + bundled expression/s-expression grammars (+ tests)
+src/language/               Language model + bundled expression/s-expression/JSON/outline grammars (+ tests)
 src/query/                  query parser, matcher, predicates, cursor (+ tests)
 src/input/                  memory / callback / std.Io.Reader / streaming sources (+ tests)
 src/unicode/                UTF-8 codec and tables (+ tests)
@@ -20,7 +20,7 @@ src/debug/                  logger, tracer, conformance harness + corpus/ (+ tes
 src/utils/                  std-backed helpers (array, bitset, math, ascii)
 conformance/main.zig        corpus report runner (zig build conformance)
 fuzz/fuzz.zig               parser/query fuzzer (zig build fuzz)
-examples/                   nine runnable programs (no test reuse)
+examples/                   thirteen runnable programs (no test reuse)
 benchmarks/parse_bench.zig  corpus benchmark (zig build bench)
 docs/                       this website
 ```

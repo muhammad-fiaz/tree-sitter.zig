@@ -6,7 +6,7 @@ const node_mod = @import("node.zig");
 /// anonymous tokens, and `(MISSING type)` for missing nodes.
 ///
 /// Used by the differential conformance harness
-/// (`conformance/corpus/*.txt`, `zig build conformance`) and handy for
+/// (`src/debug/corpus/*.txt`, `zig build conformance`) and handy for
 /// debugging. Output is canonical: single spaces, no newlines.
 pub fn toSexp(gpa: std.mem.Allocator, node: node_mod.Node) std.mem.Allocator.Error![]u8 {
     var out = std.ArrayList(u8).empty;

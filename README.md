@@ -43,9 +43,11 @@ A production-grade, native Zig implementation of the Tree-sitter runtime, design
 - [Recent Changes](#recent-changes)
   - [Version 0.0.1](#version-001)
 - [Installation](#installation)
-  - [Method 1: Zig Fetch (Recommended Stable)](#method-1-zig-fetch-recommended-stable)
-  - [Method 2: Manual Configuration](#method-2-manual-configuration)
-  - [Method 3: Building from Source](#method-3-building-from-source)
+  - [Method 1: Zig Fetch (Recommended)](#method-1-zig-fetch-recommended)
+  - [Method 2: Zig Fetch (Latest / in development)](#method-2-zig-fetch-latest--in-development)
+  - [Method 3: Manual build.zig.zon Configuration](#method-3-manual-buildzigzon-configuration)
+  - [Method 4: Local Source Checkout](#method-4-local-source-checkout)
+  - [Wire into build.zig](#wire-into-buildzig)
   - [Prebuilt Library](#prebuilt-library)
 - [Quick Start](#quick-start)
 - [Allocator Usage](#allocator-usage)
@@ -173,62 +175,66 @@ Initial stable release of the native Zig Tree-sitter runtime.
 
 ## Installation
 
-### Method 1: Zig Fetch (Recommended Stable)
+### Method 1: Zig Fetch (Recommended)
 
-The easiest way to add tree-sitter.zig to your project (current stable is `0.0.1`):
+Latest Stable Release (v0.0.1)
 
 ```bash
 zig fetch --save https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.1.tar.gz
 ```
 
-This automatically adds the dependency with the correct hash to your `build.zig.zon`.
+> [!WARNING]
+> tree-sitter.zig requires Zig 0.16.0 exactly. New projects should use Zig 0.16.0 with tree-sitter.zig v0.0.1.
 
-**For development builds (latest `main`):**
+### Method 2: Zig Fetch (Latest / in development)
+
+Use this for the latest in-development version from the `main` branch:
 
 ```bash
 zig fetch --save git+https://github.com/muhammad-fiaz/tree-sitter.zig.git
 ```
 
-### Method 2: Manual Configuration
-
-Add to your `build.zig.zon` (current stable is `0.0.1`):
+### Method 3: Manual build.zig.zon Configuration
 
 ```zig
 .dependencies = .{
     .treesitter = .{
         .url = "https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.1.tar.gz",
-        .hash = "...", // you needed to add hash here :)
+        .hash = "...", // Run `zig fetch --save <url>` to generate the hash.
     },
 },
 ```
 
-> [!NOTE]
-> Run `zig fetch --save <url>` to automatically get the correct hash, or run `zig build` and copy the expected hash from the error message.
-
-Then in your `build.zig`:
-
-```zig
-const treesitter = b.dependency("treesitter", .{
-    .target = target,
-    .optimize = optimize,
-});
-exe.root_module.addImport("treesitter", treesitter.module("treesitter"));
-```
-
-> [!NOTE]
-> Zig 0.16 keeps `root_module` on the compile step. You only need it to attach the `treesitter` module when using the package manager.
-
-For development builds, point the URL at the `main` branch archive or use the `git+https` form above.
-
-### Method 3: Building from Source
-
-Clone the repository and build tree-sitter.zig:
+### Method 4: Local Source Checkout
 
 ```bash
 git clone https://github.com/muhammad-fiaz/tree-sitter.zig.git
 cd tree-sitter.zig
 zig build
 ```
+
+To use a local checkout from another project:
+
+```zig
+.dependencies = .{
+    .treesitter = .{
+        .path = "../tree-sitter.zig",
+    },
+},
+```
+
+### Wire into build.zig
+
+```zig
+const treesitter_dep = b.dependency("treesitter", .{
+    .target = target,
+    .optimize = optimize,
+});
+exe.root_module.addImport("treesitter", treesitter_dep.module("treesitter"));
+```
+
+> [!NOTE]
+> Zig 0.16 keeps `root_module` on the compile step. You only need it to attach the `treesitter` module when using the package manager.
 
 ### Prebuilt Library
 
@@ -238,7 +244,7 @@ zig build
 To vendor manually, download the `0.0.1` archive, extract it, and add its `src/treesitter.zig` as a module in your `build.zig`:
 
 ```zig
-const treesitter_mod = b.addModule("treesitter", .{
+const treesitter_mod = b.createModule(.{
     .root_source_file = b.path("vendor/tree-sitter.zig-0.0.1/src/treesitter.zig"),
     .target = target,
     .optimize = optimize,

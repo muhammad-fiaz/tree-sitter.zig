@@ -119,8 +119,6 @@ fn findCaptureQuantifier(
     return null;
 }
 
-// tests/query/matcher_test.zig) ---
-
 const runtime_parser = @import("../parser/parser.zig");
 
 test "query: named node with capture" {
