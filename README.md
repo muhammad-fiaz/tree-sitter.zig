@@ -41,8 +41,6 @@
 
 - [Prerequisites](#prerequisites)
 - [Supported Platforms](#supported-platforms)
-- [Recent Changes](#recent-changes)
-  - [Version 0.0.1](#version-001)
 - [Installation](#installation)
   - [Method 1: Zig Fetch (Recommended)](#method-1-zig-fetch-recommended)
   - [Method 2: Zig Fetch (Latest / in development)](#method-2-zig-fetch-latest--in-development)
@@ -154,23 +152,6 @@ tree-sitter.zig supports a wide range of platforms and architectures:
 The implementation makes no pointer-width, endianness, or architecture-specific assumptions.
 
 </details>
-
----
-
-## Recent Changes
-
-### Version 0.0.1
-
-Initial stable release of the native Zig Tree-sitter runtime.
-
-**Key Changes:**
-* **Native Zig runtime** — Table-driven LR parsing engine with no C, Rust, or `@cImport` dependencies, Zig standard library only.
-* **Incremental parsing** — Subtree reuse across edits with `reused_node_count` observability, plus minimal changed-range diffs between trees.
-* **Error recovery** — Malformed input yields `ERROR` and `MISSING` nodes with error-cost recovery instead of failures.
-* **Structural queries** — Named/anonymous/wildcard patterns with fields, captures, quantifiers, anchors, predicates (`#eq?`, `#match?`, `#contains?`, `#any-of?`, `#is?`, `any-` variants and negations), and `#set!` directives.
-* **Bundled grammars** — Expression, s-expression (alias demo), JSON (field demo), and outline (external-scanner demo) table sets.
-* **Input flexibility** — Memory slices, callbacks, `std.Io.Reader` sources, true streaming via `parseStream`, and UTF-16 LE/BE transcode input.
-* **Tooling** — Differential conformance corpus (`zig build conformance`), seeded fuzz target (`zig build fuzz`), and benchmarks (`zig build bench`).
 
 ---
 
