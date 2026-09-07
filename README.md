@@ -22,7 +22,7 @@
 
 <b><a href="https://muhammad-fiaz.github.io/tree-sitter.zig/">Documentation</a> |
 <a href="https://muhammad-fiaz.github.io/tree-sitter.zig/api/">API Reference</a> |
-<a href="https://muhammad-fiaz.github.io/tree-sitter.zig/guide/getting-started">Quick Start</a> |
+<a href="https://muhammad-fiaz.github.io/tree-sitter.zig/guide/getting-started.html">Quick Start</a> |
 <a href="CONTRIBUTING.md">Contributing</a></b>
 
 </div>
@@ -91,27 +91,27 @@
 
 | Feature | Description | Documentation |
 |---------|-------------|---------------|
-| **Native Zig Runtime** | No C code, no `@cImport`, no Rust — Zig standard library only | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/getting-started) |
-| **LR Parsing Engine** | Table-driven shift / reduce / accept with lookahead | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/parsing-source) |
-| **Incremental Parsing** | Subtree reuse across edits with reuse counters | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/incremental-parsing) |
-| **Changed Ranges** | Minimal byte/point ranges between two trees | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/changed-ranges) |
-| **Error Recovery** | `ERROR` and `MISSING` nodes with error-cost recovery | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/error-recovery) |
-| **Generic Languages** | Symbols, parse tables, fields, aliases, metadata | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/language-definition) |
-| **Bundled Grammars** | Expression, s-expression (aliases), JSON (fields), outline (external scanner) | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/language-definition) |
-| **External Scanners** | Zig-native scanner interface with per-state dispatch, no C callbacks | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/external-scanners) |
-| **Structural Queries** | Named/anonymous/wildcard patterns, fields, captures | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/queries) |
-| **Quantifiers** | `?`, `*`, `+` on pattern nodes | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/query-quantifiers) |
-| **Predicates** | `#eq?`, `#match?`, `#contains?`, `#any-of?`, `#is?`, `any-` variants and negations | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/query-predicates) |
-| **Directives** | `#set!` settings plus structural `#select-adjacent!`/`#strip!` exposure with apply helpers | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/queries) |
-| **Included Ranges** | Lexer-enforced `setIncludedRanges` with validation | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/included-ranges) |
-| **Aliases & Supertypes** | Alias substitution on reduce, subtype expansion in queries | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/language-definition) |
-| **Tree Cursor** | Allocation-free traversal with field tracking | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/tree-cursors) |
-| **UTF-8 Support** | Exact byte offsets with code-point-aware positions | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/unicode-and-positions) |
-| **UTF-16 Input** | LE/BE transcode with BOM and surrogate errors | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/unicode-and-positions) |
-| **WASM Targets** | `wasm32-wasi` validated; native data needs no WASM loader | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/compatibility/wasm) |
-| **Custom Input** | Memory slices, callbacks, `std.Io.Reader` sources, true streaming via `parseStream` | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/custom-input) |
-| **Explicit Allocators** | Client-provided allocator, no hidden globals | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/allocators) |
-| **Debug Tracing** | Level-gated logging and parse-event tracing | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/logging) |
+| **Native Zig Runtime** | No C code, no `@cImport`, no Rust — Zig standard library only | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/getting-started.html) |
+| **LR Parsing Engine** | Table-driven shift / reduce / accept with lookahead | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/parsing-source.html) |
+| **Incremental Parsing** | Subtree reuse across edits with reuse counters | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/incremental-parsing.html) |
+| **Changed Ranges** | Minimal byte/point ranges between two trees | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/changed-ranges.html) |
+| **Error Recovery** | `ERROR` and `MISSING` nodes with error-cost recovery | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/error-recovery.html) |
+| **Generic Languages** | Symbols, parse tables, fields, aliases, metadata | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/language-definition.html) |
+| **Bundled Grammars** | Expression, s-expression (aliases), JSON (fields), outline (external scanner) | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/language-definition.html) |
+| **External Scanners** | Zig-native scanner interface with per-state dispatch, no C callbacks | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/external-scanners.html) |
+| **Structural Queries** | Named/anonymous/wildcard patterns, fields, captures | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/queries.html) |
+| **Quantifiers** | `?`, `*`, `+` on pattern nodes | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/query-quantifiers.html) |
+| **Predicates** | `#eq?`, `#match?`, `#contains?`, `#any-of?`, `#is?`, `any-` variants and negations | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/query-predicates.html) |
+| **Directives** | `#set!` settings plus structural `#select-adjacent!`/`#strip!` exposure with apply helpers | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/queries.html) |
+| **Included Ranges** | Lexer-enforced `setIncludedRanges` with validation | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/included-ranges.html) |
+| **Aliases & Supertypes** | Alias substitution on reduce, subtype expansion in queries | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/language-definition.html) |
+| **Tree Cursor** | Allocation-free traversal with field tracking | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/tree-cursors.html) |
+| **UTF-8 Support** | Exact byte offsets with code-point-aware positions | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/unicode-and-positions.html) |
+| **UTF-16 Input** | LE/BE transcode with BOM and surrogate errors | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/unicode-and-positions.html) |
+| **WASM Targets** | `wasm32-wasi` validated; native data needs no WASM loader | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/compatibility/wasm.html) |
+| **Custom Input** | Memory slices, callbacks, `std.Io.Reader` sources, true streaming via `parseStream` | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/custom-input.html) |
+| **Explicit Allocators** | Client-provided allocator, no hidden globals | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/allocators.html) |
+| **Debug Tracing** | Level-gated logging and parse-event tracing | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/logging.html) |
 | **Cross-Platform** | Windows, Linux, macOS on x86, x86_64, and ARM64 | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/compatibility/) |
 
 </details>
