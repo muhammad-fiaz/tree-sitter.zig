@@ -1,5 +1,7 @@
 <div align="center">
-<img src="docs/public/logo.png" alt="tree-sitter.zig logo" width="400" />
+<img src="docs/public/logo.png" alt="tree-sitter.zig logo" width="300" />
+
+# tree-sitter.zig
 
 <a href="https://muhammad-fiaz.github.io/tree-sitter.zig/"><img src="https://img.shields.io/badge/docs-muhammad--fiaz.github.io-blue" alt="Documentation"></a>
 <a href="https://ziglang.org/"><img src="https://img.shields.io/badge/Zig-0.16.0-orange.svg?logo=zig" alt="Zig Version"></a>
@@ -17,7 +19,7 @@
 <a href="https://github.com/sponsors/muhammad-fiaz"><img src="https://img.shields.io/badge/Sponsor-💖-pink?style=social&logo=github" alt="GitHub Sponsors"></a>
 <a href="https://hits.sh/muhammad-fiaz/tree-sitter.zig/"><img src="https://hits.sh/muhammad-fiaz/tree-sitter.zig.svg?label=Visitors&extraCount=0&color=green" alt="Repo Visitors"></a>
 
-<p><em>A fast, native Tree-sitter runtime built in Zig.</em></p>
+<p><em>Blazing-fast, dependency-free Tree-sitter parsing for Zig — incremental, structural, and allocator-explicit.</em></p>
 
 <b><a href="https://muhammad-fiaz.github.io/tree-sitter.zig/">Documentation</a> |
 <a href="https://muhammad-fiaz.github.io/tree-sitter.zig/api/">API Reference</a> |
@@ -26,7 +28,7 @@
 
 </div>
 
-A production-grade, native Zig implementation of the Tree-sitter runtime, designed with a clean, modular, and allocator-explicit API.
+**tree-sitter.zig** is a production-grade, native Zig implementation of the Tree-sitter runtime — a clean, modular, allocator-explicit parsing toolkit for editors, analyzers, and language tooling.
 
 > [!NOTE]
 > This is an independent Zig implementation of the Tree-sitter runtime concepts and algorithms. It is not the official Tree-sitter project, and it does not link, wrap, or depend on the upstream C runtime. The upstream implementation was studied as an algorithm and behavior reference during development; no upstream code ships with or is required by this package.
