@@ -4,8 +4,6 @@ description: Point API — rows, columns, comparison, and arithmetic.
 
 # Point
 
-<VersionBadge />
-
 ## Overview
 
 `Point { row: u32, column: u32 }` — zero-based line and byte-column. Source: `src/core/point.zig`.

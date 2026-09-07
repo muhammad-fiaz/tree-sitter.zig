@@ -4,8 +4,6 @@ description: QueryCursor API — execution, iteration, ranges, and limits.
 
 # Query Cursor
 
-<VersionBadge />
-
 ## Overview
 
 `QueryCursor` executes a compiled query against a tree and owns the collected matches. Source: `src/query/cursor.zig`.

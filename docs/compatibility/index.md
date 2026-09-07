@@ -4,8 +4,6 @@ description: Compatibility overview — validated Zig version, OS, and architect
 
 # Compatibility
 
-<VersionBadge />
-<CompatibilityTable />
 
 - [Zig](/compatibility/zig) — why exactly 0.16.0.
 - [Windows](/compatibility/windows), [Linux](/compatibility/linux), [macOS](/compatibility/macos)

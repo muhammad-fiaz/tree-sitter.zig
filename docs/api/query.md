@@ -4,8 +4,6 @@ description: Query API — compiling patterns, captures, and pattern introspecti
 
 # Query
 
-<VersionBadge />
-
 ## Overview
 
 `Query` owns the compiled form of an S-expression query: pattern nodes, capture names, predicates. Source: `src/query/query.zig`.

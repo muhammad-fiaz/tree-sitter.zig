@@ -6,7 +6,6 @@ import ExampleCard from "./components/ExampleCard.vue";
 import ExampleOutput from "./components/ExampleOutput.vue";
 import CodeTabs from "./components/CodeTabs.vue";
 import FeatureGrid from "./components/FeatureGrid.vue";
-import VersionBadge from "./components/VersionBadge.vue";
 import CompatibilityTable from "./components/CompatibilityTable.vue";
 import MemoryModel from "./components/MemoryModel.vue";
 import DocBreadcrumbs from "./components/DocBreadcrumbs.vue";
@@ -23,7 +22,6 @@ export default {
     app.component("ExampleOutput", ExampleOutput);
     app.component("CodeTabs", CodeTabs);
     app.component("FeatureGrid", FeatureGrid);
-    app.component("VersionBadge", VersionBadge);
     app.component("CompatibilityTable", CompatibilityTable);
     app.component("MemoryModel", MemoryModel);
     app.component("DocBreadcrumbs", DocBreadcrumbs);

@@ -4,8 +4,6 @@ description: Input API — Input callbacks, MemorySource, ReaderSource, StreamBu
 
 # Input
 
-<VersionBadge />
-
 ## Overview
 
 Four ways to feed bytes, from simplest to most general. Source: `src/input/`.

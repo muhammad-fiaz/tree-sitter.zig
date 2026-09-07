@@ -4,8 +4,6 @@ description: Node API — every method on the lightweight syntax-tree handle.
 
 # Node
 
-<VersionBadge />
-
 ## Overview
 
 `Node { tree: *const Tree, index: u32 }` — two words, zero ownership. Every method below is allocation-free. Source: `src/tree/node.zig`.

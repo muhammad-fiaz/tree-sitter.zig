@@ -4,8 +4,6 @@ description: Feature matrix — implemented, partial, and planned areas.
 
 # Feature Matrix
 
-<VersionBadge />
-
 | Area | Status | Notes |
 |------|--------|-------|
 | LR parsing (shift/reduce/accept) | Implemented | Table-driven, generic over languages |

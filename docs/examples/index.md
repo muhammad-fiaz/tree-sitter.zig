@@ -4,8 +4,6 @@ description: Runnable examples for tree-sitter.zig — every example maps to a r
 
 # Examples
 
-<VersionBadge />
-
 Every example below is a real program in the repository's `examples/` directory. Build them all with `zig build examples`, run one with `zig build run-<name>` (e.g. `zig build run-basic_parse`), or run the whole set with `zig build run-all-examples`.
 
 <ExampleCard title="Basics" description="Parse source, print trees, inspect nodes, and handle errors." link="/examples/basics" level="Beginner" />

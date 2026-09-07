@@ -4,8 +4,6 @@ description: Parser API — lifecycle, languages, parsing, reuse, and queries.
 
 # Parser
 
-<VersionBadge />
-
 ## Overview
 
 `Parser` owns the LR engine state: stacks, scratch buffers, reuse candidates, ranges, and the client allocator. One long-lived parser serves an entire editing session.

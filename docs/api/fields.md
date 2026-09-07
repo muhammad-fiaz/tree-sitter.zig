@@ -4,8 +4,6 @@ description: Fields API — production bindings and name/id conversion.
 
 # Fields
 
-<VersionBadge />
-
 ## Overview
 
 Field maps bind production ids to `(name, child index)` roles. Source: `src/language/fields.zig`.

@@ -4,8 +4,6 @@ description: Range API — byte and point spans with containment helpers.
 
 # Range
 
-<VersionBadge />
-
 ## Overview
 
 `Range { start_byte, end_byte, start_point, end_point }` spans source text in both coordinate systems. Source: `src/core/range.zig`.

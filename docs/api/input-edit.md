@@ -4,8 +4,6 @@ description: InputEdit API — describing source changes in bytes and points.
 
 # InputEdit
 
-<VersionBadge />
-
 ## Overview
 
 `InputEdit` describes one contiguous source change so trees can be updated and reparsed. Source: `src/core/edit.zig`.

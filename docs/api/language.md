@@ -4,8 +4,6 @@ description: Language API — symbols, tables, fields, aliases, metadata, and sc
 
 # Language
 
-<VersionBadge />
-
 ## Overview
 
 `Language` is borrowed grammar data. Source: `src/language/language.zig` (+ `symbols`, `tables`, `fields`, `aliases`, `metadata`).

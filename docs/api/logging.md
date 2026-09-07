@@ -4,8 +4,6 @@ description: Logging API — levels, Logger, and parse tracing.
 
 # Logging
 
-<VersionBadge />
-
 ## Overview
 
 Level-gated diagnostics plus structured parse-event tracing. Sources: `src/debug/logger.zig`, `src/debug/trace.zig`.

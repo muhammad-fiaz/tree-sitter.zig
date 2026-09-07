@@ -4,8 +4,6 @@ description: Guide overview for tree-sitter.zig — parsing, trees, incremental 
 
 # Guide
 
-<VersionBadge />
-
 Task-oriented guides that take you from zero to a working integration. Each page follows the same shape: what you will learn, when to use it, a complete runnable example, expected output, and links to the API and concepts behind it.
 
 ## Start here

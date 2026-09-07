@@ -4,8 +4,6 @@ description: Error reference — every error union in tree-sitter.zig and what t
 
 # Errors
 
-<VersionBadge />
-
 ## Parser
 
 ```zig

@@ -4,8 +4,6 @@ description: Symbols API — ids, kinds, and metadata flags.
 
 # Symbols
 
-<VersionBadge />
-
 ## Overview
 
 Shared symbol vocabulary plus per-language symbol tables. Sources: `src/core/symbol.zig`, `src/language/symbols.zig`.

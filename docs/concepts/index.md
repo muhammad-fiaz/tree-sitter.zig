@@ -4,8 +4,6 @@ description: Concepts overview — the mental model behind tree-sitter.zig.
 
 # Concepts
 
-<VersionBadge />
-
 Short, practical explanations of how the runtime works — simple language first, technical detail second. For hands-on steps, see the [Guide](/guide/).
 
 - [Architecture](/concepts/architecture) — how the subsystems fit together.

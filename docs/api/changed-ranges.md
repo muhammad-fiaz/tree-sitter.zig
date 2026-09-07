@@ -4,8 +4,6 @@ description: Changed-ranges API — diffing two trees into minimal spans.
 
 # Changed Ranges
 
-<VersionBadge />
-
 ## Overview
 
 Tree-to-tree diffing for repaints and re-analysis. Source: `src/tree/changed_ranges.zig`.

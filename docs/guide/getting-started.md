@@ -4,8 +4,6 @@ description: Get started with tree-sitter.zig — install the package, parse you
 
 # Getting Started
 
-<VersionBadge />
-
 ## What you'll learn
 
 - How to add `tree-sitter.zig` to a Zig 0.16.0 project.

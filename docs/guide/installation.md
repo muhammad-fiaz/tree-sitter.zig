@@ -4,8 +4,6 @@ description: Install tree-sitter.zig 0.0.1 — Zig fetch (stable), manual config
 
 # Installation
 
-<VersionBadge />
-
 ## What you'll learn
 
 - The four ways to add `tree-sitter.zig` **0.0.1** (current stable) to your project.

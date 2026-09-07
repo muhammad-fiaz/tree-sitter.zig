@@ -4,8 +4,6 @@ description: Tree API — ownership, roots, copies, cursors, and diffs.
 
 # Tree
 
-<VersionBadge />
-
 ## Overview
 
 `Tree` owns a parse result: the source copy, the node pool, and the child-index buffer. Source: `src/tree/tree.zig`.

@@ -4,8 +4,6 @@ description: Allocator API — the one-handoff rule and lifetime requirements.
 
 # Allocator
 
-<VersionBadge />
-
 ## Overview
 
 The library takes `std.mem.Allocator` — the standard Zig 0.16.0 interface — in exactly one typical place. Sources: `src/memory/`, `std.mem.Allocator`.

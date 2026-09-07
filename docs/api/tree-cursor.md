@@ -4,8 +4,6 @@ description: TreeCursor API — traversal, depth, fields, and snapshots.
 
 # Tree Cursor
 
-<VersionBadge />
-
 ## Overview
 
 Stateful depth-first traversal with an internal `(parent, child position)` stack. Source: `src/tree/cursor.zig`.
