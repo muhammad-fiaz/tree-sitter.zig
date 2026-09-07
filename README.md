@@ -18,7 +18,7 @@
 <a href="https://github.com/sponsors/muhammad-fiaz"><img src="https://img.shields.io/badge/Sponsor-💖-pink?style=social&logo=github" alt="GitHub Sponsors"></a>
 <a href="https://hits.sh/muhammad-fiaz/tree-sitter.zig/"><img src="https://hits.sh/muhammad-fiaz/tree-sitter.zig.svg?label=Visitors&extraCount=0&color=green" alt="Repo Visitors"></a>
 
-<p><em>Blazing-fast, dependency-free Tree-sitter parsing for Zig — incremental, structural, and allocator-explicit.</em></p>
+<p><em>A fast, native Tree-sitter runtime built in Zig.</em></p>
 
 <b><a href="https://muhammad-fiaz.github.io/tree-sitter.zig/">Documentation</a> |
 <a href="https://muhammad-fiaz.github.io/tree-sitter.zig/api/">API Reference</a> |
