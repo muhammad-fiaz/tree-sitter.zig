@@ -12,14 +12,12 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useRoute, withBase } from "vitepress";
+import { useData, useRoute, withBase } from "vitepress";
 
 interface Crumb {
   name: string;
   href: string;
 }
-
-const BASE = "/tree-sitter.zig";
 
 function titleCase(part: string): string {
   return part
@@ -30,7 +28,10 @@ function titleCase(part: string): string {
 
 const crumbs = computed<Crumb[]>(() => {
   const route = useRoute();
-  const withoutBase = route.path.startsWith(BASE) ? route.path.slice(BASE.length) || "/" : route.path;
+  const { site } = useData();
+  const base = site.value.base.replace(/\/$/, "") || "/";
+  const withoutBase =
+    base !== "/" && route.path.startsWith(base) ? route.path.slice(base.length) || "/" : route.path;
   const isIndex = withoutBase.endsWith("/");
   const clean = withoutBase.replace(/\.html$/, "").replace(/\/$/, "");
   const result: Crumb[] = [{ name: "Home", href: withBase("/") }];

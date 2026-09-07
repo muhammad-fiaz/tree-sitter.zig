@@ -27,16 +27,10 @@ export default defineConfig({
   cleanUrls: false,
 
   sitemap: {
-    hostname: new URL(SITE_URL).origin,
-    transformItems: (items) => {
-      const base = new URL(SITE_URL).pathname.replace(/\/$/, "");
-      return items
-        .filter((item) => item.url.endsWith("/") || item.url.endsWith(".html"))
-        .map((item) => {
-          const path = item.url === "/" ? "" : item.url.startsWith("/") ? item.url : `/${item.url}`;
-          return { ...item, url: `${base}${path}` };
-        });
-    },
+    hostname: `${SITE_URL}/`,
+    lastmodDateOnly: true,
+    transformItems: (items) =>
+      items.filter((item) => item.url.endsWith("/") || item.url.endsWith(".html")),
   },
 
   vite: {

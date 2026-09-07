@@ -17,9 +17,9 @@ Fast, incremental, dependency-free parsing for Zig 0.16.0 — no C code, no Rust
 <VersionBadge />
 
 <div class="vp-doc" style="display:flex;gap:0.6rem;flex-wrap:wrap;margin:1.4rem 0">
-  <a class="vp-button medium brand" href="/guide/getting-started">Get Started</a>
-  <a class="vp-button medium alt" href="/examples/">Examples</a>
-  <a class="vp-button medium alt" href="/api/">API Reference</a>
+  <a class="vp-button medium brand" href="/tree-sitter.zig/guide/getting-started.html">Get Started</a>
+  <a class="vp-button medium alt" href="/tree-sitter.zig/examples/">Examples</a>
+  <a class="vp-button medium alt" href="/tree-sitter.zig/api/">API Reference</a>
   <a class="vp-button medium alt" href="https://github.com/muhammad-fiaz/tree-sitter.zig">GitHub</a>
 </div>
 
