@@ -163,7 +163,13 @@ zig fetch --save https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/t
 ```
 
 > [!NOTE]
-> tree-sitter.zig targets Zig 0.17.0+.
+> `tree-sitter.zig` targets **Zig 0.17.0+** (v0.0.2).
+>
+> For projects using **Zig 0.16.0**, use release **0.0.1**:
+>
+> ```bash
+> zig fetch --save https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.1.tar.gz
+> ```
 
 ### Method 2: Zig Fetch (Latest / in development)
 
