@@ -40,7 +40,6 @@ pub const QueryCursor = struct {
     exceeded_match_limit: bool = false,
     options: QueryCursorOptions = .{},
 
-
     pub fn init(gpa: std.mem.Allocator) QueryCursor {
         return .{ .gpa = gpa };
     }

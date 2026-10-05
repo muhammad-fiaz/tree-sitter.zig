@@ -51,7 +51,6 @@ pub const Query = struct {
     disabled_captures: std.ArrayList(bool) = .empty,
     disabled_patterns: std.ArrayList(bool) = .empty,
 
-
     pub fn compile(gpa: std.mem.Allocator, language: language_mod.Language, source: []const u8) QueryError!Query {
         const parsed = try parser_mod.parse(gpa, source);
         var self = Query{

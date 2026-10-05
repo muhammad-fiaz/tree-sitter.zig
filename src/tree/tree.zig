@@ -39,7 +39,6 @@ pub const Tree = struct {
     pool: SubtreePool = .{},
     root_index: u32 = 0,
 
-
     pub fn deinit(self: *Tree) void {
         self.pool.deinit(self.gpa);
         self.gpa.free(self.source);

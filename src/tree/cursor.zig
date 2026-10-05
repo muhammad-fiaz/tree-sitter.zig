@@ -23,7 +23,6 @@ pub const TreeCursor = struct {
     stack: std.ArrayList(Entry) = .empty,
     current_descendant_index: u32 = 0,
 
-
     pub fn init(gpa: std.mem.Allocator, node: node_mod.Node) TreeCursor {
         return .{ .gpa = gpa, .node = node };
     }

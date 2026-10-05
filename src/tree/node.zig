@@ -17,7 +17,6 @@ pub const Node = struct {
     tree: *const tree_mod.Tree,
     index: u32,
 
-
     pub fn isNull(self: Node) bool {
         return self.index == subtree_mod.no_index;
     }
