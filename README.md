@@ -11,9 +11,10 @@
 <a href="https://github.com/muhammad-fiaz/tree-sitter.zig"><img src="https://img.shields.io/github/last-commit/muhammad-fiaz/tree-sitter.zig" alt="GitHub last commit"></a>
 <a href="https://github.com/muhammad-fiaz/tree-sitter.zig"><img src="https://img.shields.io/github/license/muhammad-fiaz/tree-sitter.zig" alt="License"></a>
 <a href="https://github.com/muhammad-fiaz/tree-sitter.zig/actions/workflows/ci.yml"><img src="https://github.com/muhammad-fiaz/tree-sitter.zig/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+<a href="https://github.com/muhammad-fiaz/tree-sitter.zig/actions/workflows/docs.yml"><img src="https://github.com/muhammad-fiaz/tree-sitter.zig/actions/workflows/docs.yml/badge.svg" alt="Docs"></a>
 <img src="https://img.shields.io/badge/platforms-linux%20%7C%20windows%20%7C%20macos-blue" alt="Supported Platforms">
 <a href="https://github.com/muhammad-fiaz/tree-sitter.zig/actions/workflows/release.yml"><img src="https://github.com/muhammad-fiaz/tree-sitter.zig/actions/workflows/release.yml/badge.svg" alt="Release"></a>
-<a href="https://github.com/muhammad-fiaz/tree-sitter.zig/releases/latest"><img src="https://img.shields.io/github/v/release/muhammad-fiaz/tree-sitter.zig?label=Latest%20Release&style=flat-square" alt="Latest Release"></a>
+<a href="https://github.com/muhammad-fiaz/tree-sitter.zig/releases"><img src="https://img.shields.io/github/v/release/muhammad-fiaz/tree-sitter.zig?label=Latest%20Release" alt="Latest Release"></a>
 <a href="https://pay.muhammadfiaz.com"><img src="https://img.shields.io/badge/Sponsor-pay.muhammadfiaz.com-ff69b4?style=flat&logo=heart" alt="Sponsor"></a>
 <a href="https://github.com/sponsors/muhammad-fiaz"><img src="https://img.shields.io/badge/Sponsor-💖-pink?style=social&logo=github" alt="GitHub Sponsors"></a>
 <a href="https://hits.sh/muhammad-fiaz/tree-sitter.zig/"><img src="https://hits.sh/muhammad-fiaz/tree-sitter.zig.svg?label=Visitors&extraCount=0&color=green" alt="Repo Visitors"></a>
