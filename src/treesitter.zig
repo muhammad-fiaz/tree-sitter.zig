@@ -31,22 +31,37 @@ pub const sexp_mod = tree_mod.sexp_mod;
 pub const Language = language_mod.Language;
 pub const ExternalScanner = language_mod.ExternalScanner;
 pub const TokenMatcher = language_mod.TokenMatcher;
+pub const SymbolType = language_mod.SymbolType;
+pub const LookaheadIterator = language_mod.LookaheadIterator;
+
+pub const ParserState = parser_mod.ParseState;
+pub const ParseState = parser_mod.ParseState;
+pub const ParseOptions = parser_mod.ParseOptions;
 
 pub const Query = query_mod.Query;
 pub const QueryError = query_mod.QueryError;
 pub const QueryCursor = query_mod.QueryCursor;
+pub const QueryCursorOptions = query_mod.query_cursor.QueryCursorOptions;
 pub const Match = query_mod.Match;
 pub const Capture = query_mod.Capture;
 
 pub const Input = input_mod.Input;
 pub const InputEncoding = input_mod.InputEncoding;
+pub const Encoding = input_mod.Encoding;
 pub const MemorySource = input_mod.MemorySource;
 pub const ReaderSource = input_mod.ReaderSource;
 pub const Source = input_mod.Source;
 pub const StreamBuffer = input_mod.StreamBuffer;
+pub const Io = std.Io;
+pub const File = std.Io.File;
+pub const Reader = std.Io.Reader;
+pub const Writer = std.Io.Writer;
 
 pub const Logger = debug_mod.Logger;
 pub const LogLevel = debug_mod.Level;
+/// Null logger: silently discards all log events.
+/// Ownership: stateless — no allocation, no lifetime constraint.
+pub const nullLogger = debug_mod.nullLogger;
 pub const Tracer = debug_mod.Tracer;
 pub const TraceEvent = debug_mod.TraceEvent;
 pub const TraceEntry = debug_mod.TraceEntry;
@@ -57,36 +72,41 @@ pub const conformance = @import("debug/conformance.zig");
 pub const transcodeUtf16ToUtf8 = unicode_mod.transcodeUtf16ToUtf8;
 pub const Utf16Error = unicode_mod.Utf16Error;
 
-pub const version = "0.0.1";
+pub const version = "0.0.2";
 pub const package_name = "treesitter";
 
 /// Bundled arithmetic expression language (identifiers, numbers,
 /// `+ - * /`, parens). Shared by tests, examples, and benchmarks.
-pub const expression_language = language_mod.expression_language;
+/// Ownership: static, immutable — safe to share across threads.
+pub const expressionLanguage = language_mod.expression_language;
 /// Bundled s-expression language (nested parenthesized lists).
-pub const sexp_language = language_mod.sexp_language;
+/// Ownership: static, immutable — safe to share across threads.
+pub const sexpLanguage = language_mod.sexp_language;
 /// Bundled JSON language (objects, arrays, strings, numbers, literals).
-pub const json_language = language_mod.json_language;
+/// Ownership: static, immutable — safe to share across threads.
+pub const jsonLanguage = language_mod.json_language;
 /// Bundled outline language (indentation-sensitive demo using an
-/// external scanner).
-pub const outline_language = language_mod.outline_language;
+/// external scanner). The external scanner payload field must be
+/// pointed at a caller-owned `OutlineScanState` before parsing.
+/// Ownership: copy the `Language` value; point its scanner payload at
+/// a caller-owned `OutlineScanState`; caller owns the state.
+pub const outlineLanguage = language_mod.outline_language;
 /// Per-parser state for the outline external scanner. Copy
-/// `outline_language`, point its scanner payload here, and pass the
+/// `outlineLanguage`, point its scanner payload here, and pass the
 /// copy to `setLanguage`.
+/// Ownership: exclusively owned by the caller; not shared between parsers.
 pub const OutlineScanState = language_mod.outline_scanner.ScanState;
-/// Compatibility shim: `test_grammar.test_language` is now
-/// `expression_language`. Prefer the canonical name in new code.
-pub const test_grammar = struct {
-    pub const test_language = language_mod.expression_language;
-};
-pub const parser_stack = @import("parser/stack.zig");
-pub const lexer_types = @import("lexer/lexer.zig");
-pub const unicode_types = @import("unicode/unicode.zig");
-pub const memory_types = @import("memory/memory.zig");
+pub const parserStack = @import("parser/stack.zig");
+pub const lexerTypes = @import("lexer/lexer.zig");
+pub const unicodeTypes = @import("unicode/unicode.zig");
+pub const memoryTypes = @import("memory/memory.zig");
 pub const repository = "muhammad-fiaz/tree-sitter.zig";
 pub const license = "MIT";
 pub const copyright = "Copyright (c) 2026 Muhammad Fiaz";
-pub const abi_version = language_mod.metadata.current_abi_version;
+pub const abiVersion = language_mod.metadata.currentAbiVersion;
+pub const currentAbiVersion = language_mod.metadata.currentAbiVersion;
+pub const abiVersionMin = language_mod.metadata.abiVersionMin;
+pub const abiVersionMax = language_mod.metadata.abiVersionMax;
 
 pub fn applyEdit(tree: *Tree, edit: InputEdit) void {
     tree_mod.edit_mod.applyEdit(tree, edit);
@@ -101,7 +121,7 @@ pub fn freeChangedRanges(gpa: std.mem.Allocator, ranges: []Range) void {
 }
 
 test "public api: parse simple expression" {
-    const tg = expression_language;
+    const tg = expressionLanguage;
     var parser = Parser.init(std.testing.allocator);
     defer parser.deinit();
     try parser.setLanguage(tg);
@@ -115,7 +135,7 @@ test "public api: parse simple expression" {
 }
 
 test "public api: nodes and cursor" {
-    const tg = expression_language;
+    const tg = expressionLanguage;
     var parser = Parser.init(std.testing.allocator);
     defer parser.deinit();
     try parser.setLanguage(tg);
@@ -134,7 +154,7 @@ test "public api: nodes and cursor" {
 }
 
 test "public api: queries" {
-    const tg = expression_language;
+    const tg = expressionLanguage;
     var parser = Parser.init(std.testing.allocator);
     defer parser.deinit();
     try parser.setLanguage(tg);
@@ -153,7 +173,7 @@ test "public api: queries" {
 }
 
 test "public api: incremental edit and changed ranges" {
-    const tg = expression_language;
+    const tg = expressionLanguage;
     var parser = Parser.init(std.testing.allocator);
     defer parser.deinit();
     try parser.setLanguage(tg);
@@ -176,7 +196,7 @@ test "public api: incremental edit and changed ranges" {
 }
 
 test "public api: metadata" {
-    try std.testing.expectEqualStrings("0.0.1", version);
+    try std.testing.expectEqualStrings("0.0.2", version);
     try std.testing.expectEqualStrings("treesitter", package_name);
     try std.testing.expectEqualStrings("muhammad-fiaz/tree-sitter.zig", repository);
     try std.testing.expectEqualStrings("MIT", license);
@@ -186,7 +206,7 @@ test "public api: metadata" {
 test "public api: sexp serializer" {
     var parser = Parser.init(std.testing.allocator);
     defer parser.deinit();
-    try parser.setLanguage(expression_language);
+    try parser.setLanguage(expressionLanguage);
     var tree = try parser.parseString("1 + 2");
     defer tree.deinit();
     const text = try sexp_mod.toSexp(std.testing.allocator, tree.rootNode());
@@ -195,4 +215,133 @@ test "public api: sexp serializer" {
         "(program (expression (expression (term (factor (number \"1\")))) \"+\" (term (factor (number \"2\")))))",
         text,
     );
+}
+
+test "public api: lookahead iterator" {
+    var it = LookaheadIterator.init(expressionLanguage, 0).?;
+    var found_tokens: usize = 0;
+    while (it.next()) {
+        const sym = it.currentSymbol();
+        const name = it.currentSymbolName();
+        if (sym > 0 and name.len > 0) {
+            found_tokens += 1;
+        }
+    }
+    try std.testing.expect(found_tokens > 0);
+}
+
+test "public api: node fields, siblings and descendants" {
+    var parser = Parser.init(std.testing.allocator);
+    defer parser.deinit();
+    try parser.setLanguage(jsonLanguage);
+    var tree = try parser.parseString("{\"key\": 42}");
+    defer tree.deinit();
+
+    const root = tree.rootNode();
+    try std.testing.expectEqualStrings("program", root.nodeType());
+    try std.testing.expectEqual(@as(u32, 1), root.namedChildCount());
+
+    const top_val = root.namedChild(0).?;
+    try std.testing.expectEqualStrings("value", top_val.nodeType());
+
+    const obj = top_val.namedChild(0).?;
+    try std.testing.expectEqualStrings("object", obj.nodeType());
+
+    const desc_pair = obj.descendantForByteRange(1, 10).?;
+    try std.testing.expect(desc_pair.startByte() >= 1);
+
+    var query = try parser.compileQuery("(pair) @p");
+    defer query.deinit();
+    var qcursor = parser.queryCursor();
+    defer qcursor.deinit();
+    try qcursor.execute(jsonLanguage, query.patterns(), query.nodes(), query.captureNames(), &tree);
+    const m = qcursor.nextMatch().?;
+    const pair = m.captures[0].node;
+    try std.testing.expectEqualStrings("pair", pair.nodeType());
+
+    const key_node = pair.childByFieldName("key").?;
+    try std.testing.expectEqualStrings("string", key_node.nodeType());
+    try std.testing.expectEqualStrings("\"key\"", key_node.text());
+
+    const val_node = pair.childByFieldName("value").?;
+    try std.testing.expectEqualStrings("value", val_node.nodeType());
+    try std.testing.expectEqualStrings("42", val_node.text());
+
+    try std.testing.expect(key_node.nextNamedSibling() != null);
+    try std.testing.expectEqualStrings("value", key_node.nextNamedSibling().?.nodeType());
+    try std.testing.expect(val_node.prevNamedSibling() != null);
+    try std.testing.expectEqualStrings("string", val_node.prevNamedSibling().?.nodeType());
+
+    const desc = obj.descendantForByteRange(key_node.startByte(), key_node.endByte()).?;
+    try std.testing.expectEqualStrings("string", desc.nodeType());
+}
+
+test "public api: query capture streaming and disabling" {
+    var parser = Parser.init(std.testing.allocator);
+    defer parser.deinit();
+    try parser.setLanguage(jsonLanguage);
+    var tree = try parser.parseString("{\"first\": 1, \"second\": 2}");
+    defer tree.deinit();
+
+    var query = try Query.compile(std.testing.allocator, jsonLanguage, "(pair (string) @key (value) @val)");
+    defer query.deinit();
+
+    var cursor = QueryCursor.init(std.testing.allocator);
+    defer cursor.deinit();
+    try cursor.execute(jsonLanguage, query.patterns(), query.nodes(), query.captureNames(), &tree);
+
+    var count: usize = 0;
+    var out_m: Match = undefined;
+    var cap_idx: u32 = 0;
+    while (cursor.nextCapture(&out_m, &cap_idx)) {
+        count += 1;
+        try std.testing.expect(cap_idx < out_m.captures.len);
+    }
+    try std.testing.expectEqual(@as(usize, 4), count); // 2 pairs * 2 captures (@key, @val)
+
+    // Test disabling capture
+    query.disableCapture(0);
+    try std.testing.expect(query.isCaptureDisabled(0));
+}
+
+test "public api: external scanner with outline language" {
+    var scanner_state = OutlineScanState.init(std.testing.allocator);
+    defer scanner_state.deinit();
+
+    var lang = outlineLanguage;
+    lang.external_scanner.?.payload = @ptrCast(&scanner_state);
+
+    var parser = Parser.init(std.testing.allocator);
+    defer parser.deinit();
+    try parser.setLanguage(lang);
+
+    const source =
+        \\# Section
+        \\  - item 1
+        \\  - item 2
+    ;
+    var tree = try parser.parseString(source);
+    defer tree.deinit();
+
+    try std.testing.expect(!tree.hasError());
+    const root = tree.rootNode();
+    try std.testing.expectEqualStrings("program", root.nodeType());
+}
+
+test "public api: timeout and cancellation flag" {
+    var parser = Parser.init(std.testing.allocator);
+    defer parser.deinit();
+    try parser.setLanguage(expressionLanguage);
+
+    var cancel: usize = 1;
+    parser.setCancellationFlag(&cancel);
+    try std.testing.expect(parser.cancellationFlag() != null);
+
+    const result = parser.parseString("1 + 2 + 3 + 4 + 5");
+    try std.testing.expectError(error.Aborted, result);
+
+    parser.setCancellationFlag(null);
+    var ok_tree = try parser.parseString("1 + 2");
+    defer ok_tree.deinit();
+    try std.testing.expect(!ok_tree.hasError());
 }

@@ -1,6 +1,6 @@
 const std = @import("std");
 const treesitter = @import("treesitter");
-const grammar = treesitter.json_language;
+const grammar = treesitter.jsonLanguage;
 
 pub fn main() !void {
     var gpa_state = std.heap.DebugAllocator(.{}).init;

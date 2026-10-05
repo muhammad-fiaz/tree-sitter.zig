@@ -5,7 +5,7 @@ description: Source layout — the repository map for contributors.
 # Source Layout
 
 ```text
-build.zig / build.zig.zon   Zig 0.16.0 build, module "treesitter" v0.0.1
+build.zig / build.zig.zon   Zig 0.17.0 build, module "treesitter" v0.0.2
 src/treesitter.zig          public facade + smoke tests
 src/core/                   Point, Range, InputEdit, symbols, positions (+ unit tests)
 src/memory/                 allocator model, ownership, refcount, arena (+ tests)

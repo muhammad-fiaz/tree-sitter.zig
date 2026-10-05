@@ -13,7 +13,7 @@
 
 ## Testing
 
-<!-- Check everything you ran locally (Zig 0.16.0 exactly). -->
+<!-- Check everything you ran locally (Zig 0.17.0+). -->
 
 - [ ] `zig build test` (129+ inline tests)
 - [ ] `zig build conformance`

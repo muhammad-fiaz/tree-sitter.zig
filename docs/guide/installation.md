@@ -1,26 +1,25 @@
 ---
-description: Install tree-sitter.zig 0.0.1 — Zig fetch (stable), manual configuration, source builds, and vendoring.
+description: Install tree-sitter.zig 0.0.2 — Zig fetch (stable), manual configuration, source builds, and vendoring.
 ---
 
 # Installation
 
 ## What you'll learn
 
-- The four ways to add `tree-sitter.zig` **0.0.1** (current stable) to your project.
+- The four ways to add `tree-sitter.zig` **0.0.2** (current stable) to your project.
 - How to install the latest development snapshot.
 - How to wire the module into your `build.zig`.
 
 ## Method 1: Zig Fetch (Recommended)
 
-Latest Stable Release (v0.0.1)
+Latest Stable Release (v0.0.2)
 
 ```sh
-zig fetch --save https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.1.tar.gz
+zig fetch --save https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.2.tar.gz
 ```
 
-::: warning
-tree-sitter.zig requires Zig 0.16.0 exactly. New projects should use Zig 0.16.0 with tree-sitter.zig v0.0.1.
-:::
+> [!TIP]
+> `tree-sitter.zig` targets Zig 0.17.0+. If you are on Zig 0.16.0, see [Zig 0.16 Support](/development/zig-0.16) for version 0.0.1.
 
 ## Method 2: Zig Fetch (Latest / in development)
 
@@ -35,7 +34,7 @@ zig fetch --save git+https://github.com/muhammad-fiaz/tree-sitter.zig.git
 ```zig
 .dependencies = .{
     .treesitter = .{
-        .url = "https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.1.tar.gz",
+        .url = "https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.2.tar.gz",
         .hash = "...", // Run `zig fetch --save <url>` to generate the hash.
     },
 },
@@ -81,11 +80,11 @@ zig build docs       # native Zig autodoc into zig-out/docs
 
 ## Prebuilt Library
 
-Release archives (`.tar.gz` source snapshots such as `0.0.1.tar.gz`) are published on the [Releases page](https://github.com/muhammad-fiaz/tree-sitter.zig/releases). To vendor manually, extract the archive and expose its `src/treesitter.zig` as a module:
+Release archives (`.tar.gz` source snapshots such as `0.0.2.tar.gz`) are published on the [Releases page](https://github.com/muhammad-fiaz/tree-sitter.zig/releases). To vendor manually, extract the archive and expose its `src/treesitter.zig` as a module:
 
 ```zig
 const treesitter_mod = b.createModule(.{
-    .root_source_file = b.path("vendor/tree-sitter.zig-0.0.1/src/treesitter.zig"),
+    .root_source_file = b.path("vendor/tree-sitter.zig-0.0.2/src/treesitter.zig"),
     .target = target,
     .optimize = optimize,
 });
@@ -97,7 +96,7 @@ exe.root_module.addImport("treesitter", treesitter_mod);
 ```zig
 const treesitter = @import("treesitter");
 comptime {
-    if (!std.mem.eql(u8, treesitter.version, "0.0.1")) @compileError("unexpected treesitter version");
+    if (!std.mem.eql(u8, treesitter.version, "0.0.2")) @compileError("unexpected treesitter version");
 }
 ```
 

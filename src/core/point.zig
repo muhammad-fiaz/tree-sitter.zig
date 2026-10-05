@@ -32,6 +32,20 @@ pub const Point = struct {
         if (a.row == b.row) return .{ .row = 0, .column = a.column - b.column };
         return .{ .row = a.row - b.row, .column = a.column };
     }
+
+    pub fn edit(self: *Point, byte: *u32, start_byte: u32, old_end_byte: u32, new_end_byte: u32, old_end_point: Point, new_end_point: Point) void {
+        var b = byte.*;
+        var p = self.*;
+        if (b >= old_end_byte) {
+            b = new_end_byte + (b - old_end_byte);
+            p = new_end_point.add(p.sub(old_end_point));
+        } else if (b > start_byte) {
+            b = new_end_byte;
+            p = new_end_point;
+        }
+        byte.* = b;
+        self.* = p;
+    }
 };
 
 pub fn advancePoint(point: Point, byte: u8) Point {

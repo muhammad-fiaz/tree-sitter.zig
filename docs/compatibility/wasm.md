@@ -4,7 +4,7 @@ description: WebAssembly support — the runtime compiles to wasm32-wasi out of 
 
 # WebAssembly
 
-`zig build -Dtarget=wasm32-wasi` compiles the library, every example, and every tool clean — the runtime is portable Zig standard library only (verified against Zig 0.16.0's `std` per `std.zig`): `std.mem` allocators, `std.atomic` ordering, `std.Io` clocks/readers, and `std.process` argument handling all lower to WASI. The static library also compiles for `wasm32-freestanding` (hosted syscalls like process args aside).
+`zig build -Dtarget=wasm32-wasi` compiles the library, every example, and every tool clean — the runtime is portable Zig standard library only (verified against Zig 0.17.0's `std` per `std.zig`): `std.mem` allocators, `std.atomic` ordering, `std.Io` clocks/readers, and `std.process` argument handling all lower to WASI. The static library also compiles for `wasm32-freestanding` (hosted syscalls like process args aside).
 
 Two upstream pieces deliberately have no counterpart here:
 

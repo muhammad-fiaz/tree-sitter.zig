@@ -14,7 +14,7 @@ pub const Logger = struct {
     prefix: []const u8 = "treesitter",
 
     pub fn enabled(self: Logger, level: Level) bool {
-        return @intFromEnum(level) <= @intFromEnum(self.level);
+        return @backingInt(level) <= @backingInt(self.level);
     }
 
     pub fn log(self: Logger, level: Level, comptime fmt: []const u8, args: anytype) void {
@@ -48,7 +48,8 @@ pub const Logger = struct {
     }
 };
 
-pub const null_logger = Logger{ .level = .off };
+pub const nullLogger = Logger{ .level = .off };
+pub const null_logger = nullLogger;
 
 test "logger: level gating" {
     const off = Logger{ .level = .off };

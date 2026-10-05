@@ -70,6 +70,41 @@ pub fn resetPayload(payload: ?*anyopaque) void {
     self.resetState();
 }
 
+pub fn serializePayload(payload: ?*anyopaque, buffer: []u8) usize {
+    const self: *ScanState = @ptrCast(@alignCast(payload orelse return 0));
+    var written: usize = 0;
+    for (self.stack.items) |indent| {
+        if (written + 2 > buffer.len) break;
+        std.mem.writeInt(u16, buffer[written..][0..2], indent, .little);
+        written += 2;
+    }
+    return written;
+}
+
+pub fn deserializePayload(payload: ?*anyopaque, buffer: []const u8) void {
+    const self: *ScanState = @ptrCast(@alignCast(payload orelse return));
+    self.resetState();
+    var offset: usize = 0;
+    while (offset + 2 <= buffer.len) : (offset += 2) {
+        const indent = std.mem.readInt(u16, buffer[offset..][0..2], .little);
+        self.stack.append(self.gpa, indent) catch return;
+    }
+}
+
+pub fn createPayload(allocator: std.mem.Allocator) ?*anyopaque {
+    const ptr = allocator.create(ScanState) catch return null;
+    ptr.* = ScanState.init(allocator);
+    return ptr;
+}
+
+pub fn destroyPayload(allocator: std.mem.Allocator, payload: ?*anyopaque) void {
+    if (payload) |p| {
+        const self: *ScanState = @ptrCast(@alignCast(p));
+        self.deinit();
+        allocator.destroy(self);
+    }
+}
+
 fn validAt(valid: []const bool, symbol: u16) bool {
     if (symbol >= valid.len) return false;
     return valid[symbol];
@@ -231,7 +266,7 @@ fn scanInner(
 }
 
 test "scanner: newline and blank lines" {
-    var valid_buf: [15]bool = [_]bool{true} ** 15;
+    var valid_buf: [15]bool = @splat(true);
     var state = ScanState.init(std.testing.allocator);
     defer state.deinit();
     const src = "- a\n\n- b\n";
@@ -248,7 +283,7 @@ test "scanner: newline and blank lines" {
 }
 
 test "scanner: indent and dedent levels" {
-    var valid_buf: [15]bool = [_]bool{true} ** 15;
+    var valid_buf: [15]bool = @splat(true);
     // Drive: NEWLINE after "# T", then line 1 indented.
     var state = ScanState.init(std.testing.allocator);
     defer state.deinit();
@@ -268,7 +303,7 @@ test "scanner: indent and dedent levels" {
 }
 
 test "scanner: nested dedent re-entry" {
-    var valid_buf: [15]bool = [_]bool{true} ** 15;
+    var valid_buf: [15]bool = @splat(true);
     var state = ScanState.init(std.testing.allocator);
     defer state.deinit();
     const src = "# Title\n  # Sub\n  - deep\n- two";
@@ -287,4 +322,25 @@ test "scanner: nested dedent re-entry" {
     const ded = scan(&state, src, 25, &valid_buf).?;
     try std.testing.expectEqual(outline_mod.sym_dedent, ded.symbol);
     try std.testing.expectEqual(@as(usize, 0), ded.length);
+}
+
+test "scanner: create, destroy, serialize, deserialize lifecycle" {
+    const raw = createPayload(std.testing.allocator) orelse return error.TestUnexpectedResult;
+    defer destroyPayload(std.testing.allocator, raw);
+
+    const state: *ScanState = @ptrCast(@alignCast(raw));
+    try state.stack.append(state.gpa, 2);
+    try state.stack.append(state.gpa, 4);
+
+    var buf: [64]u8 = undefined;
+    const len = serializePayload(raw, &buf);
+    try std.testing.expectEqual(@as(usize, 4), len);
+
+    var state2 = ScanState.init(std.testing.allocator);
+    defer state2.deinit();
+
+    deserializePayload(&state2, buf[0..len]);
+    try std.testing.expectEqual(@as(usize, 2), state2.stack.items.len);
+    try std.testing.expectEqual(@as(u16, 2), state2.stack.items[0]);
+    try std.testing.expectEqual(@as(u16, 4), state2.stack.items[1]);
 }

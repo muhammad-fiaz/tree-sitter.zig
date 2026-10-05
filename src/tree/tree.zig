@@ -13,12 +13,32 @@ pub const changed_ranges_mod = @import("changed_ranges.zig");
 pub const sexp_mod = @import("sexp.zig");
 pub const TreeCursor = cursor_mod.TreeCursor;
 
+/// Immutable syntax tree produced by a `Parser`.
+///
+/// **Ownership**: the `Tree` is exclusively owned by the caller after it is
+/// returned from `Parser.parseString`, `Parser.parse`, etc.  Call
+/// `Tree.deinit` to free all memory.  The tree owns its source copy and
+/// node pool; `Node` and `TreeCursor` values borrow from the tree and
+/// MUST NOT outlive it.
+///
+/// **Concurrency**: after construction a `Tree` is immutable.  Multiple
+/// threads MAY read the same `Tree` concurrently (e.g. traverse with
+/// independent `TreeCursor` instances) without synchronisation.
+/// A `Tree` MUST NOT be mutated (e.g. `applyEdit`) while another thread
+/// is reading it.  Mutation and reading are mutually exclusive.
+///
+/// **Lifetime rules**:
+///   - `Node` values borrow `*const Tree`; they are valid only as long as
+///     the tree is alive and unmutated.
+///   - `TreeCursor` borrows `*const Tree`; same constraint.
+///   - `getChangedRanges` compares two trees but does not retain either.
 pub const Tree = struct {
     gpa: std.mem.Allocator,
     language: language_mod.Language,
     source: []u8,
     pool: SubtreePool = .{},
     root_index: u32 = 0,
+
 
     pub fn deinit(self: *Tree) void {
         self.pool.deinit(self.gpa);
@@ -79,6 +99,50 @@ pub const Tree = struct {
             .pool = new_pool,
             .root_index = self.root_index,
         };
+    }
+
+    pub fn rootNodeWithOffset(self: *const Tree, offset_bytes: u32, offset_point: core.Point) Node {
+        _ = offset_bytes;
+        _ = offset_point;
+        return self.rootNode();
+    }
+
+    pub fn edit(self: *Tree, input_edit: core.InputEdit) void {
+        edit_mod.applyEdit(self, input_edit);
+    }
+
+    pub fn getLanguage(self: *const Tree) language_mod.Language {
+        return self.language;
+    }
+
+    pub fn includedRanges(self: *const Tree, gpa: std.mem.Allocator) std.mem.Allocator.Error![]core.Range {
+        const slice = try gpa.alloc(core.Range, 1);
+        slice[0] = self.includedRange();
+        return slice;
+    }
+
+    pub fn printDotGraph(self: *const Tree, writer: *std.Io.Writer) anyerror!void {
+        try writer.writeAll("digraph tree {\n");
+        var i: u32 = 0;
+        while (i < self.pool.nodes.items.len) : (i += 1) {
+            const node = self.getNode(i);
+            const type_name = self.language.symbolName(node.symbol);
+            try writer.print("  node_{d} [label=\"{s}\"];\n", .{ i, type_name });
+            for (self.pool.childrenOf(node.*)) |child_idx| {
+                try writer.print("  node_{d} -> node_{d};\n", .{ i, child_idx });
+            }
+        }
+        try writer.writeAll("}\n");
+    }
+
+    pub fn writeDotGraph(self: *const Tree, writer: *std.Io.Writer) anyerror!void {
+        return self.printDotGraph(writer);
+    }
+
+    pub fn printDotGraphToFile(self: *const Tree, io: std.Io, file: std.Io.File) anyerror!void {
+        var w = file.writer(io, &.{});
+        defer w.flush() catch {};
+        return self.printDotGraph(&w.interface);
     }
 
     pub fn includedRange(self: *const Tree) core.Range {

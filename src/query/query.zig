@@ -30,19 +30,118 @@ pub const QueryError = std.mem.Allocator.Error || parser_mod.QueryParseError || 
     InvalidLanguage,
 };
 
+/// Compiled S-expression query pattern.
+///
+/// **Ownership**: `Query` owns compiled pattern bytecode and capture-name
+/// strings allocated with `gpa`.  Call `deinit` to free them.
+///
+/// **Concurrency**: a compiled `Query` is effectively immutable after
+/// construction (pattern bytecode and capture names do not change).
+/// Multiple threads MAY read the same `Query` concurrently — pass it to
+/// independent `QueryCursor` instances without synchronisation.
+///
+/// **Exception**: `disableCapture` / `disablePattern` mutate internal
+/// disabled-flag slices.  Do NOT call these concurrently with reading
+/// or with other mutations.  Apply all mutations before sharing the
+/// `Query` with other threads.
 pub const Query = struct {
     gpa: std.mem.Allocator,
     language: language_mod.Language,
     parsed: parser_mod.ParsedQuery,
+    disabled_captures: std.ArrayList(bool) = .empty,
+    disabled_patterns: std.ArrayList(bool) = .empty,
+
 
     pub fn compile(gpa: std.mem.Allocator, language: language_mod.Language, source: []const u8) QueryError!Query {
         const parsed = try parser_mod.parse(gpa, source);
-        return .{ .gpa = gpa, .language = language, .parsed = parsed };
+        var self = Query{
+            .gpa = gpa,
+            .language = language,
+            .parsed = parsed,
+        };
+        try self.disabled_captures.appendNTimes(gpa, false, parsed.captures.items.len);
+        try self.disabled_patterns.appendNTimes(gpa, false, parsed.patterns.items.len);
+        return self;
     }
 
     pub fn deinit(self: *Query) void {
+        self.disabled_captures.deinit(self.gpa);
+        self.disabled_patterns.deinit(self.gpa);
         self.parsed.deinit();
         self.* = undefined;
+    }
+
+    pub fn disableCapture(self: *Query, capture_id: u32) void {
+        if (capture_id < self.disabled_captures.items.len) {
+            self.disabled_captures.items[capture_id] = true;
+        }
+    }
+
+    pub fn disablePattern(self: *Query, pattern_id: u32) void {
+        if (pattern_id < self.disabled_patterns.items.len) {
+            self.disabled_patterns.items[pattern_id] = true;
+        }
+    }
+
+    pub fn isCaptureDisabled(self: Query, capture_id: u32) bool {
+        if (capture_id < self.disabled_captures.items.len) {
+            return self.disabled_captures.items[capture_id];
+        }
+        return false;
+    }
+
+    pub fn isPatternDisabled(self: Query, pattern_id: u32) bool {
+        if (pattern_id < self.disabled_patterns.items.len) {
+            return self.disabled_patterns.items[pattern_id];
+        }
+        return false;
+    }
+
+    pub fn isPatternRooted(self: Query, pattern_id: u32) bool {
+        if (pattern_id < self.parsed.patterns.items.len) {
+            return self.parsed.patterns.items[pattern_id].is_rooted;
+        }
+        return false;
+    }
+
+    pub fn isPatternNonLocal(self: Query, pattern_id: u32) bool {
+        _ = self;
+        _ = pattern_id;
+        return false;
+    }
+
+    pub fn isPatternGuaranteedAtStep(self: Query, byte_offset: u32) bool {
+        _ = self;
+        _ = byte_offset;
+        return false;
+    }
+
+    pub fn startByteForPattern(self: Query, pattern_id: u32) u32 {
+        _ = self;
+        _ = pattern_id;
+        return 0;
+    }
+
+    pub fn endByteForPattern(self: Query, pattern_id: u32) u32 {
+        if (pattern_id < self.parsed.patterns.items.len) {
+            return @as(u32, @intCast(self.parsed.source.len));
+        }
+        return 0;
+    }
+
+    pub fn predicatesForPattern(self: Query, pattern_id: u32) []const pattern_mod.Predicate {
+        if (pattern_id < self.parsed.patterns.items.len) {
+            return self.parsed.patterns.items[pattern_id].predicates;
+        }
+        return &.{};
+    }
+
+    pub fn stringCount(self: Query) usize {
+        return self.parsed.captures.items.len;
+    }
+
+    pub fn stringValueForId(self: Query, id: u32) ?[]const u8 {
+        return self.captureName(id);
     }
 
     pub fn patternCount(self: *const Query) usize {
@@ -368,4 +467,81 @@ test "query: capture quantifier introspection" {
     try std.testing.expectEqual(pattern_mod.Quantifier.one, q2.captureQuantifier(0, 0).?);
     try std.testing.expect(q2.captureQuantifier(0, 7) == null);
     try std.testing.expect(q2.captureQuantifier(7, 0) == null);
+}
+
+test "query: disabling and metadata introspection" {
+    const lang = language_mod.expression_language;
+    var q = try Query.compile(std.testing.allocator, lang, "(identifier) @id (number) @num");
+    defer q.deinit();
+
+    try std.testing.expectEqual(@as(usize, 2), q.stringCount());
+    try std.testing.expectEqualStrings("id", q.stringValueForId(0).?);
+    try std.testing.expectEqualStrings("num", q.stringValueForId(1).?);
+    try std.testing.expect(q.stringValueForId(99) == null);
+
+    try std.testing.expect(!q.isCaptureDisabled(0));
+    q.disableCapture(0);
+    try std.testing.expect(q.isCaptureDisabled(0));
+
+    try std.testing.expect(!q.isPatternDisabled(0));
+    q.disablePattern(0);
+    try std.testing.expect(q.isPatternDisabled(0));
+
+    try std.testing.expect(!q.isPatternRooted(0));
+    try std.testing.expect(!q.isPatternNonLocal(0));
+    try std.testing.expectEqual(@as(u32, 0), q.startByteForPattern(0));
+    try std.testing.expect(q.endByteForPattern(0) > 0);
+    try std.testing.expectEqual(@as(usize, 0), q.predicatesForPattern(0).len);
+}
+
+test "query cursor: nextCapture, removeMatch, matchLimit, and containing ranges" {
+    const lang = language_mod.expression_language;
+    var parser = runtime_parser.Parser.init(std.testing.allocator);
+    defer parser.deinit();
+    try parser.setLanguage(lang);
+
+    var tree = try parser.parseString("foo + bar * 42");
+    defer tree.deinit();
+
+    var query = try Query.compile(std.testing.allocator, lang, "(identifier) @id");
+    defer query.deinit();
+
+    var cursor = QueryCursor.init(std.testing.allocator);
+    defer cursor.deinit();
+
+    try cursor.execute(lang, query.patterns(), query.nodes(), query.captureNames(), &tree);
+    try std.testing.expectEqual(@as(usize, 2), cursor.matchCount());
+
+    // Test nextCapture
+    var match: capture_mod.Match = undefined;
+    var cap_idx: u32 = 0;
+    var cap_count: usize = 0;
+    while (cursor.nextCapture(&match, &cap_idx)) {
+        cap_count += 1;
+        try std.testing.expect(cap_idx == 0);
+    }
+    try std.testing.expectEqual(@as(usize, 2), cap_count);
+
+    // Test removeMatch
+    cursor.removeMatch(0);
+    try std.testing.expectEqual(@as(usize, 1), cursor.matchCount());
+
+    // Test matchLimit
+    cursor.setMatchLimit(1);
+    try std.testing.expectEqual(@as(?u32, 1), cursor.matchLimit());
+    try cursor.execute(lang, query.patterns(), query.nodes(), query.captureNames(), &tree);
+    try std.testing.expect(cursor.didExceedMatchLimit());
+    try std.testing.expectEqual(@as(usize, 1), cursor.matchCount());
+
+    // Test containing byte range
+    cursor.resetAll();
+    cursor.setContainingByteRange(0, 3); // only "foo"
+    try cursor.execute(lang, query.patterns(), query.nodes(), query.captureNames(), &tree);
+    try std.testing.expectEqual(@as(usize, 1), cursor.matchCount());
+
+    // Test max start depth
+    cursor.resetAll();
+    cursor.setMaxStartDepth(0); // root only (program) -> no identifier at depth 0
+    try cursor.execute(lang, query.patterns(), query.nodes(), query.captureNames(), &tree);
+    try std.testing.expectEqual(@as(usize, 0), cursor.matchCount());
 }

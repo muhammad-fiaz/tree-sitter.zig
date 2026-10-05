@@ -83,6 +83,16 @@ pub fn freeChangedRanges(self: *const Tree, ranges: []Range) void
 
 Diff against another tree using the caller's allocator; free with either tree sharing it.
 
+### printDotGraph / writeDotGraph / printDotGraphToFile
+
+```zig
+pub fn printDotGraph(self: *const Tree, writer: *std.Io.Writer) anyerror!void
+pub fn writeDotGraph(self: *const Tree, writer: *std.Io.Writer) anyerror!void
+pub fn printDotGraphToFile(self: *const Tree, io: std.Io, file: std.Io.File) anyerror!void
+```
+
+Emits the tree structure in Graphviz DOT format to a `std.Io.Writer` or `std.Io.File`.
+
 ## Ownership
 
 Owns source + pools; borrows allocator and language tables. Streaming parses (`parseStream`) transfer the pull buffer as the source with no extra copy.

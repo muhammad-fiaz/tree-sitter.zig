@@ -270,7 +270,7 @@ pub const outline_language: language_mod.Language = .{
     .metadata = .{
         .name = "outline",
         .abi_version = metadata_mod.current_abi_version,
-        .version = "0.0.1",
+        .version = "0.0.2",
         .symbol_count = 15,
         .state_count = 21,
         .field_count = 0,
@@ -288,5 +288,9 @@ pub const outline_language: language_mod.Language = .{
         .payload = null,
         .scan = outline_scanner.scan,
         .reset = outline_scanner.resetPayload,
+        .serialize = outline_scanner.serializePayload,
+        .deserialize = outline_scanner.deserializePayload,
+        .create = outline_scanner.createPayload,
+        .destroy = outline_scanner.destroyPayload,
     },
 };

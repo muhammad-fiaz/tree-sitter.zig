@@ -23,6 +23,8 @@ pub const Subtree = struct {
     missing: bool = false,
     is_error: bool = false,
     has_error: bool = false,
+    has_changes: bool = false,
+    parse_state: u16 = 0,
 
     pub fn byteLen(self: Subtree) u32 {
         return self.end_byte - self.start_byte;

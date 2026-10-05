@@ -4,7 +4,7 @@
 # tree-sitter.zig
 
 <a href="https://muhammad-fiaz.github.io/tree-sitter.zig/"><img src="https://img.shields.io/badge/docs-muhammad--fiaz.github.io-blue" alt="Documentation"></a>
-<a href="https://ziglang.org/"><img src="https://img.shields.io/badge/Zig-0.16.0-orange.svg?logo=zig" alt="Zig Version"></a>
+<a href="https://ziglang.org/"><img src="https://img.shields.io/badge/Zig-0.17.0-orange.svg?logo=zig" alt="Zig Version"></a>
 <a href="https://github.com/muhammad-fiaz/tree-sitter.zig"><img src="https://img.shields.io/github/stars/muhammad-fiaz/tree-sitter.zig" alt="GitHub stars"></a>
 <a href="https://github.com/muhammad-fiaz/tree-sitter.zig/issues"><img src="https://img.shields.io/github/issues/muhammad-fiaz/tree-sitter.zig" alt="GitHub issues"></a>
 <a href="https://github.com/muhammad-fiaz/tree-sitter.zig/pulls"><img src="https://img.shields.io/github/issues-pr/muhammad-fiaz/tree-sitter.zig" alt="GitHub pull requests"></a>
@@ -28,9 +28,6 @@
 </div>
 
 **tree-sitter.zig** is a production-grade, native Zig implementation of the Tree-sitter runtime — a clean, modular, allocator-explicit parsing toolkit for editors, analyzers, and language tooling.
-
-> [!NOTE]
-> This is an independent Zig implementation of the Tree-sitter runtime concepts and algorithms. It is not the official Tree-sitter project, and it does not link, wrap, or depend on the upstream C runtime. The upstream implementation was studied as an algorithm and behavior reference during development; no upstream code ships with or is required by this package.
 
 **⭐️ If you love `tree-sitter.zig`, make sure to give it a star! ⭐️**
 
@@ -129,12 +126,12 @@ Before installing tree-sitter.zig, ensure you have the following:
 
 | Requirement | Version | Notes |
 |-------------|---------|-------|
-| **Zig** | 0.16.0 exactly | Download from [ziglang.org](https://ziglang.org/download/) |
+| **Zig** | 0.17.0+ | Download from [ziglang.org](https://ziglang.org/download/) |
 | **Operating System** | Windows 10+, Linux, macOS | Cross-platform support |
 | **Terminal** | Any modern terminal | For example output |
 
-> Verify your Zig installation by running `zig version` in your terminal. It must print `0.16.0`.
-> - For Zig 0.16.0, use tree-sitter.zig version 0.0.1 (current stable)
+> Verify your Zig installation by running `zig version` in your terminal. It must print `0.17.0` or higher.
+> - tree-sitter.zig version 0.0.2 targets Zig 0.17.0+
 > - See Zig releases and downloads at [ziglang.org](https://ziglang.org/)
 
 ---
@@ -159,14 +156,14 @@ The implementation makes no pointer-width, endianness, or architecture-specific 
 
 ### Method 1: Zig Fetch (Recommended)
 
-Latest Stable Release (v0.0.1)
+Latest Stable Release (v0.0.2)
 
 ```bash
-zig fetch --save https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.1.tar.gz
+zig fetch --save https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.2.tar.gz
 ```
 
-> [!WARNING]
-> tree-sitter.zig requires Zig 0.16.0 exactly. New projects should use Zig 0.16.0 with tree-sitter.zig v0.0.1.
+> [!NOTE]
+> tree-sitter.zig targets Zig 0.17.0+.
 
 ### Method 2: Zig Fetch (Latest / in development)
 
@@ -177,16 +174,16 @@ zig fetch --save git+https://github.com/muhammad-fiaz/tree-sitter.zig.git
 ```
 
 ### Method 3: Manual build.zig.zon Configuration
-
+ 
 ```zig
 .dependencies = .{
     .treesitter = .{
-        .url = "https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.1.tar.gz",
+        .url = "https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.2.tar.gz",
         .hash = "...", // Run `zig fetch --save <url>` to generate the hash.
     },
 },
 ```
-
+ 
 ### Method 4: Local Source Checkout
 
 ```bash
@@ -216,18 +213,18 @@ exe.root_module.addImport("treesitter", treesitter_dep.module("treesitter"));
 ```
 
 > [!NOTE]
-> Zig 0.16 keeps `root_module` on the compile step. You only need it to attach the `treesitter` module when using the package manager.
+> Attach the `treesitter` module to your executable's or library's `root_module`.
 
 ### Prebuilt Library
 
 > [!NOTE]
-> The recommended integration is the Zig Package Manager (Methods 1 and 2). Release archives (`.tar.gz` source snapshots such as `0.0.1.tar.gz`) for every stable version are published on the [Releases](https://github.com/muhammad-fiaz/tree-sitter.zig/releases) page. These can be useful for integration with other build systems or for vendoring.
+> The recommended integration is the Zig Package Manager (Methods 1 and 2). Release archives (`.tar.gz` source snapshots such as `0.0.2.tar.gz`) for every stable version are published on the [Releases](https://github.com/muhammad-fiaz/tree-sitter.zig/releases) page. These can be useful for integration with other build systems or for vendoring.
 
-To vendor manually, download the `0.0.1` archive, extract it, and add its `src/treesitter.zig` as a module in your `build.zig`:
+To vendor manually, download the `0.0.2` archive, extract it, and add its `src/treesitter.zig` as a module in your `build.zig`:
 
 ```zig
 const treesitter_mod = b.createModule(.{
-    .root_source_file = b.path("vendor/tree-sitter.zig-0.0.1/src/treesitter.zig"),
+    .root_source_file = b.path("vendor/tree-sitter.zig-0.0.2/src/treesitter.zig"),
     .target = target,
     .optimize = optimize,
 });
@@ -597,7 +594,7 @@ zig build bench -Doptimize=ReleaseFast
 ```
 
 > [!NOTE]
-> The benchmark measures initial parse, repeated parse, a worst-case leading-edge incremental edit (with the `reused_node_count` printed), full tree traversal, and query execution over a generated 20,000-operand expression corpus. Timing uses the Zig 0.16.0 `std.Io` monotonic clock, so no external dependencies are needed.
+> The benchmark measures initial parse, repeated parse, a worst-case leading-edge incremental edit (with the `reused_node_count` printed), full tree traversal, and query execution over a generated 20,000-operand expression corpus. Timing uses the Zig 0.17.0 `std.Io` monotonic clock, so no external dependencies are needed.
 > Results will vary by OS, Zig version, hardware, and environment.
 > For each latest release, benchmark numbers can be found on each [releases page](https://github.com/muhammad-fiaz/tree-sitter.zig/releases).
 
@@ -665,7 +662,11 @@ This will generate HTML documentation in the `zig-out/docs/` directory. Open `zi
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please review our [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing Guide](CONTRIBUTING.md) before submitting a Pull Request.
+
+## Security
+
+Please report security vulnerabilities responsibly according to our [Security Policy](SECURITY.md).
 
 ## License
 
@@ -676,4 +677,11 @@ MIT License - see [LICENSE](LICENSE) for details.
 - **Documentation**: https://muhammad-fiaz.github.io/tree-sitter.zig
 - **Repository**: https://github.com/muhammad-fiaz/tree-sitter.zig
 - **Issues**: https://github.com/muhammad-fiaz/tree-sitter.zig/issues
-- **Upstream Tree-sitter**: https://github.com/tree-sitter/tree-sitter (algorithm and behavior reference only)
+
+## Acknowledgement
+
+> [!NOTE]
+> This project is an independent implementation developed from scratch and written natively in pure Zig. The original Tree-sitter project was used as the reference for algorithms, behavior, architecture, and feature compatibility.
+>
+> Reference: https://github.com/tree-sitter/tree-sitter
+

@@ -1,6 +1,6 @@
 const std = @import("std");
 const treesitter = @import("treesitter");
-const grammar = treesitter.expression_language;
+const grammar = treesitter.expressionLanguage;
 
 /// Query directives demo: `#set!` metadata, general directives, and the
 /// application-level `select-adjacent` / `strip` helpers.

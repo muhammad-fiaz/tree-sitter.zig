@@ -1,5 +1,5 @@
 ---
-description: Performance characteristics and measured benchmarks for tree-sitter.zig 0.0.1.
+description: Performance characteristics and measured benchmarks for tree-sitter.zig 0.0.2.
 ---
 
 # Performance
@@ -27,7 +27,7 @@ zig build bench
 zig build bench -Doptimize=ReleaseFast
 ```
 
-The benchmark (`benchmarks/parse_bench.zig`) prints each measurement plus `reused_nodes`. Timing uses the Zig 0.16.0 `std.Io` monotonic clock.
+The benchmark (`benchmarks/parse_bench.zig`) prints each measurement plus `reused_nodes`. Timing uses the Zig 0.17.0 `std.Io` monotonic clock.
 
 ## Design notes
 

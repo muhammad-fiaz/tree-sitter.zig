@@ -6,6 +6,7 @@ pub const ReaderSource = struct {
     reader: *std.Io.Reader,
     buffer: []u8,
     buffered_from: usize = 0,
+    buffered_len: usize = 0,
 
     pub fn init(reader: *std.Io.Reader, buffer: []u8) ReaderSource {
         return .{ .reader = reader, .buffer = buffer };
@@ -18,16 +19,15 @@ pub const ReaderSource = struct {
             return null;
         }));
         const idx: usize = @as(usize, @intCast(byte_index));
+        if (self.buffered_len > 0 and idx >= self.buffered_from and idx < self.buffered_from + self.buffered_len) {
+            const off = idx - self.buffered_from;
+            const n = self.buffered_len - off;
+            bytes_read.* = @as(u32, @intCast(@min(n, std.math.maxInt(u32))));
+            return self.buffer.ptr + off;
+        }
         if (idx < self.buffered_from) {
             bytes_read.* = 0;
             return null;
-        }
-        const buffered_len = self.buffer.len;
-        if (idx < self.buffered_from + buffered_len and buffered_len > 0) {
-            const off = idx - self.buffered_from;
-            const n = @min(buffered_len - off, std.math.maxInt(u32));
-            bytes_read.* = @as(u32, @intCast(n));
-            return self.buffer.ptr + off;
         }
         const n = self.reader.readSliceShort(self.buffer) catch {
             bytes_read.* = 0;
@@ -38,6 +38,7 @@ pub const ReaderSource = struct {
             return null;
         }
         self.buffered_from = idx;
+        self.buffered_len = n;
         bytes_read.* = @as(u32, @intCast(@min(n, std.math.maxInt(u32))));
         return self.buffer.ptr;
     }

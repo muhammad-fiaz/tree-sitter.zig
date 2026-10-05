@@ -4,10 +4,17 @@ const tree_mod = @import("tree.zig");
 
 pub fn applyEdit(tree: *tree_mod.Tree, edit: core.InputEdit) void {
     for (tree.pool.nodes.items) |*node| {
+        const old_start = node.start_byte;
+        const old_end = node.end_byte;
         node.start_byte = edit.translateByte(node.start_byte);
         node.end_byte = edit.translateByte(node.end_byte);
         node.start_point = edit.translatePoint(node.start_point);
         node.end_point = edit.translatePoint(node.end_point);
+        if (node.start_byte != old_start or node.end_byte != old_end or
+            (old_start <= edit.old_end_byte and old_end >= edit.start_byte))
+        {
+            node.has_changes = true;
+        }
     }
 }
 

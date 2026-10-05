@@ -1,6 +1,6 @@
 const std = @import("std");
 const treesitter = @import("treesitter");
-const grammar = treesitter.expression_language;
+const grammar = treesitter.expressionLanguage;
 
 /// UTF-16 input demo: inputs carrying `.utf16_le` / `.utf16_be`
 /// encodings are transcoded to UTF-8 up front (tree offsets refer to
