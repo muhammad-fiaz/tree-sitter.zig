@@ -9,6 +9,7 @@ pub const InputEncoding = enum {
     utf16_be,
     custom,
 };
+pub const Encoding = InputEncoding;
 
 pub const Input = struct {
     payload: ?*anyopaque = null,

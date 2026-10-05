@@ -70,6 +70,14 @@ pub const InputEdit = struct {
     }
 };
 
+pub fn editPoint(point: *Point, point_byte: *u32, edit: InputEdit) void {
+    point.edit(point_byte, edit.start_byte, edit.old_end_byte, edit.new_end_byte, edit.old_end_point, edit.new_end_point);
+}
+
+pub fn editRange(range: anytype, edit: InputEdit) void {
+    range.editWithInputEdit(edit);
+}
+
 test "edit: byte translation" {
     const e = InputEdit{
         .start_byte = 2,

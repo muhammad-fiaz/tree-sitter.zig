@@ -12,7 +12,7 @@ head:
 
 A native Zig implementation of the Tree-sitter parsing runtime.
 
-Fast, incremental, dependency-free parsing for Zig 0.16.0 — no C code, no Rust, no `@cImport`. Just Zig and its standard library.
+Fast, incremental, dependency-free parsing for Zig 0.17.0 — no C code, no Rust, no `@cImport`. Just Zig and its standard library.
 
 <div class="vp-doc" style="display:flex;gap:0.6rem;flex-wrap:wrap;margin:1.4rem 0">
   <a class="vp-button medium brand" href="/tree-sitter.zig/guide/getting-started.html">Get Started</a>
@@ -48,7 +48,7 @@ const root = tree.rootNode(); // lightweight handle, no allocation
   { title: 'Structural queries', description: 'S-expression patterns with captures, fields, quantifiers, and predicates.', link: '/guide/queries' },
   { title: 'Error recovery', description: 'Malformed input yields ERROR and MISSING nodes instead of failures.', link: '/guide/error-recovery' },
   { title: 'Explicit allocators', description: 'Pass an allocator once to Parser.init; everything else inherits it.', link: '/guide/allocators' },
-  { title: 'Dependency-free', description: 'Zig 0.16.0 standard library only. No C runtime, no Rust.', link: '/compatibility/zig' },
+  { title: 'Dependency-free', description: 'Zig 0.17.0 standard library only. No C runtime, no Rust.', link: '/compatibility/zig' },
 ]" />
 
 ## Quick Start
@@ -114,10 +114,18 @@ On an ~80KB expression corpus (100,000 nodes, ReleaseFast): initial parse ~10 ms
 
 ## Compatibility
 
-Windows, Linux, and macOS across x86, x86_64, and ARM64 — validated with Zig 0.16.0. See the [compatibility matrix](/compatibility/feature-matrix).
+Windows, Linux, and macOS across x86, x86_64, and ARM64 — validated with Zig 0.17.0. See the [compatibility matrix](/compatibility/feature-matrix).
 
 ## GitHub & Community
 
 - Repository: [muhammad-fiaz/tree-sitter.zig](https://github.com/muhammad-fiaz/tree-sitter.zig)
 - Issues and feature requests welcome.
 - If this project helps you, please star it.
+
+## Acknowledgement
+
+> [!NOTE]
+> This project is an independent implementation developed from scratch and written natively in pure Zig. The original Tree-sitter project was used as the reference for algorithms, behavior, architecture, and feature compatibility.
+>
+> Reference: https://github.com/tree-sitter/tree-sitter
+

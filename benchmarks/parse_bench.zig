@@ -1,6 +1,6 @@
 const std = @import("std");
 const treesitter = @import("treesitter");
-const grammar = treesitter.expression_language;
+const grammar = treesitter.expressionLanguage;
 
 const io = std.Io.Threaded.global_single_threaded.io();
 
@@ -19,6 +19,7 @@ pub fn main() !void {
 
     var parser = treesitter.Parser.init(gpa);
     defer parser.deinit();
+    parser.setIo(io);
     try parser.setLanguage(grammar);
 
     var buf = std.ArrayList(u8).empty;

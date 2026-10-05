@@ -22,6 +22,10 @@ pub const ExternalScanner = struct {
     payload: ?*anyopaque = null,
     scan: *const fn (payload: ?*anyopaque, source: []const u8, start: usize, valid_symbols: []const bool) ?ExternalToken,
     reset: ?*const fn (payload: ?*anyopaque) void = null,
+    serialize: ?*const fn (payload: ?*anyopaque, buffer: []u8) usize = null,
+    deserialize: ?*const fn (payload: ?*anyopaque, buffer: []const u8) void = null,
+    create: ?*const fn (allocator: std.mem.Allocator) ?*anyopaque = null,
+    destroy: ?*const fn (allocator: std.mem.Allocator, payload: ?*anyopaque) void = null,
 
     pub const ExternalToken = struct {
         symbol: u16,
@@ -29,6 +33,89 @@ pub const ExternalScanner = struct {
     };
 };
 
+pub const SymbolType = enum {
+    regular,
+    anonymous,
+    supertype,
+    auxiliary,
+};
+
+pub const LookaheadIterator = struct {
+    language: Language,
+    state: u16,
+    index: usize = 0,
+    current_symbol: u16 = 0,
+
+    pub fn init(language: Language, state: u16) ?LookaheadIterator {
+        if (state >= language.stateCount()) return null;
+        return .{
+            .language = language,
+            .state = state,
+            .index = 0,
+            .current_symbol = language.table.error_symbol,
+        };
+    }
+
+    pub fn resetState(self: *LookaheadIterator, state: u16) bool {
+        if (state >= self.language.stateCount()) return false;
+        self.state = state;
+        self.index = 0;
+        self.current_symbol = self.language.table.error_symbol;
+        return true;
+    }
+
+    pub fn reset(self: *LookaheadIterator, language: Language, state: u16) bool {
+        if (state >= language.stateCount()) return false;
+        self.language = language;
+        self.state = state;
+        self.index = 0;
+        self.current_symbol = language.table.error_symbol;
+        return true;
+    }
+
+    pub fn getLanguage(self: LookaheadIterator) Language {
+        return self.language;
+    }
+
+    pub fn currentSymbol(self: LookaheadIterator) u16 {
+        return self.current_symbol;
+    }
+
+    pub fn currentSymbolName(self: LookaheadIterator) []const u8 {
+        return self.language.symbolName(self.current_symbol);
+    }
+
+    pub fn next(self: *LookaheadIterator) bool {
+        if (self.state >= self.language.stateCount()) return false;
+        const parse_state = self.language.table.states[self.state];
+        while (self.index < parse_state.actions.len) {
+            const entry = parse_state.actions[self.index];
+            self.index += 1;
+            if (!entry.action.isNone()) {
+                self.current_symbol = entry.symbol;
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+/// Grammar definition for a Tree-sitter language.
+///
+/// **Ownership**: `Language` is a value type wrapping pointers to static,
+/// compile-time-allocated grammar tables.  It is safe to copy by value and
+/// to share between threads without synchronisation.
+///
+/// **Concurrency**: fully thread-safe for reading (symbol lookups, field
+/// lookups, ABI validation).  No mutable internal state.
+///
+/// **Exception — external scanners**: the `external_scanner` field contains
+/// a `payload` pointer that is usually `null` for built-in grammars.  When
+/// you attach a stateful scanner, that payload is mutable and exclusive:
+/// copy the `Language` value, set `external_scanner.?.payload` to a
+/// caller-owned `OutlineScanState`, and keep that copy and state
+/// single-threaded.  Do not share a `Language` copy that has a live payload
+/// between threads.
 pub const Language = struct {
     metadata: metadata_mod.Metadata = .{},
     symbols: []const symbols_mod.SymbolInfo = &.{},
@@ -52,6 +139,38 @@ pub const Language = struct {
 
     pub fn symbolCount(self: Language) usize {
         return self.symbols.len;
+    }
+
+    pub fn stateCount(self: Language) usize {
+        return self.table.stateCount();
+    }
+
+    pub fn fieldCount(self: Language) usize {
+        return self.fields.fields.len;
+    }
+
+    pub fn abiVersion(self: Language) u32 {
+        return self.metadata.abi_version;
+    }
+
+    pub fn isParseable(self: Language) bool {
+        return self.table.stateCount() > 0;
+    }
+
+    pub fn symbolType(self: Language, id: u16) SymbolType {
+        if (self.symbolIsNamed(id) and self.symbolIsVisible(id)) {
+            return .regular;
+        } else if (self.symbolIsVisible(id)) {
+            return .anonymous;
+        } else if (self.symbolIsSupertype(id)) {
+            return .supertype;
+        } else {
+            return .auxiliary;
+        }
+    }
+
+    pub fn lookaheadIterator(self: Language, state: u16) ?LookaheadIterator {
+        return LookaheadIterator.init(self, state);
     }
 
     pub fn validate(self: Language) Error!void {
@@ -401,7 +520,7 @@ pub const expression_language: Language = .{
     .metadata = .{
         .name = "expression",
         .abi_version = metadata_mod.current_abi_version,
-        .version = "0.0.1",
+        .version = "0.0.2",
         .symbol_count = 15,
         .state_count = 18,
         .field_count = 2,
@@ -603,7 +722,7 @@ pub const sexp_language: Language = .{
     .metadata = .{
         .name = "sexp",
         .abi_version = metadata_mod.current_abi_version,
-        .version = "0.0.1",
+        .version = "0.0.2",
         .symbol_count = 12,
         .state_count = 12,
         .field_count = 0,
@@ -657,4 +776,31 @@ test "language: sexp alias substitution registered" {
 test "language: subtype map defaults to empty" {
     try std.testing.expectEqual(@as(usize, 0), expression_language.subtypesOf(expr_sym_expr).len);
     try std.testing.expect(!expression_language.symbolIsSupertype(expr_sym_expr));
+}
+
+test "language: lookahead iterator" {
+    var iter = expression_language.lookaheadIterator(0) orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(expression_language.metadata.name, iter.getLanguage().metadata.name);
+
+    var count: usize = 0;
+    while (iter.next()) {
+        const sym = iter.currentSymbol();
+        const name = iter.currentSymbolName();
+        try std.testing.expect(name.len > 0);
+        try std.testing.expectEqual(name, expression_language.symbolName(sym));
+        count += 1;
+    }
+    try std.testing.expect(count > 0);
+
+    // Resetting state
+    try std.testing.expect(iter.resetState(1));
+    var count_s1: usize = 0;
+    while (iter.next()) {
+        count_s1 += 1;
+    }
+    try std.testing.expect(count_s1 > 0);
+
+    // Invalid state
+    try std.testing.expect(!iter.resetState(9999));
+    try std.testing.expect(expression_language.lookaheadIterator(9999) == null);
 }

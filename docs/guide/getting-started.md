@@ -6,7 +6,7 @@ description: Get started with tree-sitter.zig — install the package, parse you
 
 ## What you'll learn
 
-- How to add `tree-sitter.zig` to a Zig 0.16.0 project.
+- How to add `tree-sitter.zig` to a Zig 0.17.0 project.
 - How to create a parser, parse source, and read the resulting tree.
 - Where to go next for editing, queries, and embedding.
 
@@ -16,7 +16,7 @@ You are new to the library and want the shortest path to a working parse.
 
 ## Prerequisites
 
-- Zig **0.16.0 exactly** (`zig version` must print `0.16.0`).
+- Zig **0.17.0+** (`zig version` must report `0.17.0` or higher).
 - A `Language` value describing the grammar to parse. The package ships a bundled expression grammar used by the examples and tests; real integrations plug in their own generated table data (see [Language Definition](/guide/language-definition)).
 
 ## Complete example
@@ -24,7 +24,7 @@ You are new to the library and want the shortest path to a working parse.
 ```zig
 const std = @import("std");
 const treesitter = @import("treesitter");
-const grammar = treesitter.expression_language;
+const grammar = treesitter.expressionLanguage;
 
 pub fn main() !void {
     var gpa_state = std.heap.DebugAllocator(.{}).init;

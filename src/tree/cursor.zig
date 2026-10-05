@@ -1,15 +1,27 @@
 const std = @import("std");
 const node_mod = @import("node.zig");
+const core = @import("../core/core.zig");
 
 const Entry = struct {
     index: u32,
     child_pos: u32,
+    descendant_index: u32 = 0,
 };
 
+/// Stateful depth-first cursor over an immutable `Tree`.
+///
+/// **Ownership**: `TreeCursor` owns its internal navigation stack via `gpa`.
+/// Call `deinit` to free it.  The cursor borrows `*const Tree` through the
+/// root `Node`; the `Tree` must outlive the cursor.
+///
+/// **Concurrency**: a `TreeCursor` MUST NOT be accessed concurrently from
+/// multiple threads.  For parallel traversals, create one independent
+/// `TreeCursor` per thread over the same shared immutable `Tree`.
 pub const TreeCursor = struct {
     gpa: std.mem.Allocator,
     node: node_mod.Node,
     stack: std.ArrayList(Entry) = .empty,
+    current_descendant_index: u32 = 0,
 
     pub fn init(gpa: std.mem.Allocator, node: node_mod.Node) TreeCursor {
         return .{ .gpa = gpa, .node = node };
@@ -23,6 +35,14 @@ pub const TreeCursor = struct {
     pub fn reset(self: *TreeCursor, node: node_mod.Node) void {
         self.stack.clearRetainingCapacity();
         self.node = node;
+        self.current_descendant_index = 0;
+    }
+
+    pub fn resetTo(self: *TreeCursor, src: *const TreeCursor) std.mem.Allocator.Error!void {
+        self.stack.clearRetainingCapacity();
+        try self.stack.appendSlice(self.gpa, src.stack.items);
+        self.node = src.node;
+        self.current_descendant_index = src.current_descendant_index;
     }
 
     pub fn currentNode(self: *const TreeCursor) node_mod.Node {
@@ -31,6 +51,14 @@ pub const TreeCursor = struct {
 
     pub fn depth(self: *const TreeCursor) u32 {
         return @as(u32, @intCast(self.stack.items.len));
+    }
+
+    pub fn currentDepth(self: *const TreeCursor) u32 {
+        return self.depth();
+    }
+
+    pub fn currentDescendantIndex(self: *const TreeCursor) u32 {
+        return self.current_descendant_index;
     }
 
     pub fn currentFieldName(self: *const TreeCursor) ?[]const u8 {
@@ -51,23 +79,84 @@ pub const TreeCursor = struct {
 
     pub fn gotoFirstChild(self: *TreeCursor) bool {
         const first = self.node.child(0) orelse return false;
-        self.stack.append(self.gpa, .{ .index = self.node.index, .child_pos = 0 }) catch return false;
+        self.stack.append(self.gpa, .{
+            .index = self.node.index,
+            .child_pos = 0,
+            .descendant_index = self.current_descendant_index,
+        }) catch return false;
         self.node = first;
+        self.current_descendant_index += 1;
         return true;
     }
 
     pub fn gotoLastChild(self: *TreeCursor) bool {
         const count = self.node.childCount();
         if (count == 0) return false;
-        const last = self.node.child(count - 1) orelse return false;
-        self.stack.append(self.gpa, .{ .index = self.node.index, .child_pos = count - 1 }) catch return false;
+        const last_pos = count - 1;
+        const last = self.node.child(last_pos) orelse return false;
+        var desc_idx = self.current_descendant_index + 1;
+        var i: u32 = 0;
+        while (i < last_pos) : (i += 1) {
+            if (self.node.child(i)) |c| desc_idx += c.descendantCount();
+        }
+        self.stack.append(self.gpa, .{
+            .index = self.node.index,
+            .child_pos = last_pos,
+            .descendant_index = self.current_descendant_index,
+        }) catch return false;
         self.node = last;
+        self.current_descendant_index = desc_idx;
         return true;
+    }
+
+    pub fn gotoFirstChildForByte(self: *TreeCursor, goal_byte: u32) ?u32 {
+        const count = self.node.childCount();
+        if (count == 0) return null;
+        var i: u32 = 0;
+        var desc_idx = self.current_descendant_index + 1;
+        while (i < count) : (i += 1) {
+            const c = self.node.child(i) orelse break;
+            if (c.endByte() > goal_byte or c.startByte() >= goal_byte) {
+                self.stack.append(self.gpa, .{
+                    .index = self.node.index,
+                    .child_pos = i,
+                    .descendant_index = self.current_descendant_index,
+                }) catch return null;
+                self.node = c;
+                self.current_descendant_index = desc_idx;
+                return i;
+            }
+            desc_idx += c.descendantCount();
+        }
+        return null;
+    }
+
+    pub fn gotoFirstChildForPoint(self: *TreeCursor, goal_point: core.Point) ?u32 {
+        const count = self.node.childCount();
+        if (count == 0) return null;
+        var i: u32 = 0;
+        var desc_idx = self.current_descendant_index + 1;
+        while (i < count) : (i += 1) {
+            const c = self.node.child(i) orelse break;
+            if (c.endPoint().order(goal_point) == .gt or goal_point.lessOrEql(c.startPoint())) {
+                self.stack.append(self.gpa, .{
+                    .index = self.node.index,
+                    .child_pos = i,
+                    .descendant_index = self.current_descendant_index,
+                }) catch return null;
+                self.node = c;
+                self.current_descendant_index = desc_idx;
+                return i;
+            }
+            desc_idx += c.descendantCount();
+        }
+        return null;
     }
 
     pub fn gotoParent(self: *TreeCursor) bool {
         const entry = self.stack.pop() orelse return false;
         self.node = node_mod.Node{ .tree = self.node.tree, .index = entry.index };
+        self.current_descendant_index = entry.descendant_index;
         return true;
     }
 
@@ -78,6 +167,7 @@ pub const TreeCursor = struct {
         const next_pos = top.child_pos + 1;
         const next = parent.child(next_pos) orelse return false;
         top.child_pos = next_pos;
+        self.current_descendant_index += self.node.descendantCount();
         self.node = next;
         return true;
     }
@@ -90,6 +180,7 @@ pub const TreeCursor = struct {
         const prev_pos = top.child_pos - 1;
         const prev = parent.child(prev_pos) orelse return false;
         top.child_pos = prev_pos;
+        self.current_descendant_index -= prev.descendantCount();
         self.node = prev;
         return true;
     }
@@ -99,14 +190,21 @@ pub const TreeCursor = struct {
             const count = self.node.childCount();
             var descended = false;
             var i: u32 = 0;
+            var desc_idx = self.current_descendant_index + 1;
             while (i < count) : (i += 1) {
                 const c = self.node.child(i) orelse break;
                 if (c.startByte() <= goal_byte_offset and goal_byte_offset < c.endByte()) {
-                    self.stack.append(self.gpa, .{ .index = self.node.index, .child_pos = i }) catch return;
+                    self.stack.append(self.gpa, .{
+                        .index = self.node.index,
+                        .child_pos = i,
+                        .descendant_index = self.current_descendant_index,
+                    }) catch return;
                     self.node = c;
+                    self.current_descendant_index = desc_idx;
                     descended = true;
                     break;
                 }
+                desc_idx += c.descendantCount();
             }
             if (!descended) return;
         }
@@ -115,7 +213,12 @@ pub const TreeCursor = struct {
     pub fn copy(self: *const TreeCursor) std.mem.Allocator.Error!TreeCursor {
         var new_stack = std.ArrayList(Entry).empty;
         try new_stack.appendSlice(self.gpa, self.stack.items);
-        return .{ .gpa = self.gpa, .node = self.node, .stack = new_stack };
+        return .{
+            .gpa = self.gpa,
+            .node = self.node,
+            .stack = new_stack,
+            .current_descendant_index = self.current_descendant_index,
+        };
     }
 };
 
@@ -213,4 +316,37 @@ test "cursor: copy is independent" {
     try std.testing.expect(dup.currentNode().eql(cursor.currentNode()));
     try std.testing.expect(cursor.gotoFirstChild());
     try std.testing.expect(!dup.currentNode().eql(cursor.currentNode()));
+}
+
+test "cursor: resetTo, descendant indexing, and byte/point child search" {
+    var parser = parser_mod.Parser.init(std.testing.allocator);
+    defer parser.deinit();
+    try parser.setLanguage(language_mod.expression_language);
+    var tree = try parser.parseString("a + b");
+    defer tree.deinit();
+
+    var cursor = TreeCursor.init(std.testing.allocator, tree.rootNode());
+    defer cursor.deinit();
+
+    try std.testing.expectEqual(@as(u32, 0), cursor.currentDepth());
+    try std.testing.expectEqual(@as(u32, 0), cursor.currentDescendantIndex());
+
+    try std.testing.expect(cursor.gotoFirstChild());
+    try std.testing.expectEqual(@as(u32, 1), cursor.currentDepth());
+    try std.testing.expectEqual(@as(u32, 1), cursor.currentDescendantIndex());
+
+    const c_idx = cursor.gotoFirstChildForByte(4);
+    try std.testing.expect(c_idx != null);
+    try std.testing.expectEqualStrings("b", cursor.currentNode().text());
+
+    var other = TreeCursor.init(std.testing.allocator, tree.rootNode());
+    defer other.deinit();
+    try other.resetTo(&cursor);
+    try std.testing.expect(other.currentNode().eql(cursor.currentNode()));
+    try std.testing.expectEqual(cursor.currentDepth(), other.currentDepth());
+    try std.testing.expectEqual(cursor.currentDescendantIndex(), other.currentDescendantIndex());
+
+    other.reset(tree.rootNode());
+    const pt_idx = other.gotoFirstChildForPoint(.{ .row = 0, .column = 0 });
+    try std.testing.expect(pt_idx != null);
 }

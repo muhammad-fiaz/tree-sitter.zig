@@ -11,11 +11,11 @@ pub const SymbolId = u16;
 pub const no_symbol: SymbolId = std.math.maxInt(SymbolId);
 
 pub fn symbolFromId(id: SymbolId) Symbol {
-    return @enumFromInt(id);
+    return @fromBackingInt(@intCast(id));
 }
 
 pub fn symbolToId(sym: Symbol) SymbolId {
-    return @intFromEnum(sym);
+    return @backingInt(sym);
 }
 
 pub fn isTerminalId(symbol_count: u16, id: SymbolId) bool {

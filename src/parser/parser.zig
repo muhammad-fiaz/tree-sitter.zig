@@ -23,6 +23,17 @@ pub const ParserError = std.mem.Allocator.Error || error{
     InvalidRange,
 } || unicode_mod.Utf16Error;
 
+pub const ParseState = struct {
+    payload: ?*anyopaque = null,
+    current_byte_offset: u32 = 0,
+    has_error: bool = false,
+};
+
+pub const ParseOptions = struct {
+    payload: ?*anyopaque = null,
+    progress_callback: ?*const fn (payload: ?*anyopaque, state: ParseState) bool = null,
+};
+
 const Candidate = struct {
     old_index: u32,
     start_byte: u32,
@@ -33,6 +44,29 @@ const Candidate = struct {
     reuse_state: u16,
 };
 
+/// Tree-sitter parser.
+///
+/// **Ownership**: exclusively owned by the caller.  `Parser.init` initialises
+/// all internal memory using the supplied `gpa`; `Parser.deinit` frees it.
+/// The parser DOES NOT take ownership of `gpa` — the allocator must outlive
+/// the parser.
+///
+/// **Concurrency**: a single `Parser` instance MUST NOT be accessed from
+/// more than one thread at a time without external synchronisation.  Parsing
+/// modifies internal scratch buffers, the parse stack, and reuse state.
+/// For parallel workloads, give each thread its own independent `Parser`.
+///
+/// **I/O context**: the `std.Io` context set via `setIo` is used only for
+/// monotonic timeout sampling and DOT-graph file output.  It does not
+/// implicitly protect the parser against concurrent mutation.
+///
+/// **Lifetime rules**:
+///   - `gpa` must outlive the `Parser`.
+///   - Any `Tracer` passed to `setTracer` must outlive the `Parser`.
+///   - Any `std.Io.Reader` passed to `parseReader` is borrowed for the
+///     duration of that call only; the parser retains no reference after
+///     the call returns.
+///   - The returned `Tree` is independently owned by the caller.
 pub const Parser = struct {
     gpa: std.mem.Allocator,
     language: ?language_mod.Language = null,
@@ -52,7 +86,19 @@ pub const Parser = struct {
     /// Scratch validity set for external scanners (symbol id -> valid
     /// in the current parser state). Retained across parses.
     valid_buf: std.ArrayList(bool) = .empty,
+    timeout_micros: u64 = 0,
+    cancellation_flag: ?*const usize = null,
+    parse_options: ParseOptions = .{},
+    dot_graph_file: ?std.Io.File = null,
+    /// Optional I/O context for monotonic timeout and DOT output.
+    /// Defaults lazily to `std.Io.Threaded.global_single_threaded.io()`.
+    /// Does NOT affect parser thread-safety.
+    io: ?std.Io = null,
 
+    /// Initialise a new parser with the given allocator.
+    ///
+    /// `gpa` is **borrowed**: the parser does not take ownership and will
+    /// never free or replace it.  `gpa` must remain valid until `deinit`.
     pub fn init(gpa: std.mem.Allocator) Parser {
         return .{ .gpa = gpa };
     }
@@ -61,6 +107,7 @@ pub const Parser = struct {
         self.stack.deinit(self.gpa);
         self.scratch.deinit(self.gpa);
         self.candidates.deinit(self.gpa);
+
         self.ranges.deinit(self.gpa);
         self.valid_buf.deinit(self.gpa);
         self.* = undefined;
@@ -82,6 +129,47 @@ pub const Parser = struct {
 
     pub fn setTracer(self: *Parser, tracer: ?*debug_mod.Tracer) void {
         self.tracer = tracer;
+    }
+
+    pub fn setTimeoutMicros(self: *Parser, timeout_micros: u64) void {
+        self.timeout_micros = timeout_micros;
+    }
+
+    pub fn timeoutMicros(self: Parser) u64 {
+        return self.timeout_micros;
+    }
+
+    pub fn setCancellationFlag(self: *Parser, flag: ?*const usize) void {
+        self.cancellation_flag = flag;
+    }
+
+    pub fn cancellationFlag(self: Parser) ?*const usize {
+        return self.cancellation_flag;
+    }
+
+    pub fn printDotGraphs(self: *Parser, file: ?std.Io.File) void {
+        self.dot_graph_file = file;
+    }
+
+    /// Configure the I/O execution context used for monotonic timeout
+    /// sampling and DOT-graph file output.
+    ///
+    /// This setting is independent of parser thread-safety.  Setting a
+    /// multi-threaded `std.Io` does NOT make the parser safe to use from
+    /// multiple threads simultaneously.  Use separate `Parser` instances
+    /// for concurrent parsing.
+    ///
+    /// If not called, `getIo` falls back to
+    /// `std.Io.Threaded.global_single_threaded.io()` which is always safe
+    /// for single-threaded use.
+    pub fn setIo(self: *Parser, io_ctx: ?std.Io) void {
+        self.io = io_ctx;
+    }
+
+    /// Return the active I/O context, defaulting to the global
+    /// single-threaded context when none has been configured.
+    pub fn getIo(self: *const Parser) std.Io {
+        return self.io orelse std.Io.Threaded.global_single_threaded.io();
     }
 
     fn trace(self: *Parser, event: debug_mod.TraceEvent, byte_offset: u32, symbol: u16, state: u16) void {
@@ -169,6 +257,45 @@ pub const Parser = struct {
         return self.parse(null, null, source);
     }
 
+    pub fn parseWithOptions(
+        self: *Parser,
+        old_tree: ?*const tree_mod.Tree,
+        edit: ?core.InputEdit,
+        source: []const u8,
+        options: ParseOptions,
+    ) ParserError!tree_mod.Tree {
+        const prev_options = self.parse_options;
+        self.parse_options = options;
+        defer self.parse_options = prev_options;
+        return self.parse(old_tree, edit, source);
+    }
+
+    pub fn parseStringEncoding(
+        self: *Parser,
+        old_tree: ?*const tree_mod.Tree,
+        edit: ?core.InputEdit,
+        source: []const u8,
+        encoding: input_mod.Encoding,
+    ) ParserError!tree_mod.Tree {
+        const Context = struct {
+            data: []const u8,
+            fn readFn(ctx_ptr: ?*anyopaque, offset: u32, _: core.Point, bytes_read: *u32) ?[*]const u8 {
+                const ctx: *const @This() = @ptrCast(@alignCast(ctx_ptr orelse return null));
+                if (offset >= ctx.data.len) return null;
+                const slice = ctx.data[offset..];
+                bytes_read.* = @as(u32, @intCast(slice.len));
+                return slice.ptr;
+            }
+        };
+        var ctx = Context{ .data = source };
+        const inp = input_mod.Input{
+            .payload = &ctx,
+            .encoding = encoding,
+            .read = Context.readFn,
+        };
+        return self.parseWithInput(old_tree, edit, inp);
+    }
+
     pub fn parse(
         self: *Parser,
         old_tree: ?*const tree_mod.Tree,
@@ -244,6 +371,24 @@ pub const Parser = struct {
         return self.runParseStream(language, reader_input);
     }
 
+    /// Parse source directly from a `std.Io.Reader` using caller-provided scratch buffer.
+    pub fn parseReader(self: *Parser, reader: *std.Io.Reader, buffer: []u8) ParserError!tree_mod.Tree {
+        var src = input_mod.ReaderSource.init(reader, buffer);
+        return self.parseWithInput(null, null, src.input());
+    }
+
+    /// Incremental parse directly from a `std.Io.Reader` using caller-provided scratch buffer and an old tree.
+    pub fn parseReaderIncremental(
+        self: *Parser,
+        old_tree: ?*const tree_mod.Tree,
+        edit: ?core.InputEdit,
+        reader: *std.Io.Reader,
+        buffer: []u8,
+    ) ParserError!tree_mod.Tree {
+        var src = input_mod.ReaderSource.init(reader, buffer);
+        return self.parseWithInput(old_tree, edit, src.input());
+    }
+
     fn runParseStream(
         self: *Parser,
         language: language_mod.Language,
@@ -279,13 +424,17 @@ pub const Parser = struct {
         stream.truncate(pst.tokenizer.offset);
         const owned = try stream.takeOwned();
         errdefer self.gpa.free(owned);
-        return .{
+        const res = tree_mod.Tree{
             .gpa = self.gpa,
             .language = language,
             .source = owned,
             .pool = pool,
             .root_index = root_idx,
         };
+        if (self.dot_graph_file) |f| {
+            res.printDotGraphToFile(self.getIo(), f) catch {};
+        }
+        return res;
     }
 
     fn runParse(
@@ -329,13 +478,17 @@ pub const Parser = struct {
 
         const owned = try self.gpa.dupe(u8, source);
         errdefer self.gpa.free(owned);
-        return .{
+        const res = tree_mod.Tree{
             .gpa = self.gpa,
             .language = language,
             .source = owned,
             .pool = pool,
             .root_index = root_idx,
         };
+        if (self.dot_graph_file) |f| {
+            res.printDotGraphToFile(self.getIo(), f) catch {};
+        }
+        return res;
     }
 
     fn collectReusable(
@@ -602,17 +755,46 @@ pub const Parser = struct {
         return lo;
     }
 
+    fn checkAbort(self: *Parser, pst: *state_mod.ParseState, start_time: ?i128) ParserError!void {
+        if (self.cancellation_flag) |flag| {
+            if (flag.* != 0) return error.Aborted;
+        }
+        if (self.timeout_micros > 0 and start_time != null) {
+            const io = self.getIo();
+            const now = std.Io.Timestamp.now(io, .awake);
+            const elapsed_ns = now.toNanoseconds() - start_time.?;
+            if (elapsed_ns > 0 and @as(u64, @intCast(@divTrunc(elapsed_ns, std.time.ns_per_us))) >= self.timeout_micros) {
+                return error.Aborted;
+            }
+        }
+        if (self.parse_options.progress_callback) |cb| {
+            const pstate = ParseState{
+                .payload = self.parse_options.payload,
+                .current_byte_offset = @as(u32, @intCast(@min(pst.tokenizer.offset, pst.source.len))),
+                .has_error = pst.error_cost > 0 or pst.error_span_open,
+            };
+            if (cb(self.parse_options.payload, pstate)) {
+                return error.Aborted;
+            }
+        }
+    }
+
     fn parseLoop(
         self: *Parser,
         language: language_mod.Language,
         pst: *state_mod.ParseState,
         pool: *subtree_mod.SubtreePool,
-    ) std.mem.Allocator.Error!u32 {
+    ) ParserError!u32 {
         const table = language.table;
         const end_sym = table.end_symbol;
         var guard: u32 = 0;
+        const start_time: ?i128 = if (self.timeout_micros > 0)
+            std.Io.Timestamp.now(self.getIo(), .awake).toNanoseconds()
+        else
+            null;
 
         while (true) {
+            try self.checkAbort(pst, start_time);
             // Live view: the streaming tokenizer grows this slice as it
             // pulls; buffered parses see a fixed slice.
             pst.source = pst.tokenizer.source;
@@ -1788,7 +1970,8 @@ test "logging: tracer records parse lifecycle" {
     var parser = Parser.init(std.testing.allocator);
     defer parser.deinit();
     try parser.setLanguage(language_mod.expression_language);
-    parser.setLogger(.{ .level = .debug, .prefix = "test" });
+    parser.setLogger(.{ .level = .off, .prefix = "test" });
+    try std.testing.expect(parser.logger.level == .off);
     var tracer = debug_mod.Tracer.init(std.testing.allocator, .{ .level = .off });
     defer tracer.deinit();
     parser.setTracer(&tracer);
@@ -1832,4 +2015,206 @@ test "logging: tracer records incremental reuse" {
         if (entry.event == .reuse_node) saw_reuse = true;
     }
     try std.testing.expect(saw_reuse);
+}
+
+test "parser: cancellation flag aborts parse" {
+    var parser = Parser.init(std.testing.allocator);
+    defer parser.deinit();
+    try parser.setLanguage(language_mod.expression_language);
+
+    var cancel: usize = 1;
+    parser.setCancellationFlag(&cancel);
+    try std.testing.expectEqual(@as(?*const usize, &cancel), parser.cancellationFlag());
+
+    const result = parser.parseString("1 + 2 * 3");
+    try std.testing.expectError(error.Aborted, result);
+
+    cancel = 0;
+    var tree = try parser.parseString("1 + 2 * 3");
+    defer tree.deinit();
+    try std.testing.expect(!tree.rootNode().hasError());
+}
+
+test "parser: progress callback aborts parse via parseWithOptions" {
+    var parser = Parser.init(std.testing.allocator);
+    defer parser.deinit();
+    try parser.setLanguage(language_mod.expression_language);
+
+    const abortFn = struct {
+        fn cb(_: ?*anyopaque, state: ParseState) bool {
+            _ = state;
+            return true; // abort immediately
+        }
+    }.cb;
+
+    const res = parser.parseWithOptions(null, null, "1 + 2 * 3", .{
+        .progress_callback = abortFn,
+    });
+    try std.testing.expectError(error.Aborted, res);
+}
+
+test "parser: timeout aborts long or zero-timeout parse" {
+    var parser = Parser.init(std.testing.allocator);
+    defer parser.deinit();
+    try parser.setLanguage(language_mod.expression_language);
+
+    // Timeout of 1 microsecond with a delay in progress callback to ensure it exceeds
+    parser.setTimeoutMicros(1);
+    try std.testing.expectEqual(@as(u64, 1), parser.timeoutMicros());
+
+    const slowFn = struct {
+        fn cb(_: ?*anyopaque, _: ParseState) bool {
+            const io = std.Io.Threaded.global_single_threaded.io();
+            std.Io.sleep(io, std.Io.Duration.fromMilliseconds(10), .awake) catch {};
+            return false;
+        }
+    }.cb;
+
+    const res = parser.parseWithOptions(null, null, "1 + 2 * 3 + 4 * 5", .{
+        .progress_callback = slowFn,
+    });
+    try std.testing.expectError(error.Aborted, res);
+}
+
+test "parser: parseStringEncoding with custom/utf8" {
+    var parser = Parser.init(std.testing.allocator);
+    defer parser.deinit();
+    try parser.setLanguage(language_mod.expression_language);
+
+    var tree = try parser.parseStringEncoding(null, null, "42 + 10", .utf8);
+    defer tree.deinit();
+    try std.testing.expect(!tree.rootNode().hasError());
+}
+
+test "io: explicit custom and single-threaded std.Io support" {
+    var parser = Parser.init(std.testing.allocator);
+    defer parser.deinit();
+    try parser.setLanguage(language_mod.expression_language);
+
+    // 1. Default fallback to global single-threaded io
+    const default_io = parser.getIo();
+    _ = default_io;
+
+    // 2. Explicit custom/threaded std.Io
+    const explicit_io = std.Io.Threaded.global_single_threaded.io();
+    parser.setIo(explicit_io);
+    try std.testing.expect(parser.io != null);
+
+    parser.setTimeoutMicros(5_000_000);
+    var tree = try parser.parseString("a + b");
+    defer tree.deinit();
+    try std.testing.expect(!tree.hasError());
+}
+
+test "io: parseReader and parseReaderIncremental from std.Io.Reader" {
+    var parser = Parser.init(std.testing.allocator);
+    defer parser.deinit();
+    try parser.setLanguage(language_mod.expression_language);
+
+    var reader = std.Io.Reader.fixed("12 * (34 + 56)");
+    var buffer: [8]u8 = undefined;
+    var tree = try parser.parseReader(&reader, &buffer);
+    defer tree.deinit();
+
+    try std.testing.expectEqualStrings("12 * (34 + 56)", tree.rootNode().text());
+    try std.testing.expect(!tree.hasError());
+
+    const edit = core.InputEdit{
+        .start_byte = 0,
+        .old_end_byte = 2,
+        .new_end_byte = 3,
+        .start_point = .{ .row = 0, .column = 0 },
+        .old_end_point = .{ .row = 0, .column = 2 },
+        .new_end_point = .{ .row = 0, .column = 3 },
+    };
+
+    var r2 = std.Io.Reader.fixed("100 * (34 + 56)");
+    var buf2: [8]u8 = undefined;
+    var new_tree = try parser.parseReaderIncremental(&tree, edit, &r2, &buf2);
+    defer new_tree.deinit();
+
+    try std.testing.expectEqualStrings("100 * (34 + 56)", new_tree.rootNode().text());
+    try std.testing.expect(!new_tree.hasError());
+}
+
+test "io: writeDotGraph to std.Io.Writer" {
+    var parser = Parser.init(std.testing.allocator);
+    defer parser.deinit();
+    try parser.setLanguage(language_mod.expression_language);
+
+    var tree = try parser.parseString("x + 1");
+    defer tree.deinit();
+
+    var out_buf: [2048]u8 = undefined;
+    var writer = std.Io.Writer.fixed(&out_buf);
+    try tree.writeDotGraph(&writer);
+    const written = writer.buffered();
+    try std.testing.expect(std.mem.indexOf(u8, written, "digraph tree") != null);
+    try std.testing.expect(std.mem.indexOf(u8, written, "program") != null);
+}
+
+test "multithreading: concurrent parsers across OS threads" {
+    const Worker = struct {
+        fn run(alloc: std.mem.Allocator, text: []const u8, result_count: *usize) void {
+            var p = Parser.init(alloc);
+            defer p.deinit();
+            p.setLanguage(language_mod.expression_language) catch unreachable;
+            var t = p.parseString(text) catch unreachable;
+            defer t.deinit();
+            result_count.* = t.nodeCount();
+        }
+    };
+
+    var count1: usize = 0;
+    var count2: usize = 0;
+    var count3: usize = 0;
+
+    const t1 = try std.Thread.spawn(.{}, Worker.run, .{ std.testing.allocator, "1 + 2 * 3", &count1 });
+    const t2 = try std.Thread.spawn(.{}, Worker.run, .{ std.testing.allocator, "a * (b + c) / d", &count2 });
+    const t3 = try std.Thread.spawn(.{}, Worker.run, .{ std.testing.allocator, "x + y + z + w", &count3 });
+
+    t1.join();
+    t2.join();
+    t3.join();
+
+    try std.testing.expect(count1 > 0);
+    try std.testing.expect(count2 > 0);
+    try std.testing.expect(count3 > 0);
+}
+
+test "multithreading: shared immutable tree and cursor read across threads" {
+    var parser = Parser.init(std.testing.allocator);
+    defer parser.deinit();
+    try parser.setLanguage(language_mod.expression_language);
+    var tree = try parser.parseString("total * price + count");
+    defer tree.deinit();
+
+    const ReaderWorker = struct {
+        fn run(shared_tree: *const tree_mod.Tree, match_count: *usize) void {
+            var cursor = shared_tree.cursor();
+            defer cursor.deinit();
+            var count: usize = 0;
+            outer: while (true) {
+                count += 1;
+                if (cursor.gotoFirstChild()) continue;
+                while (true) {
+                    if (cursor.gotoNextSibling()) break;
+                    if (!cursor.gotoParent()) break :outer;
+                }
+            }
+            match_count.* = count;
+        }
+    };
+
+    var visits1: usize = 0;
+    var visits2: usize = 0;
+
+    const t1 = try std.Thread.spawn(.{}, ReaderWorker.run, .{ &tree, &visits1 });
+    const t2 = try std.Thread.spawn(.{}, ReaderWorker.run, .{ &tree, &visits2 });
+
+    t1.join();
+    t2.join();
+
+    try std.testing.expect(visits1 > 0);
+    try std.testing.expectEqual(visits1, visits2);
 }

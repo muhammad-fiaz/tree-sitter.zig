@@ -1,12 +1,12 @@
 ---
-description: Allocator model reference — Zig 0.16.0 facilities and their exact use.
+description: Allocator model reference — Zig 0.17.0 facilities and their exact use.
 ---
 
 # Allocator Model
 
 ## Interface
 
-Everything is expressed through `std.mem.Allocator` (verified against `lib/std/mem/Allocator.zig` in the 0.16.0 SDK): `alloc` / `resize` / `remap` / `free` plus the convenience wrappers (`alloc`, `dupe`, `alignedAlloc`, `free`).
+Everything is expressed through `std.mem.Allocator` (verified against `lib/std/mem/Allocator.zig` in the 0.17.0 SDK): `alloc` / `resize` / `remap` / `free` plus the convenience wrappers (`alloc`, `dupe`, `alignedAlloc`, `free`).
 
 ## Containers
 

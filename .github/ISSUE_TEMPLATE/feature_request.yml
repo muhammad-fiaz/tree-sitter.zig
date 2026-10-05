@@ -6,14 +6,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        Proposals must be implementable in native Zig (stdlib only, Zig 0.16.0)
+        Proposals must be implementable in native Zig (stdlib only, Zig 0.17.0+)
         with inline tests and documentation. Upstream Tree-sitter is a
         behavioral reference, not a dependency.
   - type: input
     id: version
     attributes:
       label: tree-sitter.zig version
-      placeholder: "0.0.1"
+      placeholder: "0.0.2"
     validations:
       required: true
   - type: textarea

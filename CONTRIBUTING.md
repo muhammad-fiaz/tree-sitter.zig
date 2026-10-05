@@ -4,7 +4,7 @@ Thanks for helping with the native Zig Tree-sitter runtime. This guide covers th
 
 ## Prerequisites
 
-- Zig **0.16.0 exactly** (`zig version` must print `0.16.0`).
+- Zig **0.17.0+** (`zig version` must print `0.17.0` or higher).
 - No other dependencies: the library is Zig standard library only.
 
 ## Workflow
@@ -44,6 +44,14 @@ Thanks for helping with the native Zig Tree-sitter runtime. This guide covers th
 ## Reporting issues
 
 Include the Zig version, OS/architecture, a minimal source snippet, and — for parse problems — the S-expression of the produced tree (see `treesitter.sexp_mod.toSexp`).
+
+## Code of Conduct
+
+Please review and adhere to our [Code of Conduct](CODE_OF_CONDUCT.md) when participating in this project. For reporting issues or violations, contact [contact@muhammadfiaz.com](mailto:contact@muhammadfiaz.com).
+
+## Security
+
+For security vulnerabilities, please refer to our [Security Policy](SECURITY.md) and report via email to [contact@muhammadfiaz.com](mailto:contact@muhammadfiaz.com).
 
 ## License
 

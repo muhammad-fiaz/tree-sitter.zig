@@ -1,6 +1,6 @@
 const std = @import("std");
 const treesitter = @import("treesitter");
-const grammar = treesitter.expression_language;
+const grammar = treesitter.expressionLanguage;
 
 fn printNode(node: treesitter.Node, depth: usize) void {
     for (0..depth) |_| std.debug.print("  ", .{});

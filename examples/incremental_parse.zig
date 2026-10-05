@@ -1,6 +1,6 @@
 const std = @import("std");
 const treesitter = @import("treesitter");
-const grammar = treesitter.expression_language;
+const grammar = treesitter.expressionLanguage;
 
 pub fn main() !void {
     var gpa_state = std.heap.DebugAllocator(.{}).init;

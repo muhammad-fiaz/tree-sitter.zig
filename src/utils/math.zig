@@ -1,22 +1,22 @@
 const std = @import("std");
 
-pub fn min_usize(a: usize, b: usize) usize {
+pub fn minUsize(a: usize, b: usize) usize {
     return @min(a, b);
 }
 
-pub fn max_usize(a: usize, b: usize) usize {
+pub fn maxUsize(a: usize, b: usize) usize {
     return @max(a, b);
 }
 
-pub fn min_u32(a: u32, b: u32) u32 {
+pub fn minU32(a: u32, b: u32) u32 {
     return @min(a, b);
 }
 
-pub fn max_u32(a: u32, b: u32) u32 {
+pub fn maxU32(a: u32, b: u32) u32 {
     return @max(a, b);
 }
 
-pub fn clamp_usize(v: usize, lo: usize, hi: usize) usize {
+pub fn clampUsize(v: usize, lo: usize, hi: usize) usize {
     std.debug.assert(lo <= hi);
     return @min(@max(v, lo), hi);
 }

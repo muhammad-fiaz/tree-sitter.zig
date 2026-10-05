@@ -99,6 +99,32 @@ pub fn parseStream(self: *Parser, old_tree: ?*const Tree, edit: ?InputEdit, read
 
 True streaming: bytes are pulled on demand as the lexer advances — no pre-buffering — and the tree takes ownership of exactly the consumed prefix. With an old tree the input is buffered once so subtree reuse still applies. See [Custom Input](/guide/custom-input).
 
+### parseReader / parseReaderIncremental
+
+```zig
+pub fn parseReader(self: *Parser, reader: *std.Io.Reader, buffer: []u8) ParserError!Tree
+pub fn parseReaderIncremental(self: *Parser, old_tree: ?*const Tree, edit: ?InputEdit, reader: *std.Io.Reader, buffer: []u8) ParserError!Tree
+```
+
+Parses directly from any `std.Io.Reader` using a caller-provided scratch buffer.
+
+### setIo / getIo
+
+```zig
+pub fn setIo(self: *Parser, io_ctx: ?std.Io) void
+pub fn getIo(self: *const Parser) std.Io
+```
+
+Configures the polymorphic `std.Io` context (multi-threaded, single-threaded, or custom). Defaults to `std.Io.Threaded.global_single_threaded.io()`.
+
+### printDotGraphs
+
+```zig
+pub fn printDotGraphs(self: *Parser, file: ?std.Io.File) void
+```
+
+Directs the parser to write Graphviz DOT graphs to the specified file upon parse completion.
+
 ### queryCursor / compileQuery
 
 ```zig

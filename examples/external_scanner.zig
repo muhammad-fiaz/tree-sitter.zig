@@ -13,7 +13,7 @@ pub fn main() !void {
     var parser = treesitter.Parser.init(gpa);
     defer parser.deinit();
 
-    var lang = treesitter.outline_language;
+    var lang = treesitter.outlineLanguage;
     var scan_state = treesitter.OutlineScanState.init(gpa);
     defer scan_state.deinit();
     lang.external_scanner.?.payload = &scan_state;

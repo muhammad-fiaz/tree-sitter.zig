@@ -2,7 +2,7 @@ const std = @import("std");
 const builtin = @import("builtin");
 
 /// Build configuration for tree-sitter.zig - a native Zig implementation of
-/// the Tree-sitter runtime. Zig 0.16.0 only, standard library only.
+/// the Tree-sitter runtime. Zig 0.17.0+, standard library only.
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
@@ -54,6 +54,11 @@ pub fn build(b: *std.Build) void {
         "sexp_parse",
         "json_parse",
         "external_scanner",
+        "highlight",
+        "logging",
+        "unicode",
+        "multithreading",
+        "custom_io",
     };
     const examples_step = b.step("examples", "Build all examples");
     const run_all_examples = b.step("run-all-examples", "Run all examples sequentially");
@@ -67,7 +72,6 @@ pub fn build(b: *std.Build) void {
         m.addImport("treesitter", mod);
         const exe = b.addExecutable(.{ .name = name, .root_module = m });
         const install_exe = b.addInstallArtifact(exe, .{});
-        b.installArtifact(exe);
         examples_step.dependOn(&install_exe.step);
 
         const run_exe = b.addRunArtifact(exe);
@@ -102,7 +106,7 @@ pub fn build(b: *std.Build) void {
     const fuzz_exe = b.addExecutable(.{ .name = "fuzz", .root_module = fuzz_mod });
     const install_fuzz = b.addInstallArtifact(fuzz_exe, .{});
     const run_fuzz = b.addRunArtifact(fuzz_exe);
-    if (b.args) |args| run_fuzz.addArgs(args);
+    run_fuzz.addPassthruArgs();
     run_fuzz.step.dependOn(&install_fuzz.step);
     fuzz_step.dependOn(&run_fuzz.step);
 

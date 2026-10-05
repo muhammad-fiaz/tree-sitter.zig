@@ -15,3 +15,4 @@ Every example below is a real program in the repository's `examples/` directory.
 <ExampleCard title="Unicode" description="UTF-8 offsets, points, and positions." link="/examples/unicode" level="Intermediate" />
 <ExampleCard title="Debugging" description="Logging, tracing, and error inspection." link="/examples/debugging" level="Advanced" />
 <ExampleCard title="Applications" description="Highlighting, navigation, and analysis patterns." link="/examples/applications" level="Advanced" />
+<ExampleCard title="Concurrency & I/O" description="Multi-threading, thread isolation, shared immutable trees, and std.Io contexts." link="/examples/concurrency" level="Advanced" />

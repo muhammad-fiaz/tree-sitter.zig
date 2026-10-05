@@ -6,7 +6,7 @@ description: General FAQ — what tree-sitter.zig is and what it depends on.
 
 ## What is tree-sitter.zig?
 
-A native Zig implementation of the Tree-sitter parsing runtime: it turns source text into concrete syntax trees, updates them incrementally, and searches them structurally. Version 0.0.1, MIT licensed.
+A native Zig implementation of the Tree-sitter parsing runtime: it turns source text into concrete syntax trees, updates them incrementally, and searches them structurally. Version 0.0.2, MIT licensed.
 
 ## Does it depend on C?
 
@@ -22,7 +22,7 @@ No. Upstream was studied as an algorithmic reference during development; the pac
 
 ## Which Zig version?
 
-Exactly 0.16.0.
+Zig 0.17.0+.
 
 ## Where do I start?
 

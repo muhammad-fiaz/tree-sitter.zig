@@ -1,6 +1,6 @@
 const std = @import("std");
 const treesitter = @import("treesitter");
-const grammar = treesitter.expression_language;
+const grammar = treesitter.expressionLanguage;
 
 pub fn main() !void {
     var gpa_state = std.heap.DebugAllocator(.{}).init;
@@ -10,7 +10,7 @@ pub fn main() !void {
     const lang = grammar;
     std.debug.print("language: {s} abi={d} symbols={d} states={d}\n", .{
         lang.metadata.name,
-        lang.metadata.abi_version,
+        lang.metadata.abiVersion(),
         lang.symbolCount(),
         lang.table.stateCount(),
     });

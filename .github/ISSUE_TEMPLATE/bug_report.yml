@@ -7,21 +7,21 @@ body:
     attributes:
       value: |
         Thanks for reporting. Fill in everything below so the issue can be reproduced.
-        Current stable: `0.0.1` (Zig `0.16.0` exactly).
+        Current stable: `0.0.2` (Zig `0.17.0+`).
   - type: input
     id: version
     attributes:
       label: tree-sitter.zig version
-      description: Tag, commit, or output of `zig build --help` context (e.g. 0.0.1, main@abc123)
-      placeholder: "0.0.1"
+      description: Tag, commit, or output of `zig build --help` context (e.g. 0.0.2, main@abc123)
+      placeholder: "0.0.2"
     validations:
       required: true
   - type: input
     id: zig-version
     attributes:
       label: Zig version (`zig version`)
-      description: Must be 0.16.0 for supported reports
-      placeholder: "0.16.0"
+      description: Must be 0.17.0+ for supported reports
+      placeholder: "0.17.0"
     validations:
       required: true
   - type: dropdown
@@ -82,5 +82,5 @@ body:
       options:
         - label: I ran `zig build test` on a clean checkout
           required: false
-        - label: I tested with Zig 0.16.0 exactly
+        - label: I tested with Zig 0.17.0+
           required: false

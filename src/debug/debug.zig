@@ -3,6 +3,7 @@ pub const trace = @import("trace.zig");
 
 pub const Logger = logger.Logger;
 pub const Level = logger.Level;
+pub const nullLogger = logger.nullLogger;
 pub const null_logger = logger.null_logger;
 pub const Tracer = trace.Tracer;
 pub const TraceEvent = trace.TraceEvent;

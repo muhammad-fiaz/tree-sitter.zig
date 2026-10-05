@@ -1,5 +1,5 @@
 ---
-description: Set up a Zig 0.16.0 project that depends on tree-sitter.zig.
+description: Set up a Zig 0.17.0 project that depends on tree-sitter.zig.
 ---
 
 # Project Setup
@@ -18,10 +18,10 @@ description: Set up a Zig 0.16.0 project that depends on tree-sitter.zig.
     .name = .my_app,
     .version = "0.0.0",
     .fingerprint = 0x1234567890abcdef,
-    .minimum_zig_version = "0.16.0",
+    .minimum_zig_version = "0.17.0",
     .dependencies = .{
         .treesitter = .{
-            .url = "https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.1.tar.gz",
+            .url = "https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.2.tar.gz",
             .hash = "...",
         },
     },
