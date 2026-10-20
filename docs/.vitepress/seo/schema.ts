@@ -1,6 +1,7 @@
 // JSON-LD structured-data builders.
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_VERSION, AUTHOR_NAME, AUTHOR_URL, REPO_URL } from "./metadata";
 import { breadcrumbJsonLd } from "./breadcrumbs";
+import { canonicalUrlFor } from "./urls";
 
 interface PageInfo {
   title: string;
@@ -29,8 +30,7 @@ function publisherSchema(): Record<string, unknown> {
 }
 
 export function schemaForPage(page: PageInfo): Record<string, unknown> {
-  const normalized = page.relativePath.replace(/\.md$/, "").replace(/(^|\/)index$/, "$1").replace(/\/$/, "");
-  const canonical = normalized.length > 0 ? `${SITE_URL}/${normalized}` : SITE_URL;
+  const canonical = canonicalUrlFor(page.relativePath);
   const isHome = page.relativePath === "index.md";
   const lastUpdated = page.lastUpdated ? new Date(page.lastUpdated).toISOString() : new Date().toISOString();
   const graph: unknown[] = [];

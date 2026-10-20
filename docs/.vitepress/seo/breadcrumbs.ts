@@ -18,7 +18,7 @@ function pageUrl(siteUrl: string, clean: string, isIndex: boolean): string {
 }
 
 export function breadcrumbsForPath(siteUrl: string, relativePath: string): Crumb[] {
-  const crumbs: Crumb[] = [{ name: "Home", url: siteUrl }];
+  const crumbs: Crumb[] = [{ name: "Home", url: `${siteUrl}/` }];
   const isIndex = /(^|\/)index\.md$/.test(relativePath);
   const clean = relativePath.replace(/\.md$/, "").replace(/(^|\/)index$/, "$1").replace(/\/$/, "");
   if (clean.length === 0) return crumbs;

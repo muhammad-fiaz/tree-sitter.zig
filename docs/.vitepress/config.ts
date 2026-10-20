@@ -2,6 +2,8 @@ import { defineConfig } from "vitepress";
 import llmstxt from "vitepress-plugin-llms";
 import {
   SITE_URL,
+  SITE_BASE,
+  SITE_HOSTNAME,
   SITE_NAME,
   SITE_DESCRIPTION,
   SITE_VERSION,
@@ -13,6 +15,7 @@ import {
   REPO_URL,
 } from "./seo/metadata";
 import { schemaForPage } from "./seo/schema";
+import { canonicalUrlFor } from "./seo/urls";
 import { gtmSnippet, gtmNoscript } from "./analytics/google-tag-manager";
 import { ADSENSE_SRC } from "./analytics/adsense";
 
@@ -22,15 +25,24 @@ export default defineConfig({
   lang: "en-US",
   title: SITE_NAME,
   description: SITE_DESCRIPTION,
-  base: "/tree-sitter.zig/",
+  base: SITE_BASE,
   lastUpdated: true,
   cleanUrls: false,
 
   sitemap: {
-    hostname: `${SITE_URL}/`,
+    // Must include the deployment subpath and end in "/", so that VitePress
+    // resolves page URLs against the site root rather than the domain root.
+    hostname: SITE_HOSTNAME,
     lastmodDateOnly: true,
+    // Only the sitemap namespace is used; the news/image/video/xhtml
+    // namespaces are not emitted.
+    xmlns: { news: false, xhtml: false, image: false, video: false },
     transformItems: (items) =>
-      items.filter((item) => item.url.endsWith("/") || item.url.endsWith(".html")),
+      // The homepage is emitted with an empty URL, and every other page ends
+      // in "/" (section index) or ".html" (clean URLs disabled).
+      items.filter(
+        (item) => item.url === "" || item.url.endsWith("/") || item.url.endsWith(".html"),
+      ),
   },
 
   vite: {
@@ -39,7 +51,9 @@ export default defineConfig({
 
   head: [
     ["meta", { name: "title", content: SITE_NAME }],
-    ["meta", { name: "description", content: SITE_DESCRIPTION }],
+    // A site-level "description" meta would suppress the per-page one that
+    // VitePress injects, so every page would carry the same description.
+    // The per-page description is added by transformPageData instead.
     ["meta", { name: "keywords", content: KEYWORDS }],
     ["meta", { name: "author", content: AUTHOR_NAME }],
     ["meta", { name: "robots", content: "index, follow" }],
@@ -48,16 +62,13 @@ export default defineConfig({
     ["meta", { name: "generator", content: "VitePress" }],
 
     ["meta", { property: "og:type", content: "website" }],
-    ["meta", { property: "og:url", content: SITE_URL }],
     ["meta", { property: "og:title", content: SITE_NAME }],
-    ["meta", { property: "og:description", content: SITE_DESCRIPTION }],
     ["meta", { property: "og:image", content: `${SITE_URL}/logo.png` }],
     ["meta", { property: "og:image:alt", content: "tree-sitter.zig - Native Zig Tree-sitter Runtime" }],
     ["meta", { property: "og:site_name", content: SITE_NAME }],
     ["meta", { property: "og:locale", content: "en_US" }],
 
     ["meta", { name: "twitter:card", content: "summary" }],
-    ["meta", { name: "twitter:url", content: SITE_URL }],
     ["meta", { name: "twitter:title", content: SITE_NAME }],
     ["meta", { name: "twitter:description", content: SITE_DESCRIPTION }],
     ["meta", { name: "twitter:image", content: `${SITE_URL}/logo.png` }],
@@ -65,10 +76,11 @@ export default defineConfig({
     ["meta", { name: "twitter:site", content: "@muhammadfiaz_" }],
     ["meta", { name: "twitter:creator", content: "@muhammadfiaz_" }],
 
-    ["link", { rel: "canonical", href: SITE_URL }],
-    ["link", { rel: "icon", type: "image/svg+xml", href: "/tree-sitter.zig/favicon.svg" }],
-    ["link", { rel: "apple-touch-icon", href: "/tree-sitter.zig/logo.png" }],
-    ["link", { rel: "manifest", href: "/tree-sitter.zig/manifest.webmanifest" }],
+    // The canonical URL is emitted per page by transformPageData, so that it
+    // always points at the page itself instead of the site root.
+    ["link", { rel: "icon", type: "image/svg+xml", href: `${SITE_BASE}favicon.svg` }],
+    ["link", { rel: "apple-touch-icon", href: `${SITE_BASE}logo.png` }],
+    ["link", { rel: "manifest", href: `${SITE_BASE}manifest.webmanifest` }],
 
     ["meta", { name: "theme-color", content: "#2f7d4f" }],
     ["meta", { name: "msapplication-TileColor", content: "#2f7d4f" }],
@@ -95,26 +107,26 @@ gtag('config', '${GA_ID}');`,
 
   ignoreDeadLinks: [/.*\.zig$/],
 
+  transformHead({ pageData }) {
+    // The 404 page is not a published document, so it must not be indexed
+    // and must not advertise the site root as its canonical URL.
+    if (!pageData.isNotFound) return;
+    return [
+      ["meta", { name: "robots", content: "noindex, follow" }],
+    ];
+  },
+
   transformPageData(pageData: any) {
     const pageTitle: string = pageData.title || SITE_NAME;
     const pageDescription: string = pageData.frontmatter.description || SITE_DESCRIPTION;
-    const isIndexPage = /(^|\/)index\.md$/.test(pageData.relativePath);
-    const normalizedPath: string = pageData.relativePath
-      .replace(/\.md$/, "")
-      .replace(/(^|\/)index$/, "$1")
-      .replace(/\/$/, "");
-    const canonicalUrl =
-      normalizedPath.length > 0
-        ? isIndexPage
-          ? `${SITE_URL}/${normalizedPath}/`
-          : `${SITE_URL}/${normalizedPath}.html`
-        : SITE_URL;
+    const canonicalUrl = canonicalUrlFor(pageData.relativePath);
 
     pageData.frontmatter.head ??= [];
     pageData.frontmatter.head.push(
       ["link", { rel: "canonical", href: canonicalUrl }],
       ["meta", { property: "og:title", content: `${pageTitle} | ${SITE_NAME}` }],
       ["meta", { property: "og:url", content: canonicalUrl }],
+      ["meta", { name: "twitter:url", content: canonicalUrl }],
     );
 
     if (pageData.frontmatter.description) {
