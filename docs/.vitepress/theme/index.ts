@@ -8,7 +8,6 @@ import CodeTabs from "./components/CodeTabs.vue";
 import FeatureGrid from "./components/FeatureGrid.vue";
 import CompatibilityTable from "./components/CompatibilityTable.vue";
 import MemoryModel from "./components/MemoryModel.vue";
-import DocBreadcrumbs from "./components/DocBreadcrumbs.vue";
 import AdSlot from "./components/AdSlot.vue";
 import DocsLayout from "./layouts/DocsLayout.vue";
 import { trackPageView } from "../analytics/google-analytics";
@@ -24,7 +23,6 @@ export default {
     app.component("FeatureGrid", FeatureGrid);
     app.component("CompatibilityTable", CompatibilityTable);
     app.component("MemoryModel", MemoryModel);
-    app.component("DocBreadcrumbs", DocBreadcrumbs);
     app.component("AdSlot", AdSlot);
     if (typeof window !== "undefined" && router) {
       router.onAfterRouteChange = (to: string) => trackPageView(to);

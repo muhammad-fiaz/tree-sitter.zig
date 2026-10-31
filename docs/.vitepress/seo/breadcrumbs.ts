@@ -1,4 +1,10 @@
-// Breadcrumb helpers shared by the theme layout and JSON-LD generation.
+// BreadcrumbList JSON-LD for search engines.
+//
+// Breadcrumbs are emitted as structured data only (no visible UI). The list
+// is intentionally kept to Home + the current page so every `item` URL is a
+// real canonical page and search crawlers never see synthetic section URLs.
+
+import { canonicalUrlFor } from "./urls";
 
 export interface Crumb {
   name: string;
@@ -12,23 +18,22 @@ function titleCase(part: string): string {
     .join(" ");
 }
 
-function pageUrl(siteUrl: string, clean: string, isIndex: boolean): string {
-  if (clean.length === 0) return siteUrl;
-  return isIndex ? `${siteUrl}/${clean}/` : `${siteUrl}/${clean}.html`;
+function lastSegment(relativePath: string): string {
+  const parts = relativePath
+    .replace(/\.md$/, "")
+    .split("/")
+    .filter((part) => part.length > 0 && part !== "index");
+  return parts.length > 0 ? parts[parts.length - 1] : "";
 }
 
 export function breadcrumbsForPath(siteUrl: string, relativePath: string): Crumb[] {
   const crumbs: Crumb[] = [{ name: "Home", url: `${siteUrl}/` }];
-  const isIndex = /(^|\/)index\.md$/.test(relativePath);
-  const clean = relativePath.replace(/\.md$/, "").replace(/(^|\/)index$/, "$1").replace(/\/$/, "");
-  if (clean.length === 0) return crumbs;
-  const parts = clean.split("/");
-  parts.forEach((part, index) => {
-    const isLast = index === parts.length - 1;
-    const url = isLast
-      ? pageUrl(siteUrl, clean, isIndex)
-      : `${siteUrl}/${parts.slice(0, index + 1).join("/")}/`;
-    crumbs.push({ name: titleCase(part), url });
+  if (relativePath === "index.md") return crumbs;
+
+  const segment = lastSegment(relativePath);
+  crumbs.push({
+    name: segment.length > 0 ? titleCase(segment) : "Documentation",
+    url: canonicalUrlFor(relativePath),
   });
   return crumbs;
 }

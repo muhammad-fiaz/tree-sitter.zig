@@ -98,12 +98,30 @@ gtag('config', '${GA_ID}');`,
     ...(GTM_ID
       ? ([
           ["script", {}, gtmSnippet(GTM_ID)],
-          ["noscript", {}, gtmNoscript(GTM_ID)],
         ] as [string, Record<string, string>, string][])
       : []),
 
     ["script", { async: "", src: ADSENSE_SRC, crossorigin: "anonymous" }],
+
+    // Microsoft Clarity
+    [
+      "script",
+      {},
+      `(function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window, document, "clarity", "script", "z5vdzih779");`,
+    ],
   ],
+
+  transformHtml(html) {
+    if (!GTM_ID) return html;
+    return html.replace(
+      /<body([^>]*)>/,
+      `<body$1>\n    <noscript>${gtmNoscript(GTM_ID)}</noscript>`,
+    );
+  },
 
   ignoreDeadLinks: [/.*\.zig$/],
 
