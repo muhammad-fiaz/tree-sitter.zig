@@ -99,6 +99,8 @@
   - [Reproducing the Benchmark Results](#reproducing-the-benchmark-results)
     - [Performance Notes](#performance-notes)
 - [Building](#building)
+  - [Native Zig Grammars & Standalone Packages](#native-zig-grammars--standalone-packages)
+  - [Running Examples](#running-examples)
 - [Documentation](#documentation)
   - [Online Documentation](#online-documentation)
   - [Generating Local Documentation](#generating-local-documentation)
@@ -675,29 +677,7 @@ zig build examples
 > **No C Compatibility Notice**:
 > This project does **NOT** maintain backward compatibility with the original C version of Tree-sitter. All grammar packages use their own pure native Zig configurations and parse tables (`parser.zig`, `scanner.zig`, `grammar.json`, `node-types.json`).
 
-The repository provides modular, native Zig grammar packages under [`grammars/`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars):
-- [`grammars/c`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/c) (C native grammar, queries, and example)
-- [`grammars/cpp`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/cpp) (C++ native grammar, queries, and example)
-- [`grammars/python`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/python) (Python native grammar, queries, and example)
-- [`grammars/javascript`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/javascript) (JavaScript native grammar, queries, and example)
-- [`grammars/typescript`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/typescript) (TypeScript native grammar, queries, and example)
-- [`grammars/rust`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/rust) (Rust native grammar, queries, and example)
-- [`grammars/go`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/go) (Go native grammar, queries, and example)
-- [`grammars/html`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/html) (HTML native grammar, queries, and example)
-- [`grammars/css`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/css) (CSS native grammar, queries, and example)
-- [`grammars/json`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/json) (JSON native grammar, queries, and example)
-- [`grammars/java`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/java) (Java native grammar, queries, and example)
-- [`grammars/ruby`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/ruby) (Ruby native grammar, queries, and example)
-- [`grammars/php`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/php) (PHP native grammar, queries, and example)
-- [`grammars/zig`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/zig) (Zig native grammar, queries, and example)
-
-Each grammar package is organized as a standalone Zig project with:
-- `src/parser.zig`: Native Zig parse tables and driver.
-- `src/scanner.zig`: Native Zig external scanner.
-- `src/grammar.json`: Grammar AST specification.
-- `src/node-types.json`: Node types metadata.
-- `queries/`: Syntax highlighting (`highlights.scm`) and tags (`tags.scm`).
-- `examples/main.zig`: Runnable parse demonstration.
+The repository provides 14 modular, native Zig grammar packages under [`grammars/`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars). Each package is organized as an independent, standalone Zig project containing native parse tables (`src/parser.zig`), an external scanner (`src/scanner.zig`), AST and node schemas (`src/grammar.json`, `src/node-types.json`), syntax queries (`queries/`), and a runnable parse demonstration (`examples/main.zig`).
 
 #### Grammar Packages Directory & File Manifest
 
@@ -720,17 +700,17 @@ Each grammar package is organized as a standalone Zig project with:
 
 #### Running Grammar Examples
 
-You can run all grammar examples sequentially from the root project:
+Run all 14 grammar demonstrations sequentially from the root project:
 ```bash
 zig build run-all-grammars
 ```
 
-Or build all grammar binaries:
+Or build all grammar binaries into `zig-out/bin/`:
 ```bash
 zig build grammars
 ```
 
-Or run any individual grammar example directly:
+Or run any individual grammar example directly using its step name:
 ```bash
 zig build run-grammar-c
 zig build run-grammar-python
@@ -738,7 +718,7 @@ zig build run-grammar-rust
 zig build run-grammar-zig
 ```
 
-You can also navigate into any grammar directory and run it locally:
+To run and test within a specific grammar directory:
 ```bash
 cd grammars/python
 zig build test
