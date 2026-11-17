@@ -1,5 +1,5 @@
 ---
-description: Code navigation — definitions, references, and enclosing scopes.
+description: Code navigation - definitions, references, and enclosing scopes.
 ---
 
 # Code Navigation

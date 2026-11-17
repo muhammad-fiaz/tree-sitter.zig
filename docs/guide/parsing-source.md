@@ -74,8 +74,8 @@ Trees always own their source copy. Callback payloads and reader buffers stay ca
 
 ## API used
 
-- [Parser](/api/parser) — `parseString`, `parseWithInput`.
-- [Input](/api/input) — `Input`, `MemorySource`, `ReaderSource`, `Source`.
+- [Parser](/api/parser) - `parseString`, `parseWithInput`.
+- [Input](/api/input) - `Input`, `MemorySource`, `ReaderSource`, `Source`.
 
 ## Related guides
 

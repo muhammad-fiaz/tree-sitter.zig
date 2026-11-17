@@ -1,6 +1,6 @@
 const std = @import("std");
-const core = @import("../core/core.zig");
-const input_mod = @import("input.zig");
+const core = @import("../core/root.zig");
+const input_mod = @import("root.zig");
 
 /// Incremental pull buffer over an `Input` callback.
 ///
@@ -9,7 +9,7 @@ const input_mod = @import("input.zig");
 /// advances, and retained in one append-only cache. Peak memory stays
 /// proportional to the bytes actually consumed (plus one chunk of
 /// read-ahead), and parsing can start before the producer has delivered
-/// EOF — the property that makes `Parser.parseStream` suitable for
+/// EOF - the property that makes `Parser.parseStream` suitable for
 /// files, sockets, and decompressors behind `std.Io.Reader`.
 ///
 /// Offsets are `u32`, so inputs are limited to 4 GiB, matching the rest

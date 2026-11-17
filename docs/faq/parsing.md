@@ -1,5 +1,5 @@
 ---
-description: Parsing FAQ — languages, errors, UTF-8, and parser reuse.
+description: Parsing FAQ - languages, errors, UTF-8, and parser reuse.
 ---
 
 # Parsing FAQ
@@ -22,7 +22,7 @@ Set `.encoding = .utf16_le` / `.utf16_be` on the `Input`. The runtime transcodes
 
 ## Is the parser reusable?
 
-Yes — one `Parser` serves unlimited parses, retaining scratch capacity. See [Parser Reuse](/guide/parser-reuse).
+Yes - one `Parser` serves unlimited parses, retaining scratch capacity. See [Parser Reuse](/guide/parser-reuse).
 
 ## What is a syntax tree / node / cursor?
 

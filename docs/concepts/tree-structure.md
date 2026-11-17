@@ -1,5 +1,5 @@
 ---
-description: Tree structure — pools, roots, source copies, and tree-level operations.
+description: Tree structure - pools, roots, source copies, and tree-level operations.
 ---
 
 # Tree Structure

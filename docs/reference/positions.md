@@ -1,5 +1,5 @@
 ---
-description: Positions reference — byte offsets, points, ranges, and edit translation math.
+description: Positions reference - byte offsets, points, ranges, and edit translation math.
 ---
 
 # Positions
@@ -7,7 +7,7 @@ description: Positions reference — byte offsets, points, ranges, and edit tran
 ## Coordinates
 
 - **Byte offset** (`u32`): index into UTF-8 source. The only coordinate everything else derives from. 32-bit by design (see [x86-64](/compatibility/x86-64)).
-- **Point** (`row: u32`, `column: u32`): zero-based line plus byte-column. Columns count bytes, so wide characters occupy multiple columns — identical to the reference runtime's convention.
+- **Point** (`row: u32`, `column: u32`): zero-based line plus byte-column. Columns count bytes, so wide characters occupy multiple columns - identical to the reference runtime's convention.
 - **Range**: both systems together, with containment/overlap helpers.
 
 ## Translation through edits

@@ -1,5 +1,5 @@
 ---
-description: Query predicates — #eq?, #match?, #contains?, #any-of?, #is? and their negations.
+description: Query predicates - #eq?, #match?, #contains?, #any-of?, #is? and their negations.
 ---
 
 # Query Predicates
@@ -23,13 +23,13 @@ description: Query predicates — #eq?, #match?, #contains?, #any-of?, #is? and 
 | `(#not-any-of? ...)` | Negation |
 | `(#is? @a prop)` / `(#is-not? @a prop)` | Node property check: `named`, `anonymous`, `missing`, `error` (is or contains an error), `extra`, `visible` |
 
-Argument shapes are validated at compile time (comparison first arguments must be captures, `match?` takes a literal pattern), and every predicate capture must be declared by a node pattern — typos fail with `InvalidCapture` instead of silently matching nothing.
+Argument shapes are validated at compile time (comparison first arguments must be captures, `match?` takes a literal pattern), and every predicate capture must be declared by a node pattern - typos fail with `InvalidCapture` instead of silently matching nothing.
 
-Predicates attach to a pattern either after it — `(identifier) @x (#eq? @x "foo")` — or inside a group: `((identifier) @x (#match? @x "^a"))`.
+Predicates attach to a pattern either after it - `(identifier) @x (#eq? @x "foo")` - or inside a group: `((identifier) @x (#match? @x "^a"))`.
 
 ## Directives
 
-`#set!` and every other `#name!` form are parsed but not evaluated by the engine — mirroring upstream, which exposes them structurally for higher-level code:
+`#set!` and every other `#name!` form are parsed but not evaluated by the engine - mirroring upstream, which exposes them structurally for higher-level code:
 
 ```scheme
 ((identifier) @x (#set! kind "variable") (#select-adjacent! @x @x))

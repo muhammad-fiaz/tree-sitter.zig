@@ -1,5 +1,5 @@
 ---
-description: Incremental FAQ — edits, reuse, and changed ranges.
+description: Incremental FAQ - edits, reuse, and changed ranges.
 ---
 
 # Incremental FAQ
@@ -10,7 +10,7 @@ Describe the change as an `InputEdit`, pass the old tree with the new source to 
 
 ## How do I reuse a tree?
 
-Keep the old tree alive and hand it to `parse` — it is only read, never mutated. `copy()` snapshots it.
+Keep the old tree alive and hand it to `parse` - it is only read, never mutated. `copy()` snapshots it.
 
 ## Is the tree reusable?
 
@@ -18,7 +18,7 @@ Yes: old trees feed incremental parses, and `copy()` duplicates them. New trees 
 
 ## How do I run a query (on a new tree)?
 
-Queries are independent of parsing — `execute` against any tree. Reuse compiled queries and cursors across trees.
+Queries are independent of parsing - `execute` against any tree. Reuse compiled queries and cursors across trees.
 
 ## Why are my changed ranges empty?
 

@@ -1,5 +1,5 @@
 const std = @import("std");
-const language_mod = @import("language.zig");
+const language_mod = @import("root.zig");
 const symbols_mod = @import("symbols.zig");
 const tables_mod = @import("tables.zig");
 const fields_mod = @import("fields.zig");
@@ -64,8 +64,8 @@ fn matchLine(comptime marker: u8) language_mod.TokenMatchFn {
 }
 
 /// Horizontal whitespace only: newlines are significant (they feed the
-/// external scanner), so the shared whitespace matcher — which covers
-/// `\n` — must not be listed as an extra here.
+/// external scanner), so the shared whitespace matcher - which covers
+/// `\n` - must not be listed as an extra here.
 fn matchSpaces(source: []const u8, start: usize) ?usize {
     if (start >= source.len) return null;
     if (source[start] != ' ' and source[start] != '\t') return null;
@@ -270,7 +270,7 @@ pub const outline_language: language_mod.Language = .{
     .metadata = .{
         .name = "outline",
         .abi_version = metadata_mod.current_abi_version,
-        .version = "0.0.2",
+        .version = "0.0.3",
         .symbol_count = 15,
         .state_count = 21,
         .field_count = 0,

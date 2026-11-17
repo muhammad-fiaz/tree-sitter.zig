@@ -1,6 +1,6 @@
 const std = @import("std");
-const core = @import("../core/core.zig");
-const tree_mod = @import("tree.zig");
+const core = @import("../core/root.zig");
+const tree_mod = @import("root.zig");
 const node_mod = @import("node.zig");
 
 fn addRange(out: *std.ArrayList(core.Range), gpa: std.mem.Allocator, r: core.Range) std.mem.Allocator.Error!void {

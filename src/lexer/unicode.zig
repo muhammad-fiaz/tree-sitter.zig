@@ -1,5 +1,5 @@
 const std = @import("std");
-const unicode_mod = @import("../unicode/unicode.zig");
+const unicode_mod = @import("../unicode/root.zig");
 
 pub fn lookaheadChar(source: []const u8, offset: usize) ?u21 {
     if (offset >= source.len) return null;

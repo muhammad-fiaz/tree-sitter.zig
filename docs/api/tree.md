@@ -1,5 +1,5 @@
 ---
-description: Tree API — ownership, roots, copies, cursors, and diffs.
+description: Tree API - ownership, roots, copies, cursors, and diffs.
 ---
 
 # Tree

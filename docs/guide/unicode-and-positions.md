@@ -1,5 +1,5 @@
 ---
-description: Unicode in tree-sitter.zig — byte offsets vs code points, UTF-8 decoding, rows and columns.
+description: Unicode in tree-sitter.zig - byte offsets vs code points, UTF-8 decoding, rows and columns.
 ---
 
 # Unicode & Positions
@@ -34,7 +34,7 @@ Invalid sequences (`Truncated`, `InvalidStart`, `InvalidContinuation`, `Overlong
 
 ## UTF-16 input
 
-`Input` values may carry `.utf16_le` / `.utf16_be` encodings. UTF-16 is transcoded to UTF-8 up front (matching BOM stripped, conflicting BOM rejected as `UnexpectedBOM`, lone surrogates and truncation rejected) — tree offsets then refer to the UTF-8 form. `.custom` is treated as raw UTF-8 bytes. Run `zig build run-utf16_parse`:
+`Input` values may carry `.utf16_le` / `.utf16_be` encodings. UTF-16 is transcoded to UTF-8 up front (matching BOM stripped, conflicting BOM rejected as `UnexpectedBOM`, lone surrogates and truncation rejected) - tree offsets then refer to the UTF-8 form. `.custom` is treated as raw UTF-8 bytes. Run `zig build run-utf16_parse`:
 
 ```text
 parsed utf16: 1 + 2 error=false

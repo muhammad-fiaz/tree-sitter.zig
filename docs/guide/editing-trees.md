@@ -1,5 +1,5 @@
 ---
-description: Apply InputEdit metadata to trees — byte/point translation semantics.
+description: Apply InputEdit metadata to trees - byte/point translation semantics.
 ---
 
 # Editing Trees
@@ -47,11 +47,11 @@ treesitter.applyEdit(&tree, .{
 
 ## When to use this
 
-Call `applyEdit` when you keep a tree around while its source changes and want its positions to stay meaningful — for example, to map cursor positions before reparsing. `Parser.parse` does its own translation internally, so the edit-and-reparse flow does not require a prior `applyEdit`.
+Call `applyEdit` when you keep a tree around while its source changes and want its positions to stay meaningful - for example, to map cursor positions before reparsing. `Parser.parse` does its own translation internally, so the edit-and-reparse flow does not require a prior `applyEdit`.
 
 ## API used
 
-- [InputEdit](/api/input-edit), [Tree](/api/tree) — `applyEdit` helper, [Point](/api/point).
+- [InputEdit](/api/input-edit), [Tree](/api/tree) - `applyEdit` helper, [Point](/api/point).
 
 ## Related guides
 

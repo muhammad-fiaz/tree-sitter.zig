@@ -1,5 +1,5 @@
 ---
-description: Query examples — captures and directives over real source with real output.
+description: Query examples - captures and directives over real source with real output.
 ---
 
 # Queries
@@ -133,8 +133,8 @@ stripped: ' shopping'
 
 ## API used
 
-- [Query](/api/query) — `Query.compile`, `Query.patterns`, `Query.captureNames`, `Query.propertySettings`, `Query.generalPredicates`
-- [Query Cursor](/api/query-cursor) — `QueryCursor.init`, `QueryCursor.execute`, `QueryCursor.nextMatch`, `QueryCursor.nextCapture`
+- [Query](/api/query) - `Query.compile`, `Query.patterns`, `Query.captureNames`, `Query.propertySettings`, `Query.generalPredicates`
+- [Query Cursor](/api/query-cursor) - `QueryCursor.init`, `QueryCursor.execute`, `QueryCursor.nextMatch`, `QueryCursor.nextCapture`
 
 ## Related guides
 

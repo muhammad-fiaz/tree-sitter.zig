@@ -1,5 +1,5 @@
 ---
-description: Memory management in tree-sitter.zig — owners, borrowers, lifetimes, and deinit rules.
+description: Memory management in tree-sitter.zig - owners, borrowers, lifetimes, and deinit rules.
 ---
 
 # Memory Management
@@ -13,7 +13,7 @@ description: Memory management in tree-sitter.zig — owners, borrowers, lifetim
 <MemoryModel />
 
 1. **Parser** owns its stacks, scratch buffers, candidate lists, and range list. `deinit` frees them all.
-2. **Tree** owns its source copy, node pool, and child-index buffer. Nodes and cursors borrow the tree — never use them after `tree.deinit()`.
+2. **Tree** owns its source copy, node pool, and child-index buffer. Nodes and cursors borrow the tree - never use them after `tree.deinit()`.
 3. **Node** owns nothing. It is two words (tree pointer + index).
 4. **TreeCursor** owns its path stack only.
 5. **Query** owns compiled patterns, captures, and predicate args. **QueryCursor** owns its match lists.
@@ -21,7 +21,7 @@ description: Memory management in tree-sitter.zig — owners, borrowers, lifetim
 
 ## No leaks, no hidden state
 
-There are no global allocators, no global parsers, and no hidden I/O. Two parsers in different threads never share memory (parsers are not internally synchronized — use one parser per thread; see [FAQ](/faq/memory)).
+There are no global allocators, no global parsers, and no hidden I/O. Two parsers in different threads never share memory (parsers are not internally synchronized - use one parser per thread; see [FAQ](/faq/memory)).
 
 ## API used
 

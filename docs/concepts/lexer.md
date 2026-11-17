@@ -1,12 +1,12 @@
 ---
-description: How the tree-sitter.zig lexer works — position tracking, longest match, extras, and EOF.
+description: How the tree-sitter.zig lexer works - position tracking, longest match, extras, and EOF.
 ---
 
 # Lexer
 
 ## Simple explanation
 
-The lexer turns raw bytes into labeled tokens (`identifier`, `number`, `+`, …) while tracking exactly where each token sits — byte offsets plus row/column points.
+The lexer turns raw bytes into labeled tokens (`identifier`, `number`, `+`, …) while tracking exactly where each token sits - byte offsets plus row/column points.
 
 ## Technical explanation
 

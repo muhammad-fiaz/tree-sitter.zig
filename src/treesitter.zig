@@ -1,16 +1,26 @@
 const std = @import("std");
 
-pub const core = @import("core/core.zig");
-pub const memory = @import("memory/memory.zig");
-pub const parser_mod = @import("parser/parser.zig");
-pub const lexer_mod = @import("lexer/lexer.zig");
-pub const tree_mod = @import("tree/tree.zig");
-pub const language_mod = @import("language/language.zig");
-pub const query_mod = @import("query/query.zig");
-pub const input_mod = @import("input/input.zig");
-pub const unicode_mod = @import("unicode/unicode.zig");
-pub const debug_mod = @import("debug/debug.zig");
-pub const utils = @import("utils/utils.zig");
+pub const core = @import("core/root.zig");
+pub const memory = @import("memory/root.zig");
+pub const parser_mod = @import("parser/root.zig");
+pub const lexer_mod = @import("lexer/root.zig");
+pub const tree_mod = @import("tree/root.zig");
+pub const language_mod = @import("language/root.zig");
+pub const grammar_mod = @import("grammar/root.zig");
+pub const generator_mod = @import("grammar/generator.zig");
+pub const highlight_mod = @import("analysis/highlight.zig");
+pub const injection_mod = @import("analysis/injection.zig");
+pub const locals_mod = @import("analysis/locals.zig");
+pub const tags_mod = @import("analysis/tags.zig");
+pub const scanner_mod = @import("lexer/scanner.zig");
+pub const registry_mod = @import("language/registry.zig");
+pub const package_mod = @import("language/package.zig");
+pub const abi = @import("language/abi.zig");
+pub const query_mod = @import("query/root.zig");
+pub const input_mod = @import("input/root.zig");
+pub const unicode_mod = @import("unicode/root.zig");
+pub const debug_mod = @import("debug/root.zig");
+pub const utils = @import("utils/root.zig");
 
 pub const Point = core.Point;
 pub const Range = core.Range;
@@ -45,6 +55,22 @@ pub const QueryCursorOptions = query_mod.query_cursor.QueryCursorOptions;
 pub const Match = query_mod.Match;
 pub const Capture = query_mod.Capture;
 
+pub const Grammar = grammar_mod.Grammar;
+pub const Rule = grammar_mod.Rule;
+pub const GrammarCompiler = grammar_mod.GrammarCompiler;
+pub const DSLParser = grammar_mod.DSLParser;
+pub const Generator = generator_mod.Generator;
+pub const GeneratedData = generator_mod.GeneratedData;
+pub const Highlighter = highlight_mod.Highlighter;
+pub const InjectionEngine = injection_mod.InjectionEngine;
+pub const LocalsEngine = locals_mod.LocalsEngine;
+pub const TagsEngine = tags_mod.TagsEngine;
+pub const LanguageRegistry = registry_mod.LanguageRegistry;
+pub const PackageParser = package_mod.PackageParser;
+pub const NativeScanner = scanner_mod.NativeScanner;
+pub const NodeTypes = language_mod.NodeTypes;
+pub const NodeType = language_mod.NodeType;
+
 pub const Input = input_mod.Input;
 pub const InputEncoding = input_mod.InputEncoding;
 pub const Encoding = input_mod.Encoding;
@@ -60,7 +86,7 @@ pub const Writer = std.Io.Writer;
 pub const Logger = debug_mod.Logger;
 pub const LogLevel = debug_mod.Level;
 /// Null logger: silently discards all log events.
-/// Ownership: stateless — no allocation, no lifetime constraint.
+/// Ownership: stateless - no allocation, no lifetime constraint.
 pub const nullLogger = debug_mod.nullLogger;
 pub const Tracer = debug_mod.Tracer;
 pub const TraceEvent = debug_mod.TraceEvent;
@@ -72,18 +98,18 @@ pub const conformance = @import("debug/conformance.zig");
 pub const transcodeUtf16ToUtf8 = unicode_mod.transcodeUtf16ToUtf8;
 pub const Utf16Error = unicode_mod.Utf16Error;
 
-pub const version = "0.0.2";
+pub const version = "0.0.3";
 pub const package_name = "treesitter";
 
 /// Bundled arithmetic expression language (identifiers, numbers,
 /// `+ - * /`, parens). Shared by tests, examples, and benchmarks.
-/// Ownership: static, immutable — safe to share across threads.
+/// Ownership: static, immutable - safe to share across threads.
 pub const expressionLanguage = language_mod.expression_language;
 /// Bundled s-expression language (nested parenthesized lists).
-/// Ownership: static, immutable — safe to share across threads.
+/// Ownership: static, immutable - safe to share across threads.
 pub const sexpLanguage = language_mod.sexp_language;
 /// Bundled JSON language (objects, arrays, strings, numbers, literals).
-/// Ownership: static, immutable — safe to share across threads.
+/// Ownership: static, immutable - safe to share across threads.
 pub const jsonLanguage = language_mod.json_language;
 /// Bundled outline language (indentation-sensitive demo using an
 /// external scanner). The external scanner payload field must be
@@ -97,9 +123,9 @@ pub const outlineLanguage = language_mod.outline_language;
 /// Ownership: exclusively owned by the caller; not shared between parsers.
 pub const OutlineScanState = language_mod.outline_scanner.ScanState;
 pub const parserStack = @import("parser/stack.zig");
-pub const lexerTypes = @import("lexer/lexer.zig");
-pub const unicodeTypes = @import("unicode/unicode.zig");
-pub const memoryTypes = @import("memory/memory.zig");
+pub const lexerTypes = @import("lexer/root.zig");
+pub const unicodeTypes = @import("unicode/root.zig");
+pub const memoryTypes = @import("memory/root.zig");
 pub const repository = "muhammad-fiaz/tree-sitter.zig";
 pub const license = "MIT";
 pub const copyright = "Copyright (c) 2026 Muhammad Fiaz";
@@ -118,6 +144,28 @@ pub fn getChangedRanges(gpa: std.mem.Allocator, old_tree: *const Tree, new_tree:
 
 pub fn freeChangedRanges(gpa: std.mem.Allocator, ranges: []Range) void {
     tree_mod.changed_ranges_mod.freeRanges(gpa, ranges);
+}
+
+/// Parse source code in a single call using a temporary parser.
+pub fn parse(gpa: std.mem.Allocator, lang: Language, source: []const u8) !Tree {
+    var p = Parser.init(gpa);
+    defer p.deinit();
+    try p.setLanguage(lang);
+    return p.parse(null, null, source);
+}
+
+/// Highlight tokens in source code using the given language and query.
+pub fn highlight(gpa: std.mem.Allocator, lang: Language, query_source: []const u8, source: []const u8) !Highlighter.HighlightResult {
+    var h = Highlighter.init(gpa);
+    defer h.deinit();
+    return h.highlight(lang, query_source, source);
+}
+
+/// Extract symbols/tags from a syntax tree using a tags query.
+pub fn tags(gpa: std.mem.Allocator, lang: Language, query_source: []const u8, tree: *const Tree) ![]TagsEngine.Tag {
+    var engine = TagsEngine.init(gpa);
+    defer engine.deinit();
+    return engine.extract(lang, query_source, tree);
 }
 
 test "public api: parse simple expression" {
@@ -196,7 +244,7 @@ test "public api: incremental edit and changed ranges" {
 }
 
 test "public api: metadata" {
-    try std.testing.expectEqualStrings("0.0.2", version);
+    try std.testing.expectEqualStrings("0.0.3", version);
     try std.testing.expectEqualStrings("treesitter", package_name);
     try std.testing.expectEqualStrings("muhammad-fiaz/tree-sitter.zig", repository);
     try std.testing.expectEqualStrings("MIT", license);
@@ -344,4 +392,47 @@ test "public api: timeout and cancellation flag" {
     var ok_tree = try parser.parseString("1 + 2");
     defer ok_tree.deinit();
     try std.testing.expect(!ok_tree.hasError());
+}
+
+test "public api: ergonomic helpers on tree and node" {
+    var tree = try parse(std.testing.allocator, expressionLanguage, "x + y");
+    defer tree.deinit();
+
+    // tree.root()
+    const r = tree.root();
+    try std.testing.expectEqualStrings("program", r.name());
+    try std.testing.expectEqualStrings("program", r.type());
+    try std.testing.expect(!tree.hasError());
+
+    // childIterator
+    var it = r.childIterator();
+    var count: usize = 0;
+    while (it.next()) |child| {
+        try std.testing.expect(child.name().len > 0);
+        count += 1;
+    }
+    try std.testing.expect(count > 0);
+
+    // format support via {f}
+    var buf: [64]u8 = undefined;
+    const printed = try std.fmt.bufPrint(&buf, "{f}", .{r});
+    try std.testing.expect(printed.len > 0);
+    try std.testing.expect(std.mem.startsWith(u8, printed, "program [0, 5]"));
+
+    const printed_tree = try std.fmt.bufPrint(&buf, "{f}", .{tree});
+    try std.testing.expect(printed_tree.len > 0);
+}
+
+test {
+    _ = abi;
+    _ = grammar_mod;
+    _ = generator_mod;
+    _ = @import("grammar/dsl.zig");
+    _ = highlight_mod;
+    _ = injection_mod;
+    _ = locals_mod;
+    _ = tags_mod;
+    _ = scanner_mod;
+    _ = registry_mod;
+    _ = package_mod;
 }

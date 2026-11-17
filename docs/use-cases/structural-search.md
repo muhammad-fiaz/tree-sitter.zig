@@ -1,5 +1,5 @@
 ---
-description: Structural search — find code by shape across files.
+description: Structural search - find code by shape across files.
 ---
 
 # Structural Search

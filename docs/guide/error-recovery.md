@@ -1,5 +1,5 @@
 ---
-description: Error recovery in tree-sitter.zig — ERROR nodes, MISSING nodes, and inspecting broken syntax.
+description: Error recovery in tree-sitter.zig - ERROR nodes, MISSING nodes, and inspecting broken syntax.
 ---
 
 # Error Recovery
@@ -32,12 +32,12 @@ for ([_][]const u8{ "1 + * 2", "(1 + 2", "1 @ 2" }) |source| {
 
 - **Unexpected tokens** are skipped and the skipped span becomes an `ERROR` leaf (named, `isError()`, `hasError()` set). Skipping accrues an error cost per byte, bounded by a maximum recovery budget.
 - **Unexpected end of input** inserts a zero-width `MISSING` token for the expected symbol (e.g. the missing `)` in `(1 + 2`) and continues parsing, so unclosed constructs still produce structured trees.
-- **Unrecoverable states** fall back to wrapping all fragments in a root node marked `hasError()`, so a tree is always returned — parsing never fails just because the source is broken.
+- **Unrecoverable states** fall back to wrapping all fragments in a root node marked `hasError()`, so a tree is always returned - parsing never fails just because the source is broken.
 - `tree.hasError()` / `node.hasError()` flag tainted subtrees; walk children for `isError()` / `isMissing()` to pinpoint problems for diagnostics.
 
 ## API used
 
-- [Tree](/api/tree) — `hasError`; [Node](/api/node) — `isError`, `isMissing`, `hasError`; [Errors](/api/errors).
+- [Tree](/api/tree) - `hasError`; [Node](/api/node) - `isError`, `isMissing`, `hasError`; [Errors](/api/errors).
 
 ## Related guides
 

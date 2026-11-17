@@ -9,7 +9,7 @@ pub const QueryParseError = error{
     InvalidSyntax,
     InvalidPredicate,
     /// A predicate or directive references a capture never declared by
-    /// a node pattern (mirrors upstream's undeclared-capture error).
+    /// a node pattern.
     InvalidCapture,
 };
 
@@ -119,8 +119,8 @@ const Cursor = struct {
         const start = self.pos;
         while (self.pos < self.text.len) {
             const c = self.text[self.pos];
-            if (c == '(' or c == ')' or c == '"' or c == ';' or c == ' ' or
-                c == '\t' or c == '\n' or c == '\r' or c == ':' or c == '@' or c == '#' or c == '.')
+            if (c == '(' or c == ')' or c == '[' or c == ']' or c == '"' or c == ';' or c == ' ' or
+                c == '\t' or c == '\n' or c == '\r' or c == ':' or c == '@' or c == '#')
                 break;
             self.pos += 1;
         }
@@ -143,6 +143,82 @@ const Cursor = struct {
         return self.text[start..self.pos];
     }
 };
+
+const PatternCollector = struct {
+    preds: std.ArrayList(pattern_mod.Predicate),
+    settings: std.ArrayList(pattern_mod.Setting),
+    directives: std.ArrayList(pattern_mod.Directive),
+
+    fn init() PatternCollector {
+        return .{
+            .preds = .empty,
+            .settings = .empty,
+            .directives = .empty,
+        };
+    }
+
+    fn deinit(self: *PatternCollector, gpa: std.mem.Allocator) void {
+        self.preds.deinit(gpa);
+        self.settings.deinit(gpa);
+        self.directives.deinit(gpa);
+    }
+};
+
+fn dupePredicates(gpa: std.mem.Allocator, src: []const pattern_mod.Predicate) ![]pattern_mod.Predicate {
+    const res = try gpa.alloc(pattern_mod.Predicate, src.len);
+    var initialized: usize = 0;
+    errdefer {
+        for (res[0..initialized]) |p| gpa.free(p.args);
+        gpa.free(res);
+    }
+    for (src, 0..) |p, i| {
+        res[i] = p;
+        res[i].args = try gpa.dupe(pattern_mod.PredicateArg, p.args);
+        initialized += 1;
+    }
+    return res;
+}
+
+fn dupeDirectives(gpa: std.mem.Allocator, src: []const pattern_mod.Directive) ![]pattern_mod.Directive {
+    const res = try gpa.alloc(pattern_mod.Directive, src.len);
+    var initialized: usize = 0;
+    errdefer {
+        for (res[0..initialized]) |d| gpa.free(d.args);
+        gpa.free(res);
+    }
+    for (src, 0..) |d, i| {
+        res[i] = d;
+        res[i].args = try gpa.dupe(pattern_mod.PredicateArg, d.args);
+        initialized += 1;
+    }
+    return res;
+}
+
+fn collectTrailingPredicates(
+    gpa: std.mem.Allocator,
+    pq: *ParsedQuery,
+    cursor: *Cursor,
+    collector: *PatternCollector,
+) QueryParseError!void {
+    while (true) {
+        cursor.skipTrivia();
+        if (cursor.eof() or cursor.text[cursor.pos] != '(') break;
+        const saved = cursor.pos;
+        cursor.pos += 1;
+        cursor.skipTrivia();
+        if (cursor.pos < cursor.text.len and cursor.text[cursor.pos] == '#') {
+            cursor.pos = saved;
+            switch (try parsePredicate(gpa, pq, cursor)) {
+                .pred => |pred| try collector.preds.append(gpa, pred),
+                .setting => |setting| try collector.settings.append(gpa, setting),
+                .general => |directive| try collector.directives.append(gpa, directive),
+            }
+        } else {
+            cursor.pos = saved;
+            break;
+        }
+    }
+}
 
 pub fn parse(gpa: std.mem.Allocator, source_text: []const u8) QueryParseError!ParsedQuery {
     var pq = ParsedQuery{
@@ -167,42 +243,109 @@ pub fn parse(gpa: std.mem.Allocator, source_text: []const u8) QueryParseError!Pa
         if (cursor.eof()) break;
         const c = cursor.text[cursor.pos];
         if (c == '(') {
-            const is_group = isGroupStart(&cursor);
-            if (is_group) {
-                const group = try parseGroup(gpa, &pq, &cursor);
-                try pq.patterns.append(gpa, .{ .root = group.root, .predicates = group.predicates, .settings = group.settings, .directives = group.directives });
+            // Check if this is a parenthesized alternation: ([ ... ] @cap (#pred ...))
+            const saved_pos = cursor.pos;
+            cursor.pos += 1;
+            cursor.skipTrivia();
+            const next_c = if (cursor.pos < cursor.text.len) cursor.text[cursor.pos] else 0;
+            if (next_c == '[') {
+                var collector = PatternCollector.init();
+                errdefer collector.deinit(gpa);
+
+                var alts = try parseAlternation(gpa, &pq, &cursor, &collector);
+                defer alts.deinit(gpa);
+
+                // Collect any inner predicates inside the parenthesized group
+                try collectTrailingPredicates(gpa, &pq, &cursor, &collector);
+                try cursor.expect(')');
+
+                // Collect any trailing predicates after the closing ')'
+                try collectTrailingPredicates(gpa, &pq, &cursor, &collector);
+
+                const p_slice = try collector.preds.toOwnedSlice(gpa);
+                defer if (alts.items.len == 0) gpa.free(p_slice);
+                const s_slice = try collector.settings.toOwnedSlice(gpa);
+                defer if (alts.items.len == 0) gpa.free(s_slice);
+                const d_slice = try collector.directives.toOwnedSlice(gpa);
+                defer if (alts.items.len == 0) gpa.free(d_slice);
+
+                for (alts.items, 0..) |alt_root, i| {
+                    const cur_p = if (i == 0) p_slice else try dupePredicates(gpa, p_slice);
+                    const cur_s = if (i == 0) s_slice else try gpa.dupe(pattern_mod.Setting, s_slice);
+                    const cur_d = if (i == 0) d_slice else try dupeDirectives(gpa, d_slice);
+
+                    try pq.patterns.append(gpa, .{
+                        .root = alt_root,
+                        .predicates = cur_p,
+                        .settings = cur_s,
+                        .directives = cur_d,
+                    });
+                }
                 continue;
             }
-            const root = try parseNode(gpa, &pq, &cursor, true);
-            var preds = std.ArrayList(pattern_mod.Predicate).empty;
-            errdefer preds.deinit(gpa);
-            var settings = std.ArrayList(pattern_mod.Setting).empty;
-            errdefer settings.deinit(gpa);
-            var directives = std.ArrayList(pattern_mod.Directive).empty;
-            errdefer directives.deinit(gpa);
-            while (true) {
-                cursor.skipTrivia();
-                if (cursor.eof() or cursor.text[cursor.pos] != '(') break;
-                const saved = cursor.pos;
-                cursor.pos += 1;
-                cursor.skipTrivia();
-                if (cursor.pos < cursor.text.len and cursor.text[cursor.pos] == '#') {
-                    cursor.pos = saved;
-                    switch (try parsePredicate(gpa, &pq, &cursor)) {
-                        .pred => |pred| try preds.append(gpa, pred),
-                        .setting => |setting| try settings.append(gpa, setting),
-                        .general => |directive| try directives.append(gpa, directive),
-                    }
-                } else {
-                    cursor.pos = saved;
-                    break;
-                }
-            }
+            cursor.pos = saved_pos;
+
+            var collector = PatternCollector.init();
+            errdefer collector.deinit(gpa);
+
+            const is_group = isGroupStart(&cursor);
+            const root = if (is_group)
+                try parseGroup(gpa, &pq, &cursor, &collector)
+            else
+                try parseNode(gpa, &pq, &cursor, true, &collector);
+
+            try collectTrailingPredicates(gpa, &pq, &cursor, &collector);
+
             try pq.patterns.append(gpa, .{
                 .root = root,
-                .predicates = try preds.toOwnedSlice(gpa),
-                .settings = try settings.toOwnedSlice(gpa),
-                .directives = try directives.toOwnedSlice(gpa),
+                .predicates = try collector.preds.toOwnedSlice(gpa),
+                .settings = try collector.settings.toOwnedSlice(gpa),
+                .directives = try collector.directives.toOwnedSlice(gpa),
+            });
+        } else if (c == '[') {
+            var collector = PatternCollector.init();
+            errdefer collector.deinit(gpa);
+
+            var alts = try parseAlternation(gpa, &pq, &cursor, &collector);
+            defer alts.deinit(gpa);
+
+            try collectTrailingPredicates(gpa, &pq, &cursor, &collector);
+
+            const p_slice = try collector.preds.toOwnedSlice(gpa);
+            defer if (alts.items.len == 0) gpa.free(p_slice);
+            const s_slice = try collector.settings.toOwnedSlice(gpa);
+            defer if (alts.items.len == 0) gpa.free(s_slice);
+            const d_slice = try collector.directives.toOwnedSlice(gpa);
+            defer if (alts.items.len == 0) gpa.free(d_slice);
+
+            for (alts.items, 0..) |alt_root, i| {
+                const cur_p = if (i == 0) p_slice else try dupePredicates(gpa, p_slice);
+                const cur_s = if (i == 0) s_slice else try gpa.dupe(pattern_mod.Setting, s_slice);
+                const cur_d = if (i == 0) d_slice else try dupeDirectives(gpa, d_slice);
+
+                try pq.patterns.append(gpa, .{
+                    .root = alt_root,
+                    .predicates = cur_p,
+                    .settings = cur_s,
+                    .directives = cur_d,
+                });
+            }
+        } else if (c == '"') {
+            var collector = PatternCollector.init();
+            errdefer collector.deinit(gpa);
+
+            const root = try allocNode(gpa, &pq);
+            pq.nodes.items[root] = .{ .kind = .anonymous, .name = try cursor.readString() };
+            applyQuantifier(&cursor, &pq.nodes.items[root]);
+            try applyCapture(gpa, &pq, &cursor, root);
+
+            try collectTrailingPredicates(gpa, &pq, &cursor, &collector);
+
+            try pq.patterns.append(gpa, .{
+                .root = root,
+                .predicates = try collector.preds.toOwnedSlice(gpa),
+                .settings = try collector.settings.toOwnedSlice(gpa),
+                .directives = try collector.directives.toOwnedSlice(gpa),
             });
         } else {
             return error.UnexpectedToken;
@@ -215,8 +358,8 @@ pub fn parse(gpa: std.mem.Allocator, source_text: []const u8) QueryParseError!Pa
 }
 
 /// Every capture referenced by a predicate, setting, or directive must
-/// be declared by a node pattern (upstream parity: typos fail at
-/// compile time instead of silently matching nothing).
+/// be declared by a node pattern: typos fail at compile time instead of
+/// silently matching nothing.
 fn validateCaptures(pq: *const ParsedQuery) QueryParseError!void {
     for (pq.patterns.items) |pat| {
         for (pat.predicates) |pred| {
@@ -268,22 +411,14 @@ fn isGroupStart(cursor: *Cursor) bool {
     return i < cursor.text.len and cursor.text[i] == '(';
 }
 
-const GroupResult = struct {
-    root: u32,
-    predicates: []pattern_mod.Predicate,
-    settings: []pattern_mod.Setting,
-    directives: []pattern_mod.Directive,
-};
-
-fn parseGroup(gpa: std.mem.Allocator, pq: *ParsedQuery, cursor: *Cursor) QueryParseError!GroupResult {
+fn parseGroup(
+    gpa: std.mem.Allocator,
+    pq: *ParsedQuery,
+    cursor: *Cursor,
+    collector: *PatternCollector,
+) QueryParseError!u32 {
     try cursor.expect('(');
     var root: ?u32 = null;
-    var preds = std.ArrayList(pattern_mod.Predicate).empty;
-    errdefer preds.deinit(gpa);
-    var settings = std.ArrayList(pattern_mod.Setting).empty;
-    errdefer settings.deinit(gpa);
-    var directives = std.ArrayList(pattern_mod.Directive).empty;
-    errdefer directives.deinit(gpa);
     while (true) {
         cursor.skipTrivia();
         if (cursor.eof()) return error.UnexpectedEof;
@@ -304,22 +439,16 @@ fn parseGroup(gpa: std.mem.Allocator, pq: *ParsedQuery, cursor: *Cursor) QueryPa
         cursor.pos = saved;
         if (is_pred) {
             switch (try parsePredicate(gpa, pq, cursor)) {
-                .pred => |pred| try preds.append(gpa, pred),
-                .setting => |setting| try settings.append(gpa, setting),
-                .general => |directive| try directives.append(gpa, directive),
+                .pred => |pred| try collector.preds.append(gpa, pred),
+                .setting => |setting| try collector.settings.append(gpa, setting),
+                .general => |directive| try collector.directives.append(gpa, directive),
             }
         } else {
             if (root != null) return error.InvalidSyntax;
-            root = try parseNode(gpa, pq, cursor, true);
+            root = try parseNode(gpa, pq, cursor, true, collector);
         }
     }
-    const r = root orelse return error.InvalidSyntax;
-    return .{
-        .root = r,
-        .predicates = try preds.toOwnedSlice(gpa),
-        .settings = try settings.toOwnedSlice(gpa),
-        .directives = try directives.toOwnedSlice(gpa),
-    };
+    return root orelse error.InvalidSyntax;
 }
 
 fn linkChildren(gpa: std.mem.Allocator, pq: *ParsedQuery) void {
@@ -340,8 +469,8 @@ fn captureIndex(gpa: std.mem.Allocator, pq: *ParsedQuery, name: []const u8) Quer
 }
 
 /// Capture attached to a node pattern: declares the name for later
-/// predicate/directive references (undeclared references are
-/// `InvalidCapture`, mirroring upstream).
+/// predicate/directive references (undeclared references produce
+/// `InvalidCapture`).
 fn declareCapture(gpa: std.mem.Allocator, pq: *ParsedQuery, name: []const u8) QueryParseError!u32 {
     const id = try captureIndex(gpa, pq, name);
     while (pq.node_declared.items.len <= id) try pq.node_declared.append(gpa, false);
@@ -358,15 +487,20 @@ fn allocNode(gpa: std.mem.Allocator, pq: *ParsedQuery) QueryParseError!u32 {
     return @as(u32, @intCast(idx));
 }
 
-fn parseNode(gpa: std.mem.Allocator, pq: *ParsedQuery, cursor: *Cursor, is_root: bool) QueryParseError!u32 {
+fn parseNode(
+    gpa: std.mem.Allocator,
+    pq: *ParsedQuery,
+    cursor: *Cursor,
+    is_root: bool,
+    collector: *PatternCollector,
+) QueryParseError!u32 {
     _ = is_root;
     try cursor.expect('(');
     cursor.skipTrivia();
     const idx = try allocNode(gpa, pq);
     var node = &pq.nodes.items[idx];
     // A `.` before any child is a leading anchor; between children it
-    // anchors the next child to its predecessor (both audited against
-    // upstream: anchors ignore anonymous nodes).
+    // anchors the next child to its predecessor (anchors ignore anonymous nodes).
     var between_next = false;
 
     if (!cursor.eof() and cursor.text[cursor.pos] == '_') {
@@ -402,7 +536,20 @@ fn parseNode(gpa: std.mem.Allocator, pq: *ParsedQuery, cursor: *Cursor, is_root:
                 between_next = true;
             }
         } else if (c == '(') {
-            const child = try parseNode(gpa, pq, cursor, false);
+            const saved = cursor.pos;
+            cursor.pos += 1;
+            cursor.skipTrivia();
+            if (cursor.pos < cursor.text.len and cursor.text[cursor.pos] == '#') {
+                cursor.pos = saved;
+                switch (try parsePredicate(gpa, pq, cursor)) {
+                    .pred => |pred| try collector.preds.append(gpa, pred),
+                    .setting => |setting| try collector.settings.append(gpa, setting),
+                    .general => |directive| try collector.directives.append(gpa, directive),
+                }
+                continue;
+            }
+            cursor.pos = saved;
+            const child = try parseNode(gpa, pq, cursor, false, collector);
             try pq.child_lists.items[idx].append(gpa, child);
             try pq.field_lists.items[idx].append(gpa, null);
             if (between_next) {
@@ -420,6 +567,17 @@ fn parseNode(gpa: std.mem.Allocator, pq: *ParsedQuery, cursor: *Cursor, is_root:
                 between_next = false;
             }
             try applyCapture(gpa, pq, cursor, child);
+        } else if (c == '[') {
+            var alts = try parseAlternation(gpa, pq, cursor, collector);
+            defer alts.deinit(gpa);
+            for (alts.items) |child| {
+                try pq.child_lists.items[idx].append(gpa, child);
+                try pq.field_lists.items[idx].append(gpa, pq.nodes.items[child].field);
+                if (between_next) {
+                    pq.nodes.items[child].anchor_before = true;
+                }
+            }
+            between_next = false;
         } else if (c == '@' or c == '#' or c == '!') {
             if (c == '!') {
                 // Negated field assertion: the node must lack this field.
@@ -442,12 +600,30 @@ fn parseNode(gpa: std.mem.Allocator, pq: *ParsedQuery, cursor: *Cursor, is_root:
                 const fc = cursor.text[cursor.pos];
                 var child: u32 = 0;
                 if (fc == '(') {
-                    child = try parseNode(gpa, pq, cursor, false);
+                    child = try parseNode(gpa, pq, cursor, false, collector);
                 } else if (fc == '"') {
                     child = try allocNode(gpa, pq);
                     pq.nodes.items[child] = .{ .kind = .anonymous, .name = try cursor.readString() };
+                } else if (fc == '[') {
+                    var alts = try parseAlternation(gpa, pq, cursor, collector);
+                    defer alts.deinit(gpa);
+                    for (alts.items) |alt_child| {
+                        pq.nodes.items[alt_child].field = word;
+                        try pq.child_lists.items[idx].append(gpa, alt_child);
+                        try pq.field_lists.items[idx].append(gpa, word);
+                        if (between_next) {
+                            pq.nodes.items[alt_child].anchor_before = true;
+                        }
+                    }
+                    between_next = false;
+                    continue;
                 } else {
-                    return error.InvalidSyntax;
+                    const sym = try cursor.readSymbol();
+                    child = try allocNode(gpa, pq);
+                    pq.nodes.items[child] = .{
+                        .kind = if (std.mem.eql(u8, sym, "_")) .wildcard else .named,
+                        .name = sym,
+                    };
                 }
                 pq.nodes.items[child].field = word;
                 try pq.child_lists.items[idx].append(gpa, child);
@@ -505,6 +681,121 @@ fn applyCapture(gpa: std.mem.Allocator, pq: *ParsedQuery, cursor: *Cursor, idx: 
     }
 }
 
+fn parseAlternation(
+    gpa: std.mem.Allocator,
+    pq: *ParsedQuery,
+    cursor: *Cursor,
+    collector: *PatternCollector,
+) QueryParseError!std.ArrayList(u32) {
+    try cursor.expect('[');
+    var alts = std.ArrayList(u32).empty;
+    errdefer alts.deinit(gpa);
+
+    while (true) {
+        cursor.skipTrivia();
+        if (cursor.eof()) return error.UnexpectedEof;
+        const c = cursor.text[cursor.pos];
+        if (c == ']') {
+            cursor.pos += 1;
+            break;
+        } else if (c == '(') {
+            const node = try parseNode(gpa, pq, cursor, false, collector);
+            try alts.append(gpa, node);
+        } else if (c == '"') {
+            const node = try allocNode(gpa, pq);
+            pq.nodes.items[node] = .{ .kind = .anonymous, .name = try cursor.readString() };
+            applyQuantifier(cursor, &pq.nodes.items[node]);
+            try applyCapture(gpa, pq, cursor, node);
+            try alts.append(gpa, node);
+        } else if (c == '[') {
+            var inner_alts = try parseAlternation(gpa, pq, cursor, collector);
+            defer inner_alts.deinit(gpa);
+            for (inner_alts.items) |item| {
+                try alts.append(gpa, item);
+            }
+        } else if (c == '_') {
+            cursor.pos += 1;
+            const node = try allocNode(gpa, pq);
+            pq.nodes.items[node] = .{ .kind = .wildcard, .name = "_" };
+            applyQuantifier(cursor, &pq.nodes.items[node]);
+            try applyCapture(gpa, pq, cursor, node);
+            try alts.append(gpa, node);
+        } else {
+            const sym = try cursor.readSymbol();
+            cursor.skipTrivia();
+            if (!cursor.eof() and cursor.text[cursor.pos] == ':') {
+                cursor.pos += 1;
+                cursor.skipTrivia();
+                if (cursor.eof()) return error.UnexpectedEof;
+                const fc = cursor.text[cursor.pos];
+                var node: u32 = 0;
+                if (fc == '(') {
+                    node = try parseNode(gpa, pq, cursor, false, collector);
+                } else if (fc == '"') {
+                    node = try allocNode(gpa, pq);
+                    pq.nodes.items[node] = .{ .kind = .anonymous, .name = try cursor.readString() };
+                } else if (fc == '[') {
+                    var inner_alts = try parseAlternation(gpa, pq, cursor, collector);
+                    defer inner_alts.deinit(gpa);
+                    for (inner_alts.items) |alt_child| {
+                        pq.nodes.items[alt_child].field = sym;
+                        try alts.append(gpa, alt_child);
+                    }
+                    continue;
+                } else {
+                    const inner_sym = try cursor.readSymbol();
+                    node = try allocNode(gpa, pq);
+                    pq.nodes.items[node] = .{
+                        .kind = if (std.mem.eql(u8, inner_sym, "_")) .wildcard else .named,
+                        .name = inner_sym,
+                    };
+                }
+                pq.nodes.items[node].field = sym;
+                applyQuantifier(cursor, &pq.nodes.items[node]);
+                try applyCapture(gpa, pq, cursor, node);
+                try alts.append(gpa, node);
+                continue;
+            }
+            const node = try allocNode(gpa, pq);
+            pq.nodes.items[node] = .{ .kind = .named, .name = sym };
+            applyQuantifier(cursor, &pq.nodes.items[node]);
+            try applyCapture(gpa, pq, cursor, node);
+            try alts.append(gpa, node);
+        }
+    }
+
+    if (alts.items.len == 0) return error.InvalidSyntax;
+
+    // Optional quantifier on alternation
+    cursor.skipTrivia();
+    if (!cursor.eof()) {
+        const qc = cursor.text[cursor.pos];
+        if (qc == '?' or qc == '*' or qc == '+') {
+            const quant: pattern_mod.Quantifier = switch (qc) {
+                '?' => .optional,
+                '*' => .zero_or_more,
+                else => .one_or_more,
+            };
+            cursor.pos += 1;
+            for (alts.items) |node_id| {
+                pq.nodes.items[node_id].quantifier = quant;
+            }
+        }
+    }
+
+    // Optional capture on alternation
+    cursor.skipTrivia();
+    if (!cursor.eof() and cursor.text[cursor.pos] == '@') {
+        const cap_name = try cursor.readCaptureName();
+        const cap_id = try declareCapture(gpa, pq, cap_name);
+        for (alts.items) |node_id| {
+            pq.nodes.items[node_id].capture = cap_id;
+        }
+    }
+
+    return alts;
+}
+
 /// One parsed `(#...)` item: an evaluated predicate, a `set!` property
 /// setting, or a general directive for higher-level code.
 pub const PredItem = union(enum) {
@@ -547,9 +838,9 @@ fn parsePredicate(gpa: std.mem.Allocator, pq: *ParsedQuery, cursor: *Cursor) Que
     return .{ .pred = .{ .kind = kind, .name = name, .args = try args.toOwnedSlice(gpa) } };
 }
 
-/// Argument shapes mirror the upstream binding: first arguments must
-/// be captures where the operator compares capture text, `match?`
-/// takes a literal pattern, and `any-of?` takes literals only.
+/// Validate argument shapes: first arguments must be captures where the
+/// operator compares capture text, `match?` takes a literal pattern, and
+/// `any-of?` takes literals only.
 fn validatePredicateArgs(kind: pattern_mod.PredicateKind, args: []const pattern_mod.PredicateArg) QueryParseError!void {
     switch (kind) {
         .eq, .not_eq, .any_eq, .any_not_eq => {
@@ -578,9 +869,8 @@ fn validatePredicateArgs(kind: pattern_mod.PredicateKind, args: []const pattern_
     }
 }
 
-/// `set!` becomes a property setting (upstream `parse_property`
-/// rules: 1-3 args, at most one capture, key required); every other
-/// `!` operator becomes a general directive for higher-level code.
+/// `set!` becomes a property setting (1-3 args, at most one capture, key required);
+/// every other `!` operator becomes a general directive for higher-level code.
 fn parseDirective(
     name: []const u8,
     args: std.ArrayList(pattern_mod.PredicateArg),

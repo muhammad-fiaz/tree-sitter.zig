@@ -1,10 +1,10 @@
 ---
-description: Zig version compatibility — tree-sitter.zig targets Zig 0.17.0+.
+description: Zig version compatibility - tree-sitter.zig targets Zig 0.17.0+.
 ---
 
 # Zig
  
-`tree-sitter.zig` version **0.0.2** targets **Zig 0.17.0+** (`minimum_zig_version = "0.17.0"`, verified against the local SDK standard library). All APIs build directly on the Zig 0.17.0 standard library (`std.Io`, explicit allocators, monotonic clocks).
+`tree-sitter.zig` version **0.0.3** targets **Zig 0.17.0+** (`minimum_zig_version = "0.17.0"`, verified against the local SDK standard library). All APIs build directly on the Zig 0.17.0 standard library (`std.Io`, explicit allocators, monotonic clocks).
  
 > [!NOTE]
 > For projects using **Zig 0.16.0**, use release **0.0.1**:

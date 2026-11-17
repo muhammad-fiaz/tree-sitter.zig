@@ -1,5 +1,5 @@
 const std = @import("std");
-const tree_mod = @import("../tree/tree.zig");
+const tree_mod = @import("../tree/root.zig");
 const node_mod = @import("../tree/node.zig");
 
 pub const Capture = struct {

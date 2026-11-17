@@ -1,6 +1,6 @@
 const std = @import("std");
-const core = @import("../core/core.zig");
-const tree_mod = @import("tree.zig");
+const core = @import("../core/root.zig");
+const tree_mod = @import("root.zig");
 
 pub fn applyEdit(tree: *tree_mod.Tree, edit: core.InputEdit) void {
     for (tree.pool.nodes.items) |*node| {

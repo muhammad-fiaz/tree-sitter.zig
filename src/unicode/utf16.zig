@@ -52,7 +52,7 @@ pub fn decodeOne(bytes: []const u8, start: usize, little_endian: bool) Utf16Erro
 /// Transcode UTF-16 (`little_endian` selects LE vs BE) to owned UTF-8.
 /// A matching byte-order mark is stripped; a conflicting one is an
 /// error. Lone surrogates and truncation are errors, never silent
-/// replacement — malformed input must fail loudly at the boundary.
+/// replacement - malformed input must fail loudly at the boundary.
 pub fn transcodeToUtf8(gpa: std.mem.Allocator, bytes: []const u8, little_endian: bool) (std.mem.Allocator.Error || Utf16Error)![]u8 {
     var start: usize = 0;
     if (bytes.len >= 2) {

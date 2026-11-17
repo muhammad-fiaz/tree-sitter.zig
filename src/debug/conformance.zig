@@ -1,8 +1,8 @@
 const std = @import("std");
-const core = @import("../core/core.zig");
-const language_mod = @import("../language/language.zig");
-const parser_mod = @import("../parser/parser.zig");
-const tree_mod = @import("../tree/tree.zig");
+const core = @import("../core/root.zig");
+const language_mod = @import("../language/root.zig");
+const parser_mod = @import("../parser/root.zig");
+const tree_mod = @import("../tree/root.zig");
 const sexp_mod = @import("../tree/sexp.zig");
 
 /// Differential conformance harness: corpus-driven behavioral comparison.

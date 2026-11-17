@@ -1,5 +1,5 @@
 ---
-description: IDE language tools — hover, go-to-definition, and document symbols via queries.
+description: IDE language tools - hover, go-to-definition, and document symbols via queries.
 ---
 
 # IDE Language Tools

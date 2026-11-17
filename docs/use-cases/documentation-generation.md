@@ -6,7 +6,7 @@ description: Documentation generation from syntax trees.
 
 ## Problem
 
-API docs need signatures, not prose guesses — parameter lists, return positions, nesting.
+API docs need signatures, not prose guesses - parameter lists, return positions, nesting.
 
 ## Why tree-sitter.zig helps
 
@@ -14,7 +14,7 @@ Queries extract declarations structurally; ranges map them back to source for li
 
 ## API
 
-`Query` captures for declaration shapes; `Node.text` and `range` for rendering. `#set!` settings travel on patterns (`query.propertySettings`), while `#select-adjacent!` / `#strip!` apply through `query.directives.selectAdjacent` / `stripText` — the native equivalent of the tags-crate doc pipeline (see `examples/query_directives.zig`).
+`Query` captures for declaration shapes; `Node.text` and `range` for rendering. `#set!` settings travel on patterns (`query.propertySettings`), while `#select-adjacent!` / `#strip!` apply through `query.directives.selectAdjacent` / `stripText` - the native equivalent of the tags-crate doc pipeline (see `examples/query_directives.zig`).
 
 ## Architecture
 

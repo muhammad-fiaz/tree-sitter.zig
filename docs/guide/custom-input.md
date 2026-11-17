@@ -30,7 +30,7 @@ The callback receives an opaque payload, a byte index, and the position at that 
 ## Buffering versus streaming
 
 - `parseWithInput(old, edit, input)` buffers the whole input first, then parses. Use it when you also pass an old tree: subtree reuse needs the complete new text.
-- `parseStream(null, null, input)` pulls bytes on demand as the lexer advances — no pre-buffering — and the tree takes ownership of exactly the consumed prefix. Ideal for files, sockets, and decompressors behind `std.Io.Reader`. With an old tree it falls back to buffering so reuse still applies.
+- `parseStream(null, null, input)` pulls bytes on demand as the lexer advances - no pre-buffering - and the tree takes ownership of exactly the consumed prefix. Ideal for files, sockets, and decompressors behind `std.Io.Reader`. With an old tree it falls back to buffering so reuse still applies.
 
 ```zig
 var tree = try parser.parseStream(null, null, source.input());
@@ -41,7 +41,7 @@ Inputs are UTF-8; offsets are `u32` (4 GiB limit, shared by the whole runtime).
 
 ## API used
 
-- [Input](/api/input), [Parser](/api/parser) — `parseWithInput`, `parseStream`, `StreamBuffer`.
+- [Input](/api/input), [Parser](/api/parser) - `parseWithInput`, `parseStream`, `StreamBuffer`.
 
 ## Related guides
 

@@ -1,5 +1,5 @@
 ---
-description: API reference overview for tree-sitter.zig 0.0.2.
+description: API reference overview for tree-sitter.zig 0.0.3.
 ---
 
 # API Reference

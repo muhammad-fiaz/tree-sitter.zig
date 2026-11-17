@@ -1,5 +1,5 @@
 ---
-description: System architecture of tree-sitter.zig — subsystem map and dependency direction.
+description: System architecture of tree-sitter.zig - subsystem map and dependency direction.
 ---
 
 # Architecture

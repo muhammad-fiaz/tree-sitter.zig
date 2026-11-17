@@ -1,5 +1,5 @@
 ---
-description: Incremental parsing in tree-sitter.zig — edits, subtree reuse, and editor-style updates.
+description: Incremental parsing in tree-sitter.zig - edits, subtree reuse, and editor-style updates.
 ---
 
 # Incremental Parsing
@@ -11,7 +11,7 @@ description: Incremental parsing in tree-sitter.zig — edits, subtree reuse, an
 
 ## When to use this
 
-Any program that re-parses after small source changes — editors, language servers, watchers.
+Any program that re-parses after small source changes - editors, language servers, watchers.
 
 ## Complete example
 
@@ -58,20 +58,20 @@ Reuse compatible subtrees (same state, same bytes)
 New Tree → Changed ranges
 ```
 
-1. Describe the edit once: where it starts, where the old text ended, where the new text ends — in both bytes and points.
+1. Describe the edit once: where it starts, where the old text ended, where the new text ends - in both bytes and points.
 2. `parse` collects reusable old subtrees: nodes fully outside the edited span, without errors, whose recorded LR state matches the current parse state at their (translated) start offset.
-3. Matching subtrees are cloned into the new pool and the parser jumps over them — no re-lexing, no re-reducing.
+3. Matching subtrees are cloned into the new pool and the parser jumps over them - no re-lexing, no re-reducing.
 4. `parser.reused_node_count` reports how many old subtrees were spliced in (about 40,000 on the 80KB benchmark corpus for a leading-edge edit).
 
 ## Performance considerations
 
 - Reuse is opportunistic and always correct: identical LR state plus identical bytes implies an identical subtree, and error recovery backstops any mismatch.
 - Leading-edge edits (byte 0) are the worst case; trailing edits reuse large subtrees in single clones.
-- Old trees stay valid and immutable — reuse copies, never moves.
+- Old trees stay valid and immutable - reuse copies, never moves.
 
 ## API used
 
-- [Parser](/api/parser) — `parse`, `reused_node_count`.
+- [Parser](/api/parser) - `parse`, `reused_node_count`.
 - [InputEdit](/api/input-edit), [Changed Ranges](/api/changed-ranges).
 
 ## Related guides

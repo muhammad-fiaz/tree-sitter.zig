@@ -1,5 +1,5 @@
 ---
-description: Allocator model reference — Zig 0.17.0 facilities and their exact use.
+description: Allocator model reference - Zig 0.17.0 facilities and their exact use.
 ---
 
 # Allocator Model

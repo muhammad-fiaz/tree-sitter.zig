@@ -16,7 +16,7 @@ export const SITE_HOSTNAME = new URL(SITE_BASE, SITE_URL).href;
 export const SITE_NAME = "tree-sitter.zig";
 export const SITE_DESCRIPTION =
   "A native Zig implementation of the Tree-sitter parsing runtime with incremental parsing, structural queries, error recovery, and explicit allocator control.";
-export const SITE_VERSION = "0.0.2";
+export const SITE_VERSION = "0.0.3";
 export const ZIG_VERSION = "0.17.0";
 export const AUTHOR_NAME = "Muhammad Fiaz";
 export const AUTHOR_URL = "https://github.com/muhammad-fiaz";

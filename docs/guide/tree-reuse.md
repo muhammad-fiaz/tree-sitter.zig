@@ -1,5 +1,5 @@
 ---
-description: Reuse trees — copying, old-tree validity, and subtree splicing.
+description: Reuse trees - copying, old-tree validity, and subtree splicing.
 ---
 
 # Tree Reuse
@@ -25,12 +25,12 @@ defer new_tree.deinit();
 ## How it works
 
 - Old trees are **immutable** from the parser's perspective: reuse clones subtrees (translating positions through the edit) into the new pool. The old pool is only ever read.
-- `copy()` duplicates source bytes, nodes, and child indices with the tree's own allocator — a snapshot you can edit or compare later.
+- `copy()` duplicates source bytes, nodes, and child indices with the tree's own allocator - a snapshot you can edit or compare later.
 - Reused subtrees keep their recorded LR start states, which is what makes splicing sound: identical state plus identical bytes implies an identical subtree.
 
 ## API used
 
-- [Tree](/api/tree) — `copy`, `getChangedRanges`; [Parser](/api/parser) — `parse`, `reused_node_count`.
+- [Tree](/api/tree) - `copy`, `getChangedRanges`; [Parser](/api/parser) - `parse`, `reused_node_count`.
 
 ## Related guides
 

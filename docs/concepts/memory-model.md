@@ -1,5 +1,5 @@
 ---
-description: Memory model — allocator handoff, ownership, and lifetimes.
+description: Memory model - allocator handoff, ownership, and lifetimes.
 ---
 
 # Memory Model
@@ -8,7 +8,7 @@ description: Memory model — allocator handoff, ownership, and lifetimes.
 
 ## The handoff rule
 
-The client allocator enters the library at exactly one place — `Parser.init` — and is then inherited: trees inherit the parser's allocator, cursors inherit their tree's or parser's, queries inherit the parser's via the convenience constructors. Standalone constructors take an explicit allocator for code that has no parent object to inherit from.
+The client allocator enters the library at exactly one place - `Parser.init` - and is then inherited: trees inherit the parser's allocator, cursors inherit their tree's or parser's, queries inherit the parser's via the convenience constructors. Standalone constructors take an explicit allocator for code that has no parent object to inherit from.
 
 ## Ownership summary
 
@@ -20,9 +20,9 @@ The client allocator enters the library at exactly one place — `Parser.init` �
 | TreeCursor | path stack | its tree |
 | Query | patterns, captures, predicate args | the allocator, the `Language` |
 | QueryCursor | match lists | the allocator |
-| Range slice | nothing (caller-owned) | — |
+| Range slice | nothing (caller-owned) | - |
 
-`Language` table data is always borrowed — grammars are typically comptime-known statics, and the runtime never frees them.
+`Language` table data is always borrowed - grammars are typically comptime-known statics, and the runtime never frees them.
 
 ## Related pages
 

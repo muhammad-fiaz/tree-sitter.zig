@@ -1,5 +1,5 @@
 ---
-description: Range API — byte and point spans with containment helpers.
+description: Range API - byte and point spans with containment helpers.
 ---
 
 # Range
@@ -20,4 +20,4 @@ pub fn rangeContainsPoint(range: Range, point: Point) bool
 
 ## Related APIs
 
-[Point](/api/point), [Node](/api/node) — `range()`, [Changed Ranges](/api/changed-ranges)
+[Point](/api/point), [Node](/api/node) - `range()`, [Changed Ranges](/api/changed-ranges)

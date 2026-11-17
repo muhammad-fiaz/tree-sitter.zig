@@ -1,5 +1,5 @@
 ---
-description: Use cases built on tree-sitter.zig — from highlighting to refactoring.
+description: Use cases built on tree-sitter.zig - from highlighting to refactoring.
 ---
 
 # Use Cases

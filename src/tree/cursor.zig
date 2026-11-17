@@ -1,6 +1,6 @@
 const std = @import("std");
 const node_mod = @import("node.zig");
-const core = @import("../core/core.zig");
+const core = @import("../core/root.zig");
 
 const Entry = struct {
     index: u32,
@@ -222,8 +222,8 @@ pub const TreeCursor = struct {
     }
 };
 
-const parser_mod = @import("../parser/parser.zig");
-const language_mod = @import("../language/language.zig");
+const parser_mod = @import("../parser/root.zig");
+const language_mod = @import("../language/root.zig");
 
 test "cursor: full traversal visits every node" {
     var parser = parser_mod.Parser.init(std.testing.allocator);

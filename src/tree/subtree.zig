@@ -1,5 +1,5 @@
 const std = @import("std");
-const core = @import("../core/core.zig");
+const core = @import("../core/root.zig");
 
 pub const no_parent: u32 = std.math.maxInt(u32);
 pub const no_index: u32 = std.math.maxInt(u32);

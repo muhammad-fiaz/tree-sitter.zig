@@ -1,5 +1,5 @@
 ---
-description: Lexer runtime internals — tokenizer, chunk reading, and external dispatch.
+description: Lexer runtime internals - tokenizer, chunk reading, and external dispatch.
 ---
 
 # Lexer Runtime

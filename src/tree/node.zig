@@ -1,7 +1,7 @@
 const std = @import("std");
-const core = @import("../core/core.zig");
+const core = @import("../core/root.zig");
 const subtree_mod = @import("subtree.zig");
-const tree_mod = @import("tree.zig");
+const tree_mod = @import("root.zig");
 
 /// Lightweight handle to a node in a syntax tree.
 ///
@@ -40,6 +40,16 @@ pub const Node = struct {
 
     pub fn nodeType(self: Node) []const u8 {
         return self.tree.language.symbolName(self.symbol());
+    }
+
+    /// Short alias for `nodeType()`.
+    pub fn name(self: Node) []const u8 {
+        return self.nodeType();
+    }
+
+    /// Short alias for `nodeType()`.
+    pub fn @"type"(self: Node) []const u8 {
+        return self.nodeType();
     }
 
     pub fn grammarType(self: Node) []const u8 {
@@ -197,10 +207,10 @@ pub const Node = struct {
         return self.previousNamedSibling();
     }
 
-    pub fn childByFieldName(self: Node, name: []const u8) ?Node {
+    pub fn childByFieldName(self: Node, field_name: []const u8) ?Node {
         const bindings = self.tree.language.fields.bindingsForProduction(self.raw().production_id);
         for (bindings) |b| {
-            if (std.mem.eql(u8, b.name, name)) {
+            if (std.mem.eql(u8, b.name, field_name)) {
                 return self.child(@as(u32, @intCast(b.child_index)));
             }
         }
@@ -208,8 +218,55 @@ pub const Node = struct {
     }
 
     pub fn childByFieldId(self: Node, field_id: u16) ?Node {
-        const name = self.tree.language.fieldNameForId(field_id) orelse return null;
-        return self.childByFieldName(name);
+        const field_name = self.tree.language.fieldNameForId(field_id) orelse return null;
+        return self.childByFieldName(field_name);
+    }
+
+    /// Check if this node has a child bound to the given field name.
+    pub fn has(self: Node, field_name: []const u8) bool {
+        return self.childByFieldName(field_name) != null;
+    }
+
+    /// Convenient alias for `childByFieldName(name)`.
+    pub fn get(self: Node, field_name: []const u8) ?Node {
+        return self.childByFieldName(field_name);
+    }
+
+    /// Indexed child access. Alias for `child(i)`.
+    pub fn childAt(self: Node, i: u32) ?Node {
+        return self.child(i);
+    }
+
+    /// Indexed named child access. Alias for `namedChild(i)`.
+    pub fn namedChildAt(self: Node, i: u32) ?Node {
+        return self.namedChild(i);
+    }
+
+    /// Iterator over child `Node` instances.
+    pub const ChildIterator = struct {
+        node: Node,
+        index: usize = 0,
+
+        pub fn next(self: *ChildIterator) ?Node {
+            const list = self.node.children();
+            if (self.index >= list.len) return null;
+            const idx = list[self.index];
+            self.index += 1;
+            return Node{ .tree = self.node.tree, .index = idx };
+        }
+    };
+
+    /// Return an iterator yielding child `Node` handles.
+    pub fn childIterator(self: Node) ChildIterator {
+        return .{ .node = self };
+    }
+
+    /// Format implementation for `std.fmt` printing.
+    pub fn format(
+        self: Node,
+        writer: *std.Io.Writer,
+    ) std.Io.Writer.Error!void {
+        try writer.print("{s} [{d}, {d}]", .{ self.nodeType(), self.startByte(), self.endByte() });
     }
 
     pub fn fieldNameForChild(self: Node, child_index: u32) ?[]const u8 {
@@ -359,8 +416,8 @@ pub const Node = struct {
     }
 };
 
-const parser_mod = @import("../parser/parser.zig");
-const language_mod = @import("../language/language.zig");
+const parser_mod = @import("../parser/root.zig");
+const language_mod = @import("../language/root.zig");
 
 test "node: children and named children" {
     var parser = parser_mod.Parser.init(std.testing.allocator);

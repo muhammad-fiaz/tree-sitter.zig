@@ -1,21 +1,21 @@
 ---
-description: Zig 0.17 notes — standard-library facilities and installation for tree-sitter.zig 0.0.2.
+description: Zig 0.17 notes - standard-library facilities and installation for tree-sitter.zig 0.0.3.
 ---
 
 # Zig 0.17 Notes
 
-`tree-sitter.zig` targets **Zig 0.17.0+** starting with release **0.0.2**.
+`tree-sitter.zig` targets **Zig 0.17.0+** starting with release **0.0.3**.
 
 ## Installation for Zig 0.17.0+
 
-### Method 1: Zig Fetch (Stable v0.0.2)
+### Method 1: Zig Fetch (Stable v0.0.3)
 
 ```sh
-zig fetch --save https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.2.tar.gz
+zig fetch --save https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.3.tar.gz
 ```
 
 > [!NOTE]
-> `tree-sitter.zig` targets **Zig 0.17.0+** starting with release **0.0.2**.
+> `tree-sitter.zig` targets **Zig 0.17.0+** starting with release **0.0.3**.
 >
 > For projects using **Zig 0.16.0**, use release **0.0.1**:
 >
@@ -32,7 +32,7 @@ Add `tree-sitter.zig` to your `build.zig.zon`:
 ```zig
 .dependencies = .{
     .treesitter = .{
-        .url = "https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.2.tar.gz",
+        .url = "https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.3.tar.gz",
     },
 },
 ```

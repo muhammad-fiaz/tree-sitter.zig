@@ -1,5 +1,5 @@
 ---
-description: QueryCursor API — execution, iteration, ranges, and limits.
+description: QueryCursor API - execution, iteration, ranges, and limits.
 ---
 
 # Query Cursor
@@ -35,7 +35,7 @@ pub fn remainingMatches(self: *const QueryCursor) usize
 
 ## Ownership
 
-Owns match storage; borrows allocator, query data, and the tree (matches reference tree nodes — keep the tree alive while reading them).
+Owns match storage; borrows allocator, query data, and the tree (matches reference tree nodes - keep the tree alive while reading them).
 
 ## Related APIs
 

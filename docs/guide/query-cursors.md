@@ -1,5 +1,5 @@
 ---
-description: QueryCursor — executing queries, iterating matches, ranges, and limits.
+description: QueryCursor - executing queries, iterating matches, ranges, and limits.
 ---
 
 # Query Cursors
@@ -25,7 +25,7 @@ while (cursor.nextMatch()) |m| { ... }
 
 - `execute` walks the whole tree once per call and stores owned match/capture lists on the cursor; `nextMatch` then iterates without further tree access.
 - `reset()` clears results but keeps capacity **and** your range/limit options; `resetAll()` also restores default options.
-- Queries compile once and execute repeatedly; cursors are likewise reusable — set new options and `execute` again.
+- Queries compile once and execute repeatedly; cursors are likewise reusable - set new options and `execute` again.
 
 ## Memory ownership
 

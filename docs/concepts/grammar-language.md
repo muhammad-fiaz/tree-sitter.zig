@@ -1,12 +1,12 @@
 ---
-description: Grammars and languages — how grammar data drives the generic runtime.
+description: Grammars and languages - how grammar data drives the generic runtime.
 ---
 
 # Grammar & Language
 
 ## Simple explanation
 
-A *grammar* describes a language's structure (what an expression looks like); a *language* is that description packaged as data the parser can run. tree-sitter.zig never hard-codes any programming language — the same engine parses whatever tables you load.
+A *grammar* describes a language's structure (what an expression looks like); a *language* is that description packaged as data the parser can run. tree-sitter.zig never hard-codes any programming language - the same engine parses whatever tables you load.
 
 ## Technical explanation
 

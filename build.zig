@@ -59,6 +59,13 @@ pub fn build(b: *std.Build) void {
         "unicode",
         "multithreading",
         "custom_io",
+        "grammar_dsl",
+        "language_registry",
+        "language_injections",
+        "locals_analysis",
+        "tags_extraction",
+        "editor_workflow",
+        "large_file_parse",
     };
     const examples_step = b.step("examples", "Build all examples");
     const run_all_examples = b.step("run-all-examples", "Run all examples sequentially");
@@ -123,14 +130,61 @@ pub fn build(b: *std.Build) void {
     run_conformance.step.dependOn(&install_conformance.step);
     conformance_step.dependOn(&run_conformance.step);
 
+    const grammars: []const []const u8 = &.{
+        "c",
+        "cpp",
+        "css",
+        "go",
+        "html",
+        "java",
+        "javascript",
+        "json",
+        "php",
+        "python",
+        "ruby",
+        "rust",
+        "typescript",
+        "zig",
+    };
+    const grammars_step = b.step("grammars", "Build all 14 grammar examples");
+    const run_all_grammars = b.step("run-all-grammars", "Run all 14 grammar examples sequentially");
+    var previous_grammar_step: ?*std.Build.Step = null;
+    for (grammars) |gname| {
+        const g_mod = b.addModule(b.fmt("tree_sitter_{s}", .{gname}), .{
+            .root_source_file = b.path(b.fmt("grammars/{s}/src/parser.zig", .{gname})),
+            .target = target,
+            .optimize = optimize,
+        });
+        g_mod.addImport("treesitter", mod);
+
+        const g_exe_mod = b.createModule(.{
+            .root_source_file = b.path(b.fmt("grammars/{s}/examples/main.zig", .{gname})),
+            .target = target,
+            .optimize = optimize,
+        });
+        g_exe_mod.addImport("treesitter", mod);
+        g_exe_mod.addImport(b.fmt("tree_sitter_{s}", .{gname}), g_mod);
+
+        const g_exe = b.addExecutable(.{
+            .name = b.fmt("grammar_{s}_example", .{gname}),
+            .root_module = g_exe_mod,
+        });
+        const install_g_exe = b.addInstallArtifact(g_exe, .{});
+        grammars_step.dependOn(&install_g_exe.step);
+
+        const run_g_exe = b.addRunArtifact(g_exe);
+        run_g_exe.step.dependOn(&install_g_exe.step);
+        if (previous_grammar_step) |prev| run_g_exe.step.dependOn(prev);
+        const g_run_step = b.step(b.fmt("run-grammar-{s}", .{gname}), b.fmt("Run {s} grammar example", .{gname}));
+        g_run_step.dependOn(&run_g_exe.step);
+        previous_grammar_step = &run_g_exe.step;
+    }
+    if (previous_grammar_step) |last| run_all_grammars.dependOn(last);
+
     const lib = b.addLibrary(.{
         .name = "treesitter",
         .linkage = .static,
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/treesitter.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
+        .root_module = mod,
     });
     b.installArtifact(lib);
 
@@ -144,6 +198,8 @@ pub fn build(b: *std.Build) void {
 
     const test_all_step = b.step("test-all", "Run tests, benchmarks, and all runnable examples");
     test_all_step.dependOn(test_step);
+    test_all_step.dependOn(conformance_step);
     test_all_step.dependOn(bench_step);
     test_all_step.dependOn(run_all_examples);
+    test_all_step.dependOn(run_all_grammars);
 }

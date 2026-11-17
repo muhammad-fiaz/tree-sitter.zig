@@ -1,5 +1,5 @@
 ---
-description: Tree runtime internals — roots, error aggregation, edits, and diffs.
+description: Tree runtime internals - roots, error aggregation, edits, and diffs.
 ---
 
 # Tree Runtime

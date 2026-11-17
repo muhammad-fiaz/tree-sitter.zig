@@ -1,5 +1,5 @@
 const std = @import("std");
-const language_mod = @import("../language/language.zig");
+const language_mod = @import("../language/root.zig");
 
 pub const ExternalToken = language_mod.ExternalScanner.ExternalToken;
 

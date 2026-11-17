@@ -59,18 +59,15 @@ pub const Predicate = struct {
     args: []PredicateArg = &.{},
 };
 
-/// A `#set!` property setting: `key [value] [@capture]`, following the
-/// upstream property form (at most one capture, key required).
+/// A `#set!` property setting: `key [value] [@capture]` (at most one capture, key required).
 pub const Setting = struct {
     key: []const u8,
     value: ?[]const u8 = null,
     capture: ?u32 = null,
 };
 
-/// A `#name!` directive (`select-adjacent!`, `strip!`, or anything
-/// unknown): operator plus raw args, exposed structurally for
-/// higher-level code — mirroring upstream, where directives are parsed
-/// but not evaluated by the query engine itself.
+/// A `#name!` directive (`select-adjacent!`, `strip!`, or any custom directive):
+/// operator plus raw arguments, exposed structurally for higher-level tooling.
 pub const Directive = struct {
     operator: []const u8,
     args: []PredicateArg = &.{},

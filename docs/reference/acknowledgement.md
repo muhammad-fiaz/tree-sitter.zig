@@ -13,4 +13,8 @@ description: Acknowledgement of the reference Tree-sitter project and algorithms
 
 `tree-sitter.zig` is an independent pure-Zig implementation and is not affiliated with, maintained by, or endorsed by the original Tree-sitter project or its authors.
 
-The runtime algorithms—including LR state table parsing, subtree reuse for incremental parsing, changed-ranges calculation, error recovery with cost heuristics, and S-expression query execution—are implemented natively in Zig conforming to Tree-sitter's semantics and design.
+> [!IMPORTANT]
+> **No C Compatibility Notice**:
+> This project does **NOT** maintain backward compatibility with the original C version of Tree-sitter. It uses its own native Zig-based configurations, parse tables (`parser.zig`), external scanners (`scanner.zig`), and grammar metadata (`grammar.json`, `node-types.json`) for all supported grammars. There are no C header shims or C compiler requirements.
+
+The runtime algorithms - including LR state table parsing, subtree reuse for incremental parsing, changed-ranges calculation, error recovery with cost heuristics, and S-expression query execution - are implemented natively in Zig conforming to Tree-sitter's semantics and design.

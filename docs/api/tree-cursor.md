@@ -1,5 +1,5 @@
 ---
-description: TreeCursor API — traversal, depth, fields, and snapshots.
+description: TreeCursor API - traversal, depth, fields, and snapshots.
 ---
 
 # Tree Cursor

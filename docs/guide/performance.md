@@ -1,5 +1,5 @@
 ---
-description: Performance characteristics and measured benchmarks for tree-sitter.zig 0.0.2.
+description: Performance characteristics and measured benchmarks for tree-sitter.zig 0.0.3.
 ---
 
 # Performance
@@ -16,7 +16,7 @@ description: Performance characteristics and measured benchmarks for tree-sitter
 |-----------|-------|-------------|
 | Initial parse | ~87 ms | ~10 ms |
 | Repeated parse | ~86 ms | ~10 ms |
-| Small-edit incremental (≈40k reused) | ~94 ms | ~4–16 ms |
+| Small-edit incremental (≈40k reused) | ~94 ms | ~4-16 ms |
 | Tree traversal (100k nodes) | ~9 ms | ~1 ms |
 | Query execution (20k matches) | ~95 ms | ~4 ms |
 
@@ -39,7 +39,7 @@ The benchmark (`benchmarks/parse_bench.zig`) prints each measurement plus `reuse
 
 ## API used
 
-- [Parser](/api/parser) — `reused_node_count`; benchmark source in the repo.
+- [Parser](/api/parser) - `reused_node_count`; benchmark source in the repo.
 
 ## Related guides
 

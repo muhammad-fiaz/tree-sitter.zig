@@ -1,5 +1,5 @@
 ---
-description: Debugging examples — error inspection, logging, and tracing.
+description: Debugging examples - error inspection, logging, and tracing.
 ---
 
 # Debugging & Error Recovery
@@ -129,10 +129,10 @@ Tracer recorded 16 lifecycle events:
 
 ## API used
 
-- [Parser](/api/parser) — `Parser.init`, `Parser.setLanguage`, `Parser.parseString`, `Parser.setTracer`, `Parser.setLogger`
-- [Tree](/api/tree) — `Tree.hasError`, `Tree.nodeCount`
-- [Node](/api/node) — `Node.isError`, `Node.isMissing`
-- [Tracer](/api/logging) — `Tracer.init`, `Tracer.count`, `Tracer.entries`
+- [Parser](/api/parser) - `Parser.init`, `Parser.setLanguage`, `Parser.parseString`, `Parser.setTracer`, `Parser.setLogger`
+- [Tree](/api/tree) - `Tree.hasError`, `Tree.nodeCount`
+- [Node](/api/node) - `Node.isError`, `Node.isMissing`
+- [Tracer](/api/logging) - `Tracer.init`, `Tracer.count`, `Tracer.entries`
 
 ## Related guides
 

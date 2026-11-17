@@ -1,5 +1,5 @@
 ---
-description: Query FAQ — syntax, captures, predicates, and matching semantics.
+description: Query FAQ - syntax, captures, predicates, and matching semantics.
 ---
 
 # Queries FAQ
@@ -22,7 +22,7 @@ Nesting means *direct* child. Use shallower patterns or wildcards for deeper mat
 
 ## Do supertype patterns match subtypes?
 
-Yes — a pattern naming a supertype matches the supertype itself plus every subtype in the language's `supertype_map`. Aliased nodes match under their alias name. See [Aliases](/concepts/aliases).
+Yes - a pattern naming a supertype matches the supertype itself plus every subtype in the language's `supertype_map`. Aliased nodes match under their alias name. See [Aliases](/concepts/aliases).
 
 ## What are directives for?
 

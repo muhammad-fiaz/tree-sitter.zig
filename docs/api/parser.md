@@ -1,5 +1,5 @@
 ---
-description: Parser API — lifecycle, languages, parsing, reuse, and queries.
+description: Parser API - lifecycle, languages, parsing, reuse, and queries.
 ---
 
 # Parser
@@ -57,7 +57,7 @@ pub fn setIncludedRanges(self: *Parser, ranges: []const Range) (Allocator.Error 
 pub fn includedRanges(self: *const Parser) []const Range
 ```
 
-Ranges must be sorted and non-overlapping (`error.InvalidRange` otherwise) and are enforced by the lexer — see [Included Ranges](/guide/included-ranges).
+Ranges must be sorted and non-overlapping (`error.InvalidRange` otherwise) and are enforced by the lexer - see [Included Ranges](/guide/included-ranges).
 
 ### reset
 
@@ -97,7 +97,7 @@ Pulls callback chunks, buffers them, and parses identically to memory input.
 pub fn parseStream(self: *Parser, old_tree: ?*const Tree, edit: ?InputEdit, reader_input: Input) ParserError!Tree
 ```
 
-True streaming: bytes are pulled on demand as the lexer advances — no pre-buffering — and the tree takes ownership of exactly the consumed prefix. With an old tree the input is buffered once so subtree reuse still applies. See [Custom Input](/guide/custom-input).
+True streaming: bytes are pulled on demand as the lexer advances - no pre-buffering - and the tree takes ownership of exactly the consumed prefix. With an old tree the input is buffered once so subtree reuse still applies. See [Custom Input](/guide/custom-input).
 
 ### parseReader / parseReaderIncremental
 
@@ -144,7 +144,7 @@ Subtrees spliced from the old tree by the most recent `parse`.
 
 ## Errors
 
-`ParserError = Allocator.Error || error{ NoLanguage, Aborted, InvalidRange }`. Syntax problems never surface here — they become `ERROR`/`MISSING` nodes in the tree.
+`ParserError = Allocator.Error || error{ NoLanguage, Aborted, InvalidRange }`. Syntax problems never surface here - they become `ERROR`/`MISSING` nodes in the tree.
 
 ## Ownership
 

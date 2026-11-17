@@ -1,5 +1,5 @@
 ---
-description: Incremental examples — edits, subtree reuse, and changed ranges with real output.
+description: Incremental examples - edits, subtree reuse, and changed ranges with real output.
 ---
 
 # Incremental Parsing
@@ -75,9 +75,9 @@ changed: bytes [4, 6]
 
 ## API used
 
-- [Parser](/api/parser) — `Parser.parse`
-- [Input Edit](/api/input-edit) — `InputEdit`
-- [Changed Ranges](/api/changed-ranges) — `Tree.getChangedRanges`, `Tree.freeChangedRanges`
+- [Parser](/api/parser) - `Parser.parse`
+- [Input Edit](/api/input-edit) - `InputEdit`
+- [Changed Ranges](/api/changed-ranges) - `Tree.getChangedRanges`, `Tree.freeChangedRanges`
 
 ## Related guides
 

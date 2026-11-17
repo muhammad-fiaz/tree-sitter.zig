@@ -1,12 +1,12 @@
 ---
-description: Symbols — terminals, non-terminals, visibility, named status, and extras.
+description: Symbols - terminals, non-terminals, visibility, named status, and extras.
 ---
 
 # Symbols
 
 ## Simple explanation
 
-Every distinct thing in a grammar — a keyword, an identifier, an expression — gets a numeric id called a *symbol*. Symbols say whether a node is named (structural) or anonymous (punctuation), visible, or an extra like whitespace.
+Every distinct thing in a grammar - a keyword, an identifier, an expression - gets a numeric id called a *symbol*. Symbols say whether a node is named (structural) or anonymous (punctuation), visible, or an extra like whitespace.
 
 ## Technical explanation
 

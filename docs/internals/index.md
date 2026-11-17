@@ -1,5 +1,5 @@
 ---
-description: Internals overview — how each runtime subsystem is implemented.
+description: Internals overview - how each runtime subsystem is implemented.
 ---
 
 # Internals

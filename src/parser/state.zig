@@ -1,7 +1,7 @@
 const std = @import("std");
-const core = @import("../core/core.zig");
-const language_mod = @import("../language/language.zig");
-const lexer_mod = @import("../lexer/lexer.zig");
+const core = @import("../core/root.zig");
+const language_mod = @import("../language/root.zig");
+const lexer_mod = @import("../lexer/root.zig");
 const lookahead_mod = @import("lookahead.zig");
 const stack_mod = @import("stack.zig");
 

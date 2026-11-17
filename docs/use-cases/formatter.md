@@ -1,5 +1,5 @@
 ---
-description: Code formatters on tree-sitter.zig — layout from structure.
+description: Code formatters on tree-sitter.zig - layout from structure.
 ---
 
 # Formatter

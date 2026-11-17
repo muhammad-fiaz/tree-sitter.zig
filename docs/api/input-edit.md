@@ -1,5 +1,5 @@
 ---
-description: InputEdit API — describing source changes in bytes and points.
+description: InputEdit API - describing source changes in bytes and points.
 ---
 
 # InputEdit

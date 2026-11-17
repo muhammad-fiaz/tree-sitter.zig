@@ -1,5 +1,5 @@
 ---
-description: Conformance process — the differential corpus harness.
+description: Conformance process - the differential corpus harness.
 ---
 
 # Conformance
@@ -39,10 +39,10 @@ zig build conformance   # human-readable PASS/FAIL report (exit 1 on failure)
 zig build test          # the same cases run as the "conformance: corpus cases pass" test
 ```
 
-The case list is embedded once (`conformance.corpus_files`), so the report and the test suite cannot drift apart. This harness caught a real reuse-cloning bug during development (bushy subtree clones corrupted incremental trees while weak count assertions passed) — see [Incremental Runtime](/internals/incremental-runtime).
+The case list is embedded once (`conformance.corpus_files`), so the report and the test suite cannot drift apart. This harness caught a real reuse-cloning bug during development (bushy subtree clones corrupted incremental trees while weak count assertions passed) - see [Incremental Runtime](/internals/incremental-runtime).
 
 ## Adding a case
 
-Add a `*.txt` file in `src/debug/corpus/`, list it in `corpus_files`, and run both commands. Verify the expected S-expression against the grammar tables by hand before locking it in — the corpus is a reference, not an oracle.
+Add a `*.txt` file in `src/debug/corpus/`, list it in `corpus_files`, and run both commands. Verify the expected S-expression against the grammar tables by hand before locking it in - the corpus is a reference, not an oracle.
 
 Related: [Upstream Conformance](/internals/upstream-conformance), [Testing](/development/testing), [S-expressions](/api/tree).

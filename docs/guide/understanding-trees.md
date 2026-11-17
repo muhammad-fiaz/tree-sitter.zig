@@ -1,5 +1,5 @@
 ---
-description: Read concrete syntax trees — root nodes, named vs anonymous nodes, ranges, and tree structure.
+description: Read concrete syntax trees - root nodes, named vs anonymous nodes, ranges, and tree structure.
 ---
 
 # Understanding Trees
@@ -31,7 +31,7 @@ program [0, 11] named=true
 ## How it works
 
 - The **root** is always the grammar's start symbol (`program` here). `tree.rootNode()` returns it.
-- **Named nodes** (`identifier`, `expression`) carry the language's structure. **Anonymous nodes** (`+`, `(`, `)`) are punctuation tokens — visible in the tree but `isNamed()` is false.
+- **Named nodes** (`identifier`, `expression`) carry the language's structure. **Anonymous nodes** (`+`, `(`, `)`) are punctuation tokens - visible in the tree but `isNamed()` is false.
 - Every node records an exact **byte range** plus **row/column points**. Bytes are the source of truth; columns count bytes per line in the same way the reference runtime does.
 - Nodes are pooled inside the `Tree`: a `Node` is just a `(tree, index)` handle, so reading metadata never allocates.
 
@@ -53,8 +53,8 @@ Application
 
 ## API used
 
-- [Tree](/api/tree) — `rootNode`, `hasError`, `nodeCount`, `sourceText`.
-- [Node](/api/node) — `nodeType`, `isNamed`, `startByte`, `endByte`, `text`.
+- [Tree](/api/tree) - `rootNode`, `hasError`, `nodeCount`, `sourceText`.
+- [Node](/api/node) - `nodeType`, `isNamed`, `startByte`, `endByte`, `text`.
 
 ## Related guides
 

@@ -1,5 +1,5 @@
 ---
-description: External scanners in tree-sitter.zig — the Zig-native interface for context-sensitive tokens.
+description: External scanners in tree-sitter.zig - the Zig-native interface for context-sensitive tokens.
 ---
 
 # External Scanners
@@ -41,7 +41,7 @@ try parser.setLanguage(lang);
 
 The tokenizer consults the scanner **first** at every lex point (before built-in matchers), with the current state's valid set (action symbols plus extras, recomputed per parser step):
 
-- A non-extra token wins immediately — even zero-width (indent/dedent).
+- A non-extra token wins immediately - even zero-width (indent/dedent).
 - An extra token must consume input (`length > 0`); zero-width extras are ignored so skipping always progresses.
 - Results are cached per offset: the scanner runs at most once per offset per parser step, because scanning may mutate payload state (indent stacks).
 - Included ranges still apply; streaming (`parseStream`) buffers first when a scanner is present, since stateful scanners observe whole lines.
@@ -69,7 +69,7 @@ Implemented end to end: interface, per-state dispatch, result caching, the outli
 
 ## API used
 
-- [Language](/api/language) — `ExternalScanner`, `outline_language`, `OutlineScanState`.
+- [Language](/api/language) - `ExternalScanner`, `outline_language`, `OutlineScanState`.
 
 ## Related guides
 

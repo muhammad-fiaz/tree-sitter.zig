@@ -1,5 +1,5 @@
 ---
-description: Feature matrix — implemented, partial, and planned areas.
+description: Feature matrix - implemented, partial, and planned areas.
 ---
 
 # Feature Matrix

@@ -6,8 +6,8 @@ The following table lists the security support status for versions of `tree-sitt
 
 | Version | Supported | Recommended Zig Version |
 | :--- | :--- | :--- |
-| `0.0.2` | :white_check_mark: | Zig 0.17.0+ |
-| `< 0.0.2` | :x: | Zig 0.16.0 |
+| `0.0.3` | :white_check_mark: | Zig 0.17.0+ |
+| `< 0.0.3` | :x: | Zig 0.16.0 |
 
 ## Reporting a Vulnerability
 

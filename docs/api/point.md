@@ -1,12 +1,12 @@
 ---
-description: Point API — rows, columns, comparison, and arithmetic.
+description: Point API - rows, columns, comparison, and arithmetic.
 ---
 
 # Point
 
 ## Overview
 
-`Point { row: u32, column: u32 }` — zero-based line and byte-column. Source: `src/core/point.zig`.
+`Point { row: u32, column: u32 }` - zero-based line and byte-column. Source: `src/core/point.zig`.
 
 ## Methods
 
@@ -21,7 +21,7 @@ pub fn advancePoint(point: Point, byte: u8) Point   // '\n' → next row
 pub fn pointForBytes(source: []const u8, byte_offset: usize) Point
 ```
 
-Columns count bytes, not code points — see [Unicode](/concepts/unicode).
+Columns count bytes, not code points - see [Unicode](/concepts/unicode).
 
 ## Related APIs
 

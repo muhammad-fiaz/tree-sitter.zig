@@ -3,9 +3,7 @@ const std = @import("std");
 /// A single alias rule: within one grammar production, the child at
 /// `child_index` is renamed to `value` (a symbol id present in the
 /// language's symbol table) with the given named/anonymous flag.
-///
-/// Mirrors the upstream `AliasSequence` concept, stored sparsely so a
-/// production only lists the children it actually renames.
+/// Stored sparsely so a production only lists the children it actually renames.
 pub const Alias = struct {
     symbol: u16,
     value: u16,

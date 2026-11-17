@@ -1,5 +1,5 @@
 ---
-description: Structural queries in tree-sitter.zig — patterns, named and anonymous nodes, wildcards, and fields.
+description: Structural queries in tree-sitter.zig - patterns, named and anonymous nodes, wildcards, and fields.
 ---
 
 # Queries

@@ -1,5 +1,5 @@
 ---
-description: FAQ overview — practical answers about tree-sitter.zig.
+description: FAQ overview - practical answers about tree-sitter.zig.
 ---
 
 # FAQ

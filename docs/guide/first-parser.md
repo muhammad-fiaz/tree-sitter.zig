@@ -49,7 +49,7 @@ text: 1 + 2 * 3
 1. **Allocator once.** `Parser.init` is the only call that takes an allocator. The parser stores it and every derived object reuses it.
 2. **Language.** `setLanguage` validates the grammar's ABI version and loads its tables. Without it, `parseString` returns `error.NoLanguage`.
 3. **Parse.** `parseString` runs the lexer plus the LR engine and returns an owning `Tree`.
-4. **Inspect.** `rootNode()` gives a `Node` — a small handle (tree pointer + index), not an allocation.
+4. **Inspect.** `rootNode()` gives a `Node` - a small handle (tree pointer + index), not an allocation.
 5. **Cleanup.** Each `deinit` frees exactly what its object owns: parser scratch, tree pool and source copy.
 
 ## API used
