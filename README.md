@@ -33,7 +33,8 @@
 > **No C Compatibility Notice**:
 > This project does **NOT** maintain backward compatibility with the original C version of Tree-sitter. It is an independent, 100% native Zig implementation that uses its own Zig-based configurations, native parse tables (`parser.zig`), native external scanners (`scanner.zig`), and grammar metadata (`grammar.json`, `node-types.json`) for all supported grammars. There is zero C code, zero `@cImport`, and no C compiler dependency.
 
-### Related Zig projects:
+<details>
+<summary><strong>Related Zig projects</strong> (click to expand)</summary>
 
 - For env.zig (.env parsing), check out [env.zig](https://github.com/muhammad-fiaz/env.zig).
 - For TUI support, check out [tui.zig](https://github.com/muhammad-fiaz/tui.zig).
@@ -55,6 +56,8 @@
 - For CUDA/GPU computing support, check out [cuda.zig](https://github.com/muhammad-fiaz/cuda.zig).
 - For Sqlite support, check out [sqlite.zig](https://github.com/muhammad-fiaz/sqlite.zig).
 - For Simplified Build.zig support, check out [build.zig](https://github.com/muhammad-fiaz/buildx.zig).
+
+</details>
 
 **⭐️ If you love `tree-sitter.zig`, make sure to give it a star! ⭐️**
 
@@ -529,6 +532,9 @@ const reused = parser.reused_node_count;
 
 ## Node API
 
+<details>
+<summary><strong>Node API Methods</strong> (click to expand)</summary>
+
 | Method | Description |
 |--------|-------------|
 | `nodeType()` | Symbol name (`"expression"`, `"+"`, `"ERROR"`) |
@@ -547,7 +553,12 @@ const reused = parser.reused_node_count;
 | `descendantForByteRange(s, e)` | Smallest node in a range |
 | `eql(other)` | Handle equality |
 
+</details>
+
 ## Cursor API
+
+<details>
+<summary><strong>Cursor API Methods</strong> (click to expand)</summary>
 
 | Method | Description |
 |--------|-------------|
@@ -560,7 +571,12 @@ const reused = parser.reused_node_count;
 | `gotoDescendant(byte)` | Deepest node containing a byte |
 | `reset(node)` / `copy()` | Reuse and snapshot cursors |
 
+</details>
+
 ## Query API
+
+<details>
+<summary><strong>Query API Methods</strong> (click to expand)</summary>
 
 | Item | Description |
 |------|-------------|
@@ -573,6 +589,8 @@ const reused = parser.reused_node_count;
 | `cursor.setByteRange(s, e)` / `setPointRange()` | Restrict matching |
 | `cursor.setMatchLimit(n)` | Cap result count |
 | `cursor.reset()` / `resetAll()` | Reuse the cursor |
+
+</details>
 
 ## Performance & Benchmarks
 
@@ -608,12 +626,17 @@ tree-sitter.zig is designed for every-keystroke parsing: pooled tree storage, re
 
 ### Summary
 
+<details>
+<summary><strong>Benchmark Summary Metrics</strong> (click to expand)</summary>
+
 | Metric | Value |
 |--------|-------|
 | **Corpus** | ~80KB source, 20,000 operands, 100,000 nodes, 20,000 query matches |
 | **ReleaseFast parse throughput** | ~8 MB/s |
 | **Incremental reuse (leading-edge edit)** | ~40,000 subtrees spliced without re-lexing |
 | **Traversal** | ~1 ms per 100,000 nodes (ReleaseFast) |
+
+</details>
 
 > [!NOTE]
 > Benchmark results may vary based on operating system, environment, Zig version, hardware specifications, and software configurations.
@@ -679,7 +702,8 @@ zig build examples
 
 The repository provides 14 modular, native Zig grammar packages under [`grammars/`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars). Each package is organized as an independent, standalone Zig project containing native parse tables (`src/parser.zig`), an external scanner (`src/scanner.zig`), AST and node schemas (`src/grammar.json`, `src/node-types.json`), syntax queries (`queries/`), and a runnable parse demonstration (`examples/main.zig`).
 
-#### Grammar Packages Directory & File Manifest
+<details>
+<summary><strong>Grammar Packages Directory & File Manifest</strong> (click to expand)</summary>
 
 | Language | Path | Parser Tables | External Scanner | AST & Node Types | Queries | Standalone Example | Run Step |
 |:---|:---|:---|:---|:---|:---|:---|:---|
@@ -697,6 +721,8 @@ The repository provides 14 modular, native Zig grammar packages under [`grammars
 | **Ruby** | [`grammars/ruby`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/ruby) | [`parser.zig`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/ruby/src/parser.zig) | [`scanner.zig`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/ruby/src/scanner.zig) | [`grammar.json`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/ruby/src/grammar.json), [`node-types.json`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/ruby/src/node-types.json) | [`highlights.scm`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/ruby/queries/highlights.scm), [`tags.scm`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/ruby/queries/tags.scm) | [`main.zig`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/ruby/examples/main.zig) | `zig build run-grammar-ruby` |
 | **PHP** | [`grammars/php`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/php) | [`parser.zig`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/php/src/parser.zig) | [`scanner.zig`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/php/src/scanner.zig) | [`grammar.json`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/php/src/grammar.json), [`node-types.json`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/php/src/node-types.json) | [`highlights.scm`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/php/queries/highlights.scm), [`tags.scm`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/php/queries/tags.scm) | [`main.zig`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/php/examples/main.zig) | `zig build run-grammar-php` |
 | **Zig** | [`grammars/zig`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars/zig) | [`parser.zig`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/zig/src/parser.zig) | [`scanner.zig`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/zig/src/scanner.zig) | [`grammar.json`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/zig/src/grammar.json), [`node-types.json`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/zig/src/node-types.json) | [`highlights.scm`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/zig/queries/highlights.scm), [`tags.scm`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/zig/queries/tags.scm) | [`main.zig`](https://github.com/muhammad-fiaz/tree-sitter.zig/blob/main/grammars/zig/examples/main.zig) | `zig build run-grammar-zig` |
+
+</details>
 
 #### Running Grammar Examples
 
