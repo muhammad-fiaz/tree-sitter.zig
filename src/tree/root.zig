@@ -49,6 +49,25 @@ pub const Tree = struct {
         return Node{ .tree = self, .index = self.root_index };
     }
 
+    /// Short alias for `rootNode()`.
+    pub fn root(self: *const Tree) Node {
+        return self.rootNode();
+    }
+
+    /// Serialize tree root into canonical S-expression representation.
+    pub fn toSexp(self: *const Tree, gpa: std.mem.Allocator) std.mem.Allocator.Error![]u8 {
+        return sexp_mod.toSexp(gpa, self.rootNode());
+    }
+
+    /// Format implementation for `std.fmt` printing.
+    pub fn format(
+        self: Tree,
+        writer: *std.Io.Writer,
+    ) std.Io.Writer.Error!void {
+        const r = self.rootNode();
+        try writer.print("{s} [{d}, {d}]", .{ r.nodeType(), r.startByte(), r.endByte() });
+    }
+
     pub fn cursor(self: *const Tree) TreeCursor {
         return TreeCursor.init(self.gpa, self.rootNode());
     }
@@ -146,12 +165,12 @@ pub const Tree = struct {
 
     pub fn includedRange(self: *const Tree) core.Range {
         if (self.pool.nodes.items.len == 0) return .{};
-        const root = self.getNode(self.root_index);
+        const root_sub = self.getNode(self.root_index);
         return .{
-            .start_byte = root.start_byte,
-            .end_byte = root.end_byte,
-            .start_point = root.start_point,
-            .end_point = root.end_point,
+            .start_byte = root_sub.start_byte,
+            .end_byte = root_sub.end_byte,
+            .start_point = root_sub.start_point,
+            .end_point = root_sub.end_point,
         };
     }
 };

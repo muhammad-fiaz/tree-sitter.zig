@@ -146,6 +146,28 @@ pub fn freeChangedRanges(gpa: std.mem.Allocator, ranges: []Range) void {
     tree_mod.changed_ranges_mod.freeRanges(gpa, ranges);
 }
 
+/// Parse source code in a single call using a temporary parser.
+pub fn parse(gpa: std.mem.Allocator, lang: Language, source: []const u8) !Tree {
+    var p = Parser.init(gpa);
+    defer p.deinit();
+    try p.setLanguage(lang);
+    return p.parse(null, null, source);
+}
+
+/// Highlight tokens in source code using the given language and query.
+pub fn highlight(gpa: std.mem.Allocator, lang: Language, query_source: []const u8, source: []const u8) !Highlighter.HighlightResult {
+    var h = Highlighter.init(gpa);
+    defer h.deinit();
+    return h.highlight(lang, query_source, source);
+}
+
+/// Extract symbols/tags from a syntax tree using a tags query.
+pub fn tags(gpa: std.mem.Allocator, lang: Language, query_source: []const u8, tree: *const Tree) ![]TagsEngine.Tag {
+    var engine = TagsEngine.init(gpa);
+    defer engine.deinit();
+    return engine.extract(lang, query_source, tree);
+}
+
 test "public api: parse simple expression" {
     const tg = expressionLanguage;
     var parser = Parser.init(std.testing.allocator);
@@ -370,6 +392,35 @@ test "public api: timeout and cancellation flag" {
     var ok_tree = try parser.parseString("1 + 2");
     defer ok_tree.deinit();
     try std.testing.expect(!ok_tree.hasError());
+}
+
+test "public api: ergonomic helpers on tree and node" {
+    var tree = try parse(std.testing.allocator, expressionLanguage, "x + y");
+    defer tree.deinit();
+
+    // tree.root()
+    const r = tree.root();
+    try std.testing.expectEqualStrings("program", r.name());
+    try std.testing.expectEqualStrings("program", r.type());
+    try std.testing.expect(!tree.hasError());
+
+    // childIterator
+    var it = r.childIterator();
+    var count: usize = 0;
+    while (it.next()) |child| {
+        try std.testing.expect(child.name().len > 0);
+        count += 1;
+    }
+    try std.testing.expect(count > 0);
+
+    // format support via {f}
+    var buf: [64]u8 = undefined;
+    const printed = try std.fmt.bufPrint(&buf, "{f}", .{r});
+    try std.testing.expect(printed.len > 0);
+    try std.testing.expect(std.mem.startsWith(u8, printed, "program [0, 5]"));
+
+    const printed_tree = try std.fmt.bufPrint(&buf, "{f}", .{tree});
+    try std.testing.expect(printed_tree.len > 0);
 }
 
 test {

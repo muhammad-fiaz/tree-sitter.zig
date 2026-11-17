@@ -150,24 +150,19 @@ pub fn build(b: *std.Build) void {
     const run_all_grammars = b.step("run-all-grammars", "Run all 14 grammar examples sequentially");
     var previous_grammar_step: ?*std.Build.Step = null;
     for (grammars) |gname| {
-        const g_treesitter_mod = b.createModule(.{
-            .root_source_file = b.path("src/treesitter.zig"),
-            .target = target,
-            .optimize = optimize,
-        });
-        const g_mod = b.createModule(.{
+        const g_mod = b.addModule(b.fmt("tree_sitter_{s}", .{gname}), .{
             .root_source_file = b.path(b.fmt("grammars/{s}/src/parser.zig", .{gname})),
             .target = target,
             .optimize = optimize,
         });
-        g_mod.addImport("treesitter", g_treesitter_mod);
+        g_mod.addImport("treesitter", mod);
 
         const g_exe_mod = b.createModule(.{
             .root_source_file = b.path(b.fmt("grammars/{s}/examples/main.zig", .{gname})),
             .target = target,
             .optimize = optimize,
         });
-        g_exe_mod.addImport("treesitter", g_treesitter_mod);
+        g_exe_mod.addImport("treesitter", mod);
         g_exe_mod.addImport(b.fmt("tree_sitter_{s}", .{gname}), g_mod);
 
         const g_exe = b.addExecutable(.{
@@ -189,11 +184,7 @@ pub fn build(b: *std.Build) void {
     const lib = b.addLibrary(.{
         .name = "treesitter",
         .linkage = .static,
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/treesitter.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
+        .root_module = mod,
     });
     b.installArtifact(lib);
 

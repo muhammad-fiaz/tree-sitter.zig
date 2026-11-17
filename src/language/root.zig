@@ -135,48 +135,29 @@ pub const Language = struct {
     /// of its listed subtypes (subtype expansion).
     supertype_map: []const SupertypeEntry = &.{},
     external_scanner: ?ExternalScanner = null,
-    ts_language: ?*const abi.TSLanguage = null,
 
     pub const Error = error{
         IncompatibleAbiVersion,
         InvalidSymbol,
     };
 
-    pub fn fromTSLanguage(ts: *const abi.TSLanguage) Language {
-        return .{
-            .metadata = .{
-                .name = if (ts.name) |n| std.mem.span(n) else "unknown",
-                .abi_version = ts.abi_version,
-                .symbol_count = @as(u16, @intCast(@min(ts.symbol_count, std.math.maxInt(u16)))),
-                .state_count = @as(u16, @intCast(@min(ts.state_count, std.math.maxInt(u16)))),
-                .field_count = @as(u16, @intCast(@min(ts.field_count, std.math.maxInt(u16)))),
-            },
-            .ts_language = ts,
-        };
-    }
-
     pub fn symbolCount(self: Language) usize {
-        if (self.ts_language) |ts| return ts.symbol_count;
         return self.symbols.len;
     }
 
     pub fn stateCount(self: Language) usize {
-        if (self.ts_language) |ts| return ts.state_count;
         return self.table.stateCount();
     }
 
     pub fn fieldCount(self: Language) usize {
-        if (self.ts_language) |ts| return ts.field_count;
         return self.fields.fields.len;
     }
 
     pub fn abiVersion(self: Language) u32 {
-        if (self.ts_language) |ts| return ts.abi_version;
         return self.metadata.abi_version;
     }
 
     pub fn isParseable(self: Language) bool {
-        if (self.ts_language) |ts| return ts.state_count > 0;
         return self.table.stateCount() > 0;
     }
 
@@ -197,10 +178,6 @@ pub const Language = struct {
     }
 
     pub fn validate(self: Language) Error!void {
-        if (self.ts_language) |ts| {
-            if (!ts.isValid()) return error.IncompatibleAbiVersion;
-            return;
-        }
         if (!self.metadata.isCompatible()) return error.IncompatibleAbiVersion;
     }
 
@@ -208,48 +185,18 @@ pub const Language = struct {
         for (self.symbols) |s| {
             if (s.id == id) return s;
         }
-        if (self.ts_language) |ts| {
-            if (id < ts.symbol_count) {
-                var meta = symbols_mod.SymbolMetadata{};
-                if (ts.symbol_metadata) |sm| {
-                    meta.visible = sm[id].visible;
-                    meta.named = sm[id].named;
-                    meta.supertype = sm[id].supertype;
-                }
-                return symbols_mod.SymbolInfo{
-                    .id = id,
-                    .name = ts.getSymbolName(id),
-                    .metadata = meta,
-                };
-            }
-        }
         return null;
     }
 
     pub fn symbolName(self: Language, id: u16) []const u8 {
-        if (self.ts_language) |ts| {
-            return ts.getSymbolName(id);
-        }
         return if (self.symbolInfo(id)) |info| info.name else "(unknown)";
     }
 
     pub fn symbolIsNamed(self: Language, id: u16) bool {
-        if (self.ts_language) |ts| {
-            if (ts.symbol_metadata) |sm| {
-                if (id < ts.symbol_count) return sm[id].named;
-            }
-            return false;
-        }
         return if (self.symbolInfo(id)) |info| info.metadata.named else false;
     }
 
     pub fn symbolIsVisible(self: Language, id: u16) bool {
-        if (self.ts_language) |ts| {
-            if (ts.symbol_metadata) |sm| {
-                if (id < ts.symbol_count) return sm[id].visible;
-            }
-            return true;
-        }
         return if (self.symbolInfo(id)) |info| info.metadata.visible else true;
     }
 
@@ -264,17 +211,6 @@ pub const Language = struct {
     }
 
     pub fn symbolIsSupertype(self: Language, id: u16) bool {
-        if (self.ts_language) |ts| {
-            if (ts.supertype_symbols) |supertypes| {
-                for (supertypes[0..ts.supertype_count]) |s| {
-                    if (s == id) return true;
-                }
-            }
-            if (ts.symbol_metadata) |sm| {
-                if (id < ts.symbol_count) return sm[id].supertype;
-            }
-            return false;
-        }
         if (self.symbolInfo(id)) |info| {
             if (info.metadata.supertype) return true;
         }
@@ -285,23 +221,6 @@ pub const Language = struct {
     }
 
     pub fn symbolForName(self: Language, name: []const u8, is_named: bool) ?u16 {
-        if (self.ts_language) |ts| {
-            var i: u16 = 0;
-            while (i < ts.symbol_count) : (i += 1) {
-                const sname = ts.getSymbolName(i);
-                if (std.mem.eql(u8, sname, name)) {
-                    if (ts.symbol_metadata) |sm| {
-                        if (sm[i].named == is_named) return i;
-                    } else return i;
-                }
-            }
-            i = 0;
-            while (i < ts.symbol_count) : (i += 1) {
-                const sname = ts.getSymbolName(i);
-                if (std.mem.eql(u8, sname, name)) return i;
-            }
-            return null;
-        }
         for (self.symbols) |s| {
             if (std.mem.eql(u8, s.name, name) and s.metadata.named == is_named) return s.id;
         }
@@ -312,62 +231,18 @@ pub const Language = struct {
     }
 
     pub fn fieldIdForName(self: Language, name: []const u8) ?u16 {
-        if (self.ts_language) |ts| {
-            if (ts.field_names) |fnames| {
-                var i: u16 = 1;
-                while (i <= ts.field_count) : (i += 1) {
-                    if (fnames[i]) |fname| {
-                        if (std.mem.eql(u8, std.mem.span(fname), name)) return i;
-                    }
-                }
-            }
-            return null;
-        }
         return self.fields.fieldIdForName(name);
     }
 
     pub fn fieldNameForId(self: Language, field_id: u16) ?[]const u8 {
-        if (self.ts_language) |ts| {
-            if (ts.field_names) |fnames| {
-                if (field_id <= ts.field_count and fnames[field_id] != null) {
-                    return std.mem.span(fnames[field_id]);
-                }
-            }
-            return null;
-        }
         return self.fields.fieldName(field_id);
     }
 
     pub fn nextState(self: Language, state: u16, symbol: u16) u16 {
-        if (self.ts_language) |ts| {
-            return ts.lookup(state, symbol);
-        }
         return self.table.gotoState(state, symbol) orelse 0;
     }
 
     pub fn actionFor(self: Language, state: u16, symbol: u16) tables_mod.Action {
-        if (self.ts_language) |ts| {
-            const entry_idx = ts.lookup(state, symbol);
-            if (entry_idx == 0) return .none;
-            const entries = ts.parse_actions orelse return .none;
-            const entry = entries[entry_idx];
-            if (entry.entry.count == 0) return .none;
-            const action_ptr = @as([*]const abi.TSParseAction, @ptrCast(entries + entry_idx + 1));
-            const act = action_ptr[0];
-            return switch (act.type) {
-                .shift => if (act.params.shift.extra) .extra else .{ .shift = act.params.shift.state },
-                .reduce => .{
-                    .reduce = .{
-                        .symbol = act.params.reduce.symbol,
-                        .child_count = act.params.reduce.child_count,
-                        .dynamic_precedence = act.params.reduce.dynamic_precedence,
-                        .production_id = act.params.reduce.production_id,
-                    },
-                },
-                .accept => .accept,
-                .recover => .{ .recover = act.params.shift.state },
-            };
-        }
         return self.table.actionFor(state, symbol);
     }
 
