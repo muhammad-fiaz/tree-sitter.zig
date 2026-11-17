@@ -1,5 +1,5 @@
 ---
-description: Application patterns — syntax highlighting, code navigation, and structural search.
+description: Application patterns - syntax highlighting, code navigation, and structural search.
 ---
 
 # Applications
@@ -102,6 +102,39 @@ defer query.deinit();
 2. Construct an `InputEdit` and apply it to the existing tree.
 3. Call `parser.parse(&old_tree, edit, new_buffer)`.
 4. Call `old_tree.getChangedRanges(&new_tree)` to update syntax highlighting only for dirty screen lines.
+
+Run the real-time buffer simulation:
+```bash
+zig build run-editor_workflow
+```
+
+### 4. Code Tags and Symbol Extraction
+
+Extract class, function, and field definitions for outline views and code indexers:
+```bash
+zig build run-tags_extraction
+```
+
+### 5. Lexical Scope and Locals Analysis
+
+Track variable definitions, references, and nested lexical scopes:
+```bash
+zig build run-locals_analysis
+```
+
+### 6. Multi-Language Injections
+
+Discover embedded code islands (such as JavaScript inside HTML script tags or SQL in strings):
+```bash
+zig build run-language_injections
+```
+
+### 7. Dynamic Language Registry
+
+Manage and look up parsers dynamically by language name or file extension:
+```bash
+zig build run-language_registry
+```
 
 ## Related guides
 

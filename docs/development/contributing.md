@@ -1,5 +1,5 @@
 ---
-description: Contributing guide — workflow, conventions, and quality gates.
+description: Contributing guide - workflow, conventions, and quality gates.
 ---
 
 # Contributing
@@ -13,7 +13,7 @@ description: Contributing guide — workflow, conventions, and quality gates.
    ```
 2. Keep changes focused: one feature or fix per pull request.
 3. Follow the codebase conventions:
-   - Tests live **inline** at the bottom of the source file that implements the functionality — never in a separate `tests/` tree.
+   - Tests live **inline** at the bottom of the source file that implements the functionality - never in a separate `tests/` tree.
    - Examples in `examples/` consume only the public API (`@import("treesitter")`) and the bundled grammars; they must all run via `zig build run-all-examples`.
    - No hidden allocators: take `std.mem.Allocator` explicitly, document ownership on every public type.
    - No C, no Rust, no vendored code: upstream Tree-sitter is a behavioral reference only.

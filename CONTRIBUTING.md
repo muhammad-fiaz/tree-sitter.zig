@@ -16,7 +16,7 @@ Thanks for helping with the native Zig Tree-sitter runtime. This guide covers th
    ```
 2. Keep changes focused: one feature or fix per pull request.
 3. Follow the codebase conventions:
-   - Tests live **inline** at the bottom of the source file that implements the functionality — never in a separate `tests/` tree.
+   - Tests live **inline** at the bottom of the source file that implements the functionality - never in a separate `tests/` tree.
    - Examples in `examples/` consume only the public API (`@import("treesitter")`) and the bundled grammars; they must all run via `zig build run-all-examples`.
    - No hidden allocators: take `std.mem.Allocator` explicitly, document ownership on every public type.
    - No C, no Rust, no vendored code: the upstream Tree-sitter repository (previously kept beside the code for study) is a behavioral reference only.
@@ -43,7 +43,7 @@ Thanks for helping with the native Zig Tree-sitter runtime. This guide covers th
 
 ## Reporting issues
 
-Include the Zig version, OS/architecture, a minimal source snippet, and — for parse problems — the S-expression of the produced tree (see `treesitter.sexp_mod.toSexp`).
+Include the Zig version, OS/architecture, a minimal source snippet, and - for parse problems - the S-expression of the produced tree (see `treesitter.sexp_mod.toSexp`).
 
 ## Code of Conduct
 

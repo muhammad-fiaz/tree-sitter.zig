@@ -1,5 +1,5 @@
 ---
-description: Guide overview for tree-sitter.zig — parsing, trees, incremental updates, queries, memory, and performance.
+description: Guide overview for tree-sitter.zig - parsing, trees, incremental updates, queries, memory, and performance.
 ---
 
 # Guide
@@ -8,9 +8,9 @@ Task-oriented guides that take you from zero to a working integration. Each page
 
 ## Start here
 
-- [Getting Started](/guide/getting-started) — install, create a parser, parse source, inspect a tree.
-- [Your First Parser](/guide/first-parser) — the minimal end-to-end program.
-- [Parsing Source](/guide/parsing-source) — inputs, languages, and the parse call.
+- [Getting Started](/guide/getting-started) - install, create a parser, parse source, inspect a tree.
+- [Your First Parser](/guide/first-parser) - the minimal end-to-end program.
+- [Parsing Source](/guide/parsing-source) - inputs, languages, and the parse call.
 
 ## Trees and navigation
 

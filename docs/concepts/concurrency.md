@@ -40,7 +40,7 @@ This page documents the exact ownership, lifetime, and thread-safety guarantees 
 
 A `Parser` instance must be used from **one thread at a time**.
 
-**Correct — independent parsers per thread:**
+**Correct - independent parsers per thread:**
 
 `zig
 var parserA = treesitter.Parser.init(allocatorA);
@@ -48,7 +48,7 @@ defer parserA.deinit();
 `
 
 **Ownership**: borrows `gpa`; allocator must outlive the parser.
-**I/O context**: `setIo` controls timeout/DOT context only — not thread safety.
+**I/O context**: `setIo` controls timeout/DOT context only - not thread safety.
 
 ---
 
@@ -81,8 +81,8 @@ These are stateful and exclusively owned. Create one per thread for parallel wor
 | Multiple parsers on multiple OS threads | Verified |
 | Shared immutable Tree with independent cursors | Verified |
 | Shared Query with independent QueryCursors | Verified |
-| parseReader — reader borrowed, not retained | Verified |
-| writeDotGraph — writer borrowed, not retained | Verified |
+| parseReader - reader borrowed, not retained | Verified |
+| writeDotGraph - writer borrowed, not retained | Verified |
 
 ---
 

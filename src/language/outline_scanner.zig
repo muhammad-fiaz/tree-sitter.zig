@@ -1,5 +1,5 @@
 const std = @import("std");
-const language_mod = @import("language.zig");
+const language_mod = @import("root.zig");
 const outline_mod = @import("outline.zig");
 
 /// External scanner for the bundled outline grammar: newline tracking,

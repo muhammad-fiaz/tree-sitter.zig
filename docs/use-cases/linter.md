@@ -1,5 +1,5 @@
 ---
-description: Linters on tree-sitter.zig — rules as queries, violations as matches.
+description: Linters on tree-sitter.zig - rules as queries, violations as matches.
 ---
 
 # Linter

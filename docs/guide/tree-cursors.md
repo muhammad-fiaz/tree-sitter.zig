@@ -1,5 +1,5 @@
 ---
-description: Traverse syntax trees with TreeCursor — allocation-free movement, depth, and field tracking.
+description: Traverse syntax trees with TreeCursor - allocation-free movement, depth, and field tracking.
 ---
 
 # Tree Cursors
@@ -53,9 +53,9 @@ depth=4 identifier [8, 9]
 
 ## How it works
 
-- The cursor keeps a small stack of `(node, child position)` entries. Movement rewrites the top entry — ordinary movement never touches the allocator.
+- The cursor keeps a small stack of `(node, child position)` entries. Movement rewrites the top entry - ordinary movement never touches the allocator.
 - `depth()` reports how far below the start node you are; `currentFieldName()` reports the field binding (e.g. `"left"`) of the current child, if any.
-- `gotoDescendant(byte)` dives to the deepest node containing a byte offset — ideal for hover and click handling.
+- `gotoDescendant(byte)` dives to the deepest node containing a byte offset - ideal for hover and click handling.
 - `reset(node)` reuses the cursor for another walk; `copy()` snapshots it.
 
 ## Memory ownership
@@ -64,7 +64,7 @@ depth=4 identifier [8, 9]
 
 ## API used
 
-- [Tree Cursor](/api/tree-cursor), [Tree](/api/tree) — `cursor()`.
+- [Tree Cursor](/api/tree-cursor), [Tree](/api/tree) - `cursor()`.
 
 ## Related guides
 

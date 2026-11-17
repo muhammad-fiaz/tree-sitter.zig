@@ -1,5 +1,5 @@
 ---
-description: Memory FAQ — allocators, ownership, deinit, and allocation failures.
+description: Memory FAQ - allocators, ownership, deinit, and allocation failures.
 ---
 
 # Memory FAQ
@@ -14,7 +14,7 @@ Parsers, trees, cursors, queries, query cursors, and changed-range slices. Nodes
 
 ## What happens on allocation failure?
 
-`OutOfMemory` propagates with partial state cleaned up — covered by failing-allocator tests.
+`OutOfMemory` propagates with partial state cleaned up - covered by failing-allocator tests.
 
 ## Can objects outlive the allocator?
 

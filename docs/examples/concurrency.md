@@ -1,5 +1,5 @@
 ---
-description: Concurrency and I/O examples — multi-threading, thread-isolated parsers, shared immutable trees, and polymorphic std.Io contexts.
+description: Concurrency and I/O examples - multi-threading, thread-isolated parsers, shared immutable trees, and polymorphic std.Io contexts.
 ---
 
 # Concurrency & I/O
@@ -216,11 +216,11 @@ digraph tree {
 
 ## API used
 
-- [Parser](/api/parser) — `Parser.init`, `Parser.setLanguage`, `Parser.parseString`, `Parser.parseReader`, `Parser.setIo`, `Parser.setTimeoutMicros`
-- [Tree](/api/tree) — `Tree.nodeCount`, `Tree.hasError`, `Tree.writeDotGraph`, `Tree.printDotGraphToFile`
-- [Query](/api/query) — `Query.compile`, `Parser.compileQuery`
-- [Query Cursor](/api/query-cursor) — `QueryCursor.init`, `QueryCursor.execute`, `QueryCursor.nextMatch`
-- [Input & I/O Reference](/reference/input-io) — `std.Io`, `ReaderSource`
+- [Parser](/api/parser) - `Parser.init`, `Parser.setLanguage`, `Parser.parseString`, `Parser.parseReader`, `Parser.setIo`, `Parser.setTimeoutMicros`
+- [Tree](/api/tree) - `Tree.nodeCount`, `Tree.hasError`, `Tree.writeDotGraph`, `Tree.printDotGraphToFile`
+- [Query](/api/query) - `Query.compile`, `Parser.compileQuery`
+- [Query Cursor](/api/query-cursor) - `QueryCursor.init`, `QueryCursor.execute`, `QueryCursor.nextMatch`
+- [Input & I/O Reference](/reference/input-io) - `std.Io`, `ReaderSource`
 
 ## Related guides
 

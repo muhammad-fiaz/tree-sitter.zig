@@ -1,6 +1,6 @@
 const std = @import("std");
-const language_mod = @import("../language/language.zig");
-const tree_mod = @import("../tree/tree.zig");
+const language_mod = @import("../language/root.zig");
+const tree_mod = @import("../tree/root.zig");
 const node_mod = @import("../tree/node.zig");
 const pattern_mod = @import("pattern.zig");
 const capture_mod = @import("capture.zig");
@@ -120,7 +120,7 @@ pub const Matcher = struct {
     }
 
     /// First named child at or after `from`, if any. Anchors ignore
-    /// anonymous nodes, mirroring upstream.
+    /// anonymous nodes.
     fn firstNamedIndex(node: node_mod.Node, from: u32) ?u32 {
         var i = from;
         const count = node.childCount();

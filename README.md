@@ -27,7 +27,34 @@
 
 </div>
 
-**tree-sitter.zig** is a production-grade, native Zig implementation of the Tree-sitter runtime — a clean, modular, allocator-explicit parsing toolkit for editors, analyzers, and language tooling.
+**tree-sitter.zig** is a production-grade, native Zig implementation of the Tree-sitter runtime - a clean, modular, allocator-explicit parsing toolkit for editors, analyzers, and language tooling.
+
+> [!IMPORTANT]
+> **No C Compatibility Notice**:
+> This project does **NOT** maintain backward compatibility with the original C version of Tree-sitter. It is an independent, 100% native Zig implementation that uses its own Zig-based configurations, native parse tables (`parser.zig`), native external scanners (`scanner.zig`), and grammar metadata (`grammar.json`, `node-types.json`) for all supported grammars. There is zero C code, zero `@cImport`, and no C compiler dependency.
+
+### Related Zig projects:
+
+- For env.zig (.env parsing), check out [env.zig](https://github.com/muhammad-fiaz/env.zig).
+- For TUI support, check out [tui.zig](https://github.com/muhammad-fiaz/tui.zig).
+- For ZON file format support, check out [zon.zig](https://github.com/muhammad-fiaz/zon.zig).
+- For spinners/loading/progress bar support, check out [loaders.zig](https://github.com/muhammad-fiaz/loaders.zig).
+- For MCP support, check out [mcp.zig](https://github.com/muhammad-fiaz/mcp.zig).
+- For args parsing support, check out [args.zig](https://github.com/muhammad-fiaz/args.zig).
+- For HTTP client/server support, check out [httpx.zig](https://github.com/muhammad-fiaz/httpx.zig).
+- For API framework support, check out [api.zig](https://github.com/muhammad-fiaz/api.zig).
+- For web framework support, check out [zix](https://github.com/muhammad-fiaz/zix).
+- For archive/compression support, check out [archive.zig](https://github.com/muhammad-fiaz/archive.zig).
+- For compression file format support, check out [zigx](https://github.com/muhammad-fiaz/zigx).
+- For file downloading support, check out [downloader.zig](https://github.com/muhammad-fiaz/downloader.zig).
+- For update checker/auto-updater support, check out [updater.zig](https://github.com/muhammad-fiaz/updater.zig).
+- For numerical computing support, check out [num.zig](https://github.com/muhammad-fiaz/num.zig).
+- For logging support, check out [logly.zig](https://github.com/muhammad-fiaz/logly.zig).
+- For data validation and serialization support, check out [zigantic](https://github.com/muhammad-fiaz/zigantic).
+- For build tooling support, check out [buildx.zig](https://github.com/muhammad-fiaz/buildx.zig).
+- For CUDA/GPU computing support, check out [cuda.zig](https://github.com/muhammad-fiaz/cuda.zig).
+- For Sqlite support, check out [sqlite.zig](https://github.com/muhammad-fiaz/sqlite.zig).
+- For Simplified Build.zig support, check out [build.zig](https://github.com/muhammad-fiaz/buildx.zig).
 
 **⭐️ If you love `tree-sitter.zig`, make sure to give it a star! ⭐️**
 
@@ -88,14 +115,18 @@
 
 | Feature | Description | Documentation |
 |---------|-------------|---------------|
-| **Native Zig Runtime** | No C code, no `@cImport`, no Rust — Zig standard library only | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/getting-started.html) |
+| **Native Zig Runtime** | No C code, no `@cImport`, no Rust - Zig standard library only | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/getting-started.html) |
+| **Native Parser Generator** | Emits deterministic native Zig parse tables and grammar drivers (`parser.zig`) | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/language-definition.html) |
+| **Native Grammar Packages** | Modular native Zig grammar packages with `parser.zig`, `scanner.zig`, and AST schemas | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/language-definition.html) |
+| **Grammar DSL & Compiler** | Shared AST (`Grammar`, `Rule`), validation, FIRST/FOLLOW, and LR table generation | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/language-definition.html) |
+| **Grammar JSON & DSL** | Evaluates and parses Tree-sitter `grammar.json` and native Zig grammar DSL into normalized AST | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/language-definition.html) |
 | **LR Parsing Engine** | Table-driven shift / reduce / accept with lookahead | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/parsing-source.html) |
 | **Incremental Parsing** | Subtree reuse across edits with reuse counters | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/incremental-parsing.html) |
 | **Changed Ranges** | Minimal byte/point ranges between two trees | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/changed-ranges.html) |
 | **Error Recovery** | `ERROR` and `MISSING` nodes with error-cost recovery | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/error-recovery.html) |
-| **Generic Languages** | Symbols, parse tables, fields, aliases, metadata | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/language-definition.html) |
-| **Bundled Grammars** | Expression, s-expression (aliases), JSON (fields), outline (external scanner) | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/language-definition.html) |
-| **External Scanners** | Zig-native scanner interface with per-state dispatch, no C callbacks | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/external-scanners.html) |
+| **Language Tooling** | Syntax highlighting, language injections, locals analysis, and tags extraction | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/queries.html) |
+| **Language Registry** | Dynamic registration and lookup by file extension or scope | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/language-definition.html) |
+| **External Scanners** | Native Zig external scanner interface (`NativeScanner`, state serialization/deserialization) | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/external-scanners.html) |
 | **Structural Queries** | Named/anonymous/wildcard patterns, fields, captures | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/queries.html) |
 | **Quantifiers** | `?`, `*`, `+` on pattern nodes | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/query-quantifiers.html) |
 | **Predicates** | `#eq?`, `#match?`, `#contains?`, `#any-of?`, `#is?`, `any-` variants and negations | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/query-predicates.html) |
@@ -105,7 +136,7 @@
 | **Tree Cursor** | Allocation-free traversal with field tracking | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/tree-cursors.html) |
 | **UTF-8 Support** | Exact byte offsets with code-point-aware positions | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/unicode-and-positions.html) |
 | **UTF-16 Input** | LE/BE transcode with BOM and surrogate errors | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/unicode-and-positions.html) |
-| **WASM Targets** | `wasm32-wasi` validated; native data needs no WASM loader | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/compatibility/wasm.html) |
+| **WASM Targets** | `wasm32-wasi` and `wasm32-freestanding` compatible | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/compatibility/wasm.html) |
 | **Custom Input** | Memory slices, callbacks, `std.Io.Reader` sources, true streaming via `parseStream` | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/custom-input.html) |
 | **Explicit Allocators** | Client-provided allocator, no hidden globals | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/allocators.html) |
 | **Debug Tracing** | Level-gated logging and parse-event tracing | [Docs](https://muhammad-fiaz.github.io/tree-sitter.zig/guide/logging.html) |
@@ -131,7 +162,7 @@ Before installing tree-sitter.zig, ensure you have the following:
 | **Terminal** | Any modern terminal | For example output |
 
 > Verify your Zig installation by running `zig version` in your terminal. It must print `0.17.0` or higher.
-> - tree-sitter.zig version 0.0.2 targets Zig 0.17.0+
+> - tree-sitter.zig version 0.0.3 targets Zig 0.17.0+
 > - See Zig releases and downloads at [ziglang.org](https://ziglang.org/)
 
 ---
@@ -156,14 +187,14 @@ The implementation makes no pointer-width, endianness, or architecture-specific 
 
 ### Method 1: Zig Fetch (Recommended)
 
-Latest Stable Release (v0.0.2)
+Latest Stable Release (v0.0.3)
 
 ```bash
-zig fetch --save https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.2.tar.gz
+zig fetch --save https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.3.tar.gz
 ```
 
 > [!NOTE]
-> `tree-sitter.zig` targets **Zig 0.17.0+** (v0.0.2).
+> `tree-sitter.zig` targets **Zig 0.17.0+** (v0.0.3).
 >
 > For projects using **Zig 0.16.0**, use release **0.0.1**:
 >
@@ -184,7 +215,7 @@ zig fetch --save git+https://github.com/muhammad-fiaz/tree-sitter.zig.git
 ```zig
 .dependencies = .{
     .treesitter = .{
-        .url = "https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.2.tar.gz",
+        .url = "https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.3.tar.gz",
         .hash = "...", // Run `zig fetch --save <url>` to generate the hash.
     },
 },
@@ -224,13 +255,13 @@ exe.root_module.addImport("treesitter", treesitter_dep.module("treesitter"));
 ### Prebuilt Library
 
 > [!NOTE]
-> The recommended integration is the Zig Package Manager (Methods 1 and 2). Release archives (`.tar.gz` source snapshots such as `0.0.2.tar.gz`) for every stable version are published on the [Releases](https://github.com/muhammad-fiaz/tree-sitter.zig/releases) page. These can be useful for integration with other build systems or for vendoring.
+> The recommended integration is the Zig Package Manager (Methods 1 and 2). Release archives (`.tar.gz` source snapshots such as `0.0.3.tar.gz`) for every stable version are published on the [Releases](https://github.com/muhammad-fiaz/tree-sitter.zig/releases) page. These can be useful for integration with other build systems or for vendoring.
 
-To vendor manually, download the `0.0.2` archive, extract it, and add its `src/treesitter.zig` as a module in your `build.zig`:
+To vendor manually, download the `0.0.3` archive, extract it, and add its `src/treesitter.zig` as a module in your `build.zig`:
 
 ```zig
 const treesitter_mod = b.createModule(.{
-    .root_source_file = b.path("vendor/tree-sitter.zig-0.0.2/src/treesitter.zig"),
+    .root_source_file = b.path("vendor/tree-sitter.zig-0.0.3/src/treesitter.zig"),
     .target = target,
     .optimize = optimize,
 });
@@ -265,7 +296,7 @@ pub fn main() !void {
 
 ## Allocator Usage
 
-tree-sitter.zig works with any `std.mem.Allocator` implementation. You pass your allocator **once** to `Parser.init` — every object derived from the parser or its trees transparently reuses it. There are no hidden global allocators, and ordinary operations never ask for an allocator again:
+tree-sitter.zig works with any `std.mem.Allocator` implementation. You pass your allocator **once** to `Parser.init` - every object derived from the parser or its trees transparently reuses it. There are no hidden global allocators, and ordinary operations never ask for an allocator again:
 
 ```zig
 var gpa_state = std.heap.DebugAllocator(.{}).init;
@@ -554,9 +585,9 @@ tree-sitter.zig is designed for every-keystroke parsing: pooled tree storage, re
 |-----------|------------------------|-------|
 | Initial parse | ~10 ms | 100,000 nodes from scratch |
 | Repeated parse | ~10 ms | Reused parser, fresh tree |
-| Small-edit incremental | ~4–16 ms | Leading-edge edit, ~40,000 subtrees reused |
-| Tree traversal | ~1–2 ms | 100,000 nodes visited |
-| Query execution | ~4–5 ms | 20,000 `(identifier)` matches |
+| Small-edit incremental | ~4-16 ms | Leading-edge edit, ~40,000 subtrees reused |
+| Tree traversal | ~1-2 ms | 100,000 nodes visited |
+| Query execution | ~4-5 ms | 20,000 `(identifier)` matches |
 
 </details>
 
@@ -613,41 +644,107 @@ zig build bench -Doptimize=ReleaseFast
 > - **Zero-copy core** - Parsing a `[]const u8` never touches the filesystem; callback and `std.Io.Reader` inputs only copy when buffering chunks.
 > - All benchmarks use the bundled expression grammar; per-language tables change absolute numbers but not the architecture.
 
-## Building
+## Building and Testing
 
 ```bash
-# Run the full test suite (all tests live inline in src/, plus the conformance corpus)
+# Build the native Zig static library (zig-out/lib/libtreesitter.a)
+zig build
+
+# Run the complete test suite (170 unit tests with zero memory leaks)
 zig build test
 
-# Differential conformance report (parse/shape/incremental corpus in src/debug/corpus)
+# Run all 25 examples sequentially
+zig build run-all-examples
+
+# Run differential conformance tests against Tree-sitter reference corpus
 zig build conformance
+
+# Run performance benchmarks
+zig build bench -Doptimize=ReleaseFast
 
 # Fuzz the parser and query compiler (options: --iterations=N --seed=N after --)
 zig build fuzz
 
-# Build all examples
+# Build all example executables into zig-out/bin/
 zig build examples
-
-# Run an example
-./zig-out/bin/basic_parse       # POSIX
-.\zig-out\bin\basic_parse.exe # Windows PowerShell
-
-# Run the benchmark (add -Doptimize=ReleaseFast for fast numbers)
-zig build bench
 ```
 
-Individual examples:
+### Native Zig Grammars & Standalone Packages
+
+> [!IMPORTANT]
+> **No C Compatibility Notice**:
+> This project does **NOT** maintain backward compatibility with the original C version of Tree-sitter. All grammar packages use their own pure native Zig configurations and parse tables (`parser.zig`, `scanner.zig`, `grammar.json`, `node-types.json`).
+
+The repository provides modular, native Zig grammar packages under `grammars/`:
+- `grammars/c` (C native grammar, queries, and example)
+- `grammars/cpp` (C++ native grammar, queries, and example)
+- `grammars/python` (Python native grammar, queries, and example)
+- `grammars/javascript` (JavaScript native grammar, queries, and example)
+- `grammars/typescript` (TypeScript native grammar, queries, and example)
+- `grammars/rust` (Rust native grammar, queries, and example)
+- `grammars/go` (Go native grammar, queries, and example)
+- `grammars/html` (HTML native grammar, queries, and example)
+- `grammars/css` (CSS native grammar, queries, and example)
+- `grammars/json` (JSON native grammar, queries, and example)
+- `grammars/java` (Java native grammar, queries, and example)
+- `grammars/ruby` (Ruby native grammar, queries, and example)
+- `grammars/php` (PHP native grammar, queries, and example)
+- `grammars/zig` (Zig native grammar, queries, and example)
+
+Each grammar package is organized as a standalone Zig project with:
+- `src/parser.zig`: Native Zig parse tables and driver.
+- `src/scanner.zig`: Native Zig external scanner.
+- `src/grammar.json`: Grammar AST specification.
+- `src/node-types.json`: Node types metadata.
+- `queries/`: Syntax highlighting (`highlights.scm`) and tags (`tags.scm`).
+- `examples/main.zig`: Runnable parse demonstration.
+
+#### Running Grammar Examples
+
+You can run all grammar examples sequentially from the root project:
+```bash
+zig build run-all-grammars
+```
+
+Or build all grammar binaries:
+```bash
+zig build grammars
+```
+
+Or run any individual grammar example directly:
+```bash
+zig build run-grammar-c
+zig build run-grammar-python
+zig build run-grammar-rust
+zig build run-grammar-zig
+```
+
+You can also navigate into any grammar directory and run it locally:
+```bash
+cd grammars/python
+zig build test
+zig build run
+```
+
+### Running Examples
+
+All 25 example programs are located directly in the [examples/](examples/) directory. You can run all of them sequentially with:
 
 ```bash
-zig build examples
-./zig-out/bin/basic_parse
-./zig-out/bin/incremental_parse
-./zig-out/bin/tree_walk
-./zig-out/bin/tree_cursor
-./zig-out/bin/query
-./zig-out/bin/custom_input
-./zig-out/bin/error_recovery
-./zig-out/bin/language
+zig build run-all-examples
+```
+
+Or run any individual example directly via its dedicated step:
+
+```bash
+zig build run-basic_parse
+zig build run-grammar_dsl
+zig build run-language_registry
+zig build run-language_injections
+zig build run-locals_analysis
+zig build run-tags_extraction
+zig build run-editor_workflow
+zig build run-large_file_parse
 ```
 
 ## Documentation
@@ -656,7 +753,7 @@ zig build examples
 Full documentation is available at: https://muhammad-fiaz.github.io/tree-sitter.zig
 
 ### Generating Local Documentation
-The public API entry point is `src/treesitter.zig` — start there and follow the subsystem facades (`core`, `memory`, `parser`, `lexer`, `tree`, `language`, `query`, `input`, `unicode`, `debug`, `utils`). Each subsystem directory documents its ownership and lifetime rules in its facade module.
+The public API entry point is `src/treesitter.zig` - start there and follow the subsystem facades (`core`, `memory`, `parser`, `lexer`, `tree`, `language`, `query`, `input`, `unicode`, `debug`, `utils`). Each subsystem directory documents its ownership and lifetime rules in its facade module.
 
 To generate `zig docs` HTML locally:
 

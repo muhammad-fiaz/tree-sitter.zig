@@ -1,5 +1,5 @@
 ---
-description: Input API — Input callbacks, MemorySource, ReaderSource, StreamBuffer, and Source.
+description: Input API - Input callbacks, MemorySource, ReaderSource, StreamBuffer, and Source.
 ---
 
 # Input
@@ -22,7 +22,7 @@ Return `null` or length 0 from `read` at end of input. Offsets are pulled monoto
 
 ## Encodings
 
-`Input.encoding` selects `.utf8` (default), `.utf16_le`, `.utf16_be`, or `.custom` (raw bytes, treated as UTF-8). UTF-16 inputs are transcoded via `unicode.utf16.transcodeToUtf8` (also exposed as `treesitter.transcodeUtf16ToUtf8`): matching BOMs are stripped, conflicting BOMs (`UnexpectedBOM`), lone surrogates (`LoneSurrogate`), and truncation (`Truncated`) are errors — never silent replacement. Tree offsets always refer to the UTF-8 form.
+`Input.encoding` selects `.utf8` (default), `.utf16_le`, `.utf16_be`, or `.custom` (raw bytes, treated as UTF-8). UTF-16 inputs are transcoded via `unicode.utf16.transcodeToUtf8` (also exposed as `treesitter.transcodeUtf16ToUtf8`): matching BOMs are stripped, conflicting BOMs (`UnexpectedBOM`), lone surrogates (`LoneSurrogate`), and truncation (`Truncated`) are errors - never silent replacement. Tree offsets always refer to the UTF-8 form.
 
 ## Ownership
 

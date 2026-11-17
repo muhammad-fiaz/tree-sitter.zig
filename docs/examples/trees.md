@@ -1,5 +1,5 @@
 ---
-description: Tree examples — recursive walks and cursor traversal with real output.
+description: Tree examples - recursive walks and cursor traversal with real output.
 ---
 
 # Trees
@@ -144,9 +144,9 @@ depth=4 identifier [8, 9]
 
 ## API used
 
-- [Node](/api/node) — `Node.childCount`, `Node.child`, `Node.nodeType`, `Node.startByte`, `Node.endByte`, `Node.isNamed`
-- [Tree](/api/tree) — `Tree.rootNode`, `Tree.cursor`
-- [Tree Cursor](/api/tree-cursor) — `TreeCursor.currentNode`, `TreeCursor.depth`, `TreeCursor.gotoFirstChild`, `TreeCursor.gotoNextSibling`, `TreeCursor.gotoParent`
+- [Node](/api/node) - `Node.childCount`, `Node.child`, `Node.nodeType`, `Node.startByte`, `Node.endByte`, `Node.isNamed`
+- [Tree](/api/tree) - `Tree.rootNode`, `Tree.cursor`
+- [Tree Cursor](/api/tree-cursor) - `TreeCursor.currentNode`, `TreeCursor.depth`, `TreeCursor.gotoFirstChild`, `TreeCursor.gotoNextSibling`, `TreeCursor.gotoParent`
 
 ## Related guides
 

@@ -1,5 +1,5 @@
 ---
-description: Unicode concepts — bytes, code points, rows, and columns.
+description: Unicode concepts - bytes, code points, rows, and columns.
 ---
 
 # Unicode

@@ -1,5 +1,5 @@
 ---
-description: Source code analysis — metrics and structure extraction from syntax trees.
+description: Source code analysis - metrics and structure extraction from syntax trees.
 ---
 
 # Source Code Analysis

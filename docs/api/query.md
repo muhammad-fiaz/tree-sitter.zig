@@ -1,5 +1,5 @@
 ---
-description: Query API — compiling patterns, captures, and pattern introspection.
+description: Query API - compiling patterns, captures, and pattern introspection.
 ---
 
 # Query

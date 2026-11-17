@@ -1,6 +1,6 @@
 const std = @import("std");
-const core = @import("../core/core.zig");
-const input_mod = @import("input.zig");
+const core = @import("../core/root.zig");
+const input_mod = @import("root.zig");
 const memory_mod = @import("memory.zig");
 
 pub const Source = union(enum) {

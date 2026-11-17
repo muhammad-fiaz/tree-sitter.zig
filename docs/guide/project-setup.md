@@ -21,7 +21,7 @@ description: Set up a Zig 0.17.0 project that depends on tree-sitter.zig.
     .minimum_zig_version = "0.17.0",
     .dependencies = .{
         .treesitter = .{
-            .url = "https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.2.tar.gz",
+            .url = "https://github.com/muhammad-fiaz/tree-sitter.zig/archive/refs/tags/0.0.3.tar.gz",
             .hash = "...",
         },
     },

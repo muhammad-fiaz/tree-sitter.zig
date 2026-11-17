@@ -1,5 +1,5 @@
 ---
-description: Unicode examples — UTF-8 decoding, byte-exact offsets, and position tracking.
+description: Unicode examples - UTF-8 decoding, byte-exact offsets, and position tracking.
 ---
 
 # Unicode
@@ -69,8 +69,8 @@ round-trip: U+1F600 matches=true
 
 ## API used
 
-- [Point](/api/point) — `Point`
-- [Unicode & Positions](/guide/unicode-and-positions) — `unicode_types.decodeOne`, `unicode_types.encodeOne`
+- [Point](/api/point) - `Point`
+- [Unicode & Positions](/guide/unicode-and-positions) - `unicode_types.decodeOne`, `unicode_types.encodeOne`
 
 ## Related guides
 

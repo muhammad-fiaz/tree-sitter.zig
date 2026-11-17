@@ -1,5 +1,5 @@
 ---
-description: Navigate syntax nodes — children, parents, siblings, fields, and byte-range lookup.
+description: Navigate syntax nodes - children, parents, siblings, fields, and byte-range lookup.
 ---
 
 # Navigating Nodes
@@ -31,16 +31,16 @@ const found = tree.rootNode().descendantForByteRange(4, 5).?;
 
 - `child(i)` counts every child including punctuation; `namedChild(i)` skips anonymous tokens.
 - `parent()` returns `null` at the root; siblings walk the parent's child list.
-- `childByFieldName("left")` consults the language's field map for the node's production id — see [Fields](/concepts/fields).
+- `childByFieldName("left")` consults the language's field map for the node's production id - see [Fields](/concepts/fields).
 - `descendantForByteRange` descends to the smallest node covering a range; `namedDescendantForByteRange` then walks up to the nearest named node.
 
 ## Performance considerations
 
-All navigation is index arithmetic over the tree's pools — no heap allocation, no tree copying.
+All navigation is index arithmetic over the tree's pools - no heap allocation, no tree copying.
 
 ## API used
 
-- [Node](/api/node) — full method table.
+- [Node](/api/node) - full method table.
 
 ## Related guides
 

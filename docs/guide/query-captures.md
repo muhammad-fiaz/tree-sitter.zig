@@ -1,5 +1,5 @@
 ---
-description: Query captures — naming matched nodes and reading match results.
+description: Query captures - naming matched nodes and reading match results.
 ---
 
 # Query Captures
@@ -26,7 +26,7 @@ Capture names are interned once at compile time (`captureIndexForName` / `captur
 
 ## API used
 
-- [Query](/api/query) — `captureCount`, `captureName`, `captureIndexForName`; [Query Cursor](/api/query-cursor) — `nextMatch`, `matchCount`.
+- [Query](/api/query) - `captureCount`, `captureName`, `captureIndexForName`; [Query Cursor](/api/query-cursor) - `nextMatch`, `matchCount`.
 
 ## Related guides
 

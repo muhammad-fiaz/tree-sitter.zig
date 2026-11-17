@@ -1,5 +1,5 @@
 ---
-description: Building a code editor backend on tree-sitter.zig — the incremental loop.
+description: Building a code editor backend on tree-sitter.zig - the incremental loop.
 ---
 
 # Code Editor

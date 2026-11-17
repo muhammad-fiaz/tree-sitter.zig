@@ -1,5 +1,5 @@
 ---
-description: Dependency analysis — imports and references from syntax structure.
+description: Dependency analysis - imports and references from syntax structure.
 ---
 
 # Dependency Analysis

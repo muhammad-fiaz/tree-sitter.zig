@@ -1,5 +1,5 @@
 ---
-description: Language examples — inspecting symbols, tables, fields, and parsing bundled grammars.
+description: Language examples - inspecting symbols, tables, fields, and parsing bundled grammars.
 ---
 
 # Languages
@@ -262,10 +262,10 @@ header: # Fruit
 
 ## API used
 
-- [Language](/api/language) — `Language.symbolCount`, `Language.symbolForName`, `Language.fieldIdForName`, `Language.fieldNameForId`
-- [Symbols](/api/symbols) — `Symbol`
-- [Fields](/api/fields) — `FieldId`
-- [External Scanners](/concepts/external-scanners) — `ExternalScanner`, `OutlineScanState`
+- [Language](/api/language) - `Language.symbolCount`, `Language.symbolForName`, `Language.fieldIdForName`, `Language.fieldNameForId`
+- [Symbols](/api/symbols) - `Symbol`
+- [Fields](/api/fields) - `FieldId`
+- [External Scanners](/concepts/external-scanners) - `ExternalScanner`, `OutlineScanState`
 
 ## Related guides
 

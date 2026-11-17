@@ -1,12 +1,12 @@
 ---
-description: Fields — named roles for children within a production.
+description: Fields - named roles for children within a production.
 ---
 
 # Fields
 
 ## Simple explanation
 
-In `left + right`, both operands are expressions — but they play different *roles*. Fields name those roles so tools can ask for "the left side" directly instead of counting children.
+In `left + right`, both operands are expressions - but they play different *roles*. Fields name those roles so tools can ask for "the left side" directly instead of counting children.
 
 ## Technical explanation
 

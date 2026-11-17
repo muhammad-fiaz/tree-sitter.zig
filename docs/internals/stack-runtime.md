@@ -1,5 +1,5 @@
 ---
-description: Stack runtime internals — parallel arrays, lockstep invariants, and retained capacity.
+description: Stack runtime internals - parallel arrays, lockstep invariants, and retained capacity.
 ---
 
 # Stack Runtime

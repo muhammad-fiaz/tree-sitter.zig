@@ -29,4 +29,4 @@
 - [ ] Examples under `examples/` are not reused as tests
 - [ ] Allocator rules respected: no hidden globals, ownership documented, `deinit` provided
 - [ ] Public API changes are reflected in `README.md` and the VitePress docs with real signatures and output
-- [ ] No invented APIs, outputs, or benchmark numbers — everything matches the implementation
+- [ ] No invented APIs, outputs, or benchmark numbers - everything matches the implementation

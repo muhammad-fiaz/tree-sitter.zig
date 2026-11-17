@@ -1,5 +1,5 @@
 ---
-description: Changed-ranges API — diffing two trees into minimal spans.
+description: Changed-ranges API - diffing two trees into minimal spans.
 ---
 
 # Changed Ranges

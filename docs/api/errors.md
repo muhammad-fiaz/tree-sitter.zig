@@ -1,5 +1,5 @@
 ---
-description: Error reference — every error union in tree-sitter.zig and what to do about each.
+description: Error reference - every error union in tree-sitter.zig and what to do about each.
 ---
 
 # Errors
@@ -10,11 +10,11 @@ description: Error reference — every error union in tree-sitter.zig and what t
 ParserError = Allocator.Error || error{ NoLanguage, Aborted }
 ```
 
-- `NoLanguage` — `parse*` called before `setLanguage`.
-- `Aborted` — reserved for cancelled parses.
-- `OutOfMemory` — propagate; all partial state is cleaned up.
+- `NoLanguage` - `parse*` called before `setLanguage`.
+- `Aborted` - reserved for cancelled parses.
+- `OutOfMemory` - propagate; all partial state is cleaned up.
 
-Syntax errors never appear here — they become tree nodes (see below).
+Syntax errors never appear here - they become tree nodes (see below).
 
 ## Language
 
@@ -22,7 +22,7 @@ Syntax errors never appear here — they become tree nodes (see below).
 Language.Error = error{ IncompatibleAbiVersion, InvalidSymbol }
 ```
 
-- `IncompatibleAbiVersion` — tables target an ABI outside 13–15.
+- `IncompatibleAbiVersion` - tables target an ABI outside 13-15.
 
 ## Query
 
@@ -31,7 +31,7 @@ QueryError = Allocator.Error || QueryParseError || error{ InvalidLanguage }
 QueryParseError = error{ OutOfMemory, UnexpectedEof, UnexpectedToken, InvalidSyntax, InvalidPredicate }
 ```
 
-- `InvalidLanguage` — `compileQuery` without a language set.
+- `InvalidLanguage` - `compileQuery` without a language set.
 - The parse errors pinpoint malformed query source; typos in `#predicate?` names are `InvalidPredicate`.
 
 ## Tree-level error inspection

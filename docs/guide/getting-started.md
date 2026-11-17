@@ -1,5 +1,5 @@
 ---
-description: Get started with tree-sitter.zig — install the package, parse your first source, and inspect the tree.
+description: Get started with tree-sitter.zig - install the package, parse your first source, and inspect the tree.
 ---
 
 # Getting Started
@@ -18,6 +18,9 @@ You are new to the library and want the shortest path to a working parse.
 
 - Zig **0.17.0+** (`zig version` must report `0.17.0` or higher).
 - A `Language` value describing the grammar to parse. The package ships a bundled expression grammar used by the examples and tests; real integrations plug in their own generated table data (see [Language Definition](/guide/language-definition)).
+
+> [!NOTE]
+> **Pure Native Zig**: `tree-sitter.zig` does not link against or depend on the original C Tree-sitter library or C compilers. It uses native Zig configurations, parse tables, and scanners for all grammars.
 
 ## Complete example
 
@@ -60,17 +63,17 @@ text: 1 + 2 * 3
 
 ## How it works
 
-1. `Parser.init(allocator)` — the **only** place you hand over an allocator. Everything created from this parser inherits it.
-2. `setLanguage(...)` — loads generic grammar tables and validates the ABI version.
-3. `parseString(...)` — runs the LR engine and returns an owning `Tree`. The source is copied into the tree, so the tree outlives your input slice.
-4. `rootNode()` — returns a lightweight `Node` handle. Reading its type, bytes, and points allocates nothing.
+1. `Parser.init(allocator)` - the **only** place you hand over an allocator. Everything created from this parser inherits it.
+2. `setLanguage(...)` - loads generic grammar tables and validates the ABI version.
+3. `parseString(...)` - runs the LR engine and returns an owning `Tree`. The source is copied into the tree, so the tree outlives your input slice.
+4. `rootNode()` - returns a lightweight `Node` handle. Reading its type, bytes, and points allocates nothing.
 5. Each `defer ...deinit()` releases exactly what its object owns.
 
 ## API used
 
-- [Parser](/api/parser) — `init`, `setLanguage`, `parseString`.
-- [Tree](/api/tree) — `rootNode`, `hasError`.
-- [Node](/api/node) — `nodeType`, `startByte`, `endByte`, `text`.
+- [Parser](/api/parser) - `init`, `setLanguage`, `parseString`.
+- [Tree](/api/tree) - `rootNode`, `hasError`.
+- [Node](/api/node) - `nodeType`, `startByte`, `endByte`, `text`.
 
 ## Memory ownership
 

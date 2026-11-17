@@ -361,9 +361,9 @@ pub fn predicateKindForName(name: []const u8) ?pattern_mod.PredicateKind {
 
 // (The tree is assembled directly so these tests need no parser.)
 
-const tree_mod = @import("../tree/tree.zig");
+const tree_mod = @import("../tree/root.zig");
 const subtree_mod = @import("../tree/subtree.zig");
-const language_mod = @import("../language/language.zig");
+const language_mod = @import("../language/root.zig");
 
 fn testTree() !tree_mod.Tree {
     var pool = subtree_mod.SubtreePool{};

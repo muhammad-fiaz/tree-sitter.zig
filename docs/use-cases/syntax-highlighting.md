@@ -1,5 +1,5 @@
 ---
-description: Syntax highlighting with tree-sitter.zig — token classification and incremental repaint.
+description: Syntax highlighting with tree-sitter.zig - token classification and incremental repaint.
 ---
 
 # Syntax Highlighting

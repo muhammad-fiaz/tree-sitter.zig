@@ -7,13 +7,13 @@ body:
     attributes:
       value: |
         Thanks for reporting. Fill in everything below so the issue can be reproduced.
-        Current stable: `0.0.2` (Zig `0.17.0+`).
+        Current stable: `0.0.3` (Zig `0.17.0+`).
   - type: input
     id: version
     attributes:
       label: tree-sitter.zig version
-      description: Tag, commit, or output of `zig build --help` context (e.g. 0.0.2, main@abc123)
-      placeholder: "0.0.2"
+      description: Tag, commit, or output of `zig build --help` context (e.g. 0.0.3, main@abc123)
+      placeholder: "0.0.3"
     validations:
       required: true
   - type: input

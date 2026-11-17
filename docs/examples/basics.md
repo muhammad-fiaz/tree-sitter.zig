@@ -1,5 +1,5 @@
 ---
-description: Basic examples — parse source, inspect the root, and handle malformed input.
+description: Basic examples - parse source, inspect the root, and handle malformed input.
 ---
 
 # Basics
@@ -65,9 +65,9 @@ text: 1 + 2 * 3
 
 ## API used
 
-- [Parser](/api/parser) — `Parser.init`, `Parser.setLanguage`, `Parser.parseString`
-- [Tree](/api/tree) — `Tree.rootNode`, `Tree.hasError`, `Tree.deinit`
-- [Node](/api/node) — `Node.nodeType`, `Node.startByte`, `Node.endByte`, `Node.text`
+- [Parser](/api/parser) - `Parser.init`, `Parser.setLanguage`, `Parser.parseString`
+- [Tree](/api/tree) - `Tree.rootNode`, `Tree.hasError`, `Tree.deinit`
+- [Node](/api/node) - `Node.nodeType`, `Node.startByte`, `Node.endByte`, `Node.text`
 
 ## Related guides
 

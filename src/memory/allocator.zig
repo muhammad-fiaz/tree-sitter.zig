@@ -14,8 +14,8 @@ pub fn freeSlice(gpa: Allocator, slice: []u8) void {
     gpa.free(slice);
 }
 
-const parser_mod = @import("../parser/parser.zig");
-const language_mod = @import("../language/language.zig");
+const parser_mod = @import("../parser/root.zig");
+const language_mod = @import("../language/root.zig");
 
 test "allocator: failing allocator propagates OutOfMemory" {
     var parser = parser_mod.Parser.init(std.testing.failing_allocator);

@@ -1,11 +1,11 @@
 ---
-description: Zig 0.16 compatibility — using tree-sitter.zig version 0.0.1 on Zig 0.16.0.
+description: Zig 0.16 compatibility - using tree-sitter.zig version 0.0.1 on Zig 0.16.0.
 ---
 
 # Zig 0.16 Support
 
 > [!NOTE]
-> `tree-sitter.zig` version **0.0.2+** targets **Zig 0.17.0+**.
+> `tree-sitter.zig` version **0.0.3+** targets **Zig 0.17.0+**.
 >
 > If your project is using **Zig 0.16.0**, use `tree-sitter.zig` version **0.0.1**.
 
@@ -32,4 +32,4 @@ Add the dependency to your `build.zig.zon`:
 ```
 
 > [!IMPORTANT]
-> Version `0.0.1` is maintained for projects targeting Zig 0.16.0. For modern projects on Zig 0.17.0+, use `0.0.2` or later as documented in [Installation](/guide/installation) and [Zig 0.17 Notes](/development/zig-0.17).
+> Version `0.0.1` is maintained for projects targeting Zig 0.16.0. For modern projects on Zig 0.17.0+, use `0.0.3` or later as documented in [Installation](/guide/installation) and [Zig 0.17 Notes](/development/zig-0.17).

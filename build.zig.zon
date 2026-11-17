@@ -1,6 +1,6 @@
 .{
     .name = .treesitter,
-    .version = "0.0.2",
+    .version = "0.0.3",
     .fingerprint = 0x8b4879bc58295442,
     .minimum_zig_version = "0.17.0",
     .dependencies = .{},
@@ -8,6 +8,7 @@
         "build.zig",
         "build.zig.zon",
         "src",
+        "grammars",
         "examples",
         "benchmarks",
         "conformance",

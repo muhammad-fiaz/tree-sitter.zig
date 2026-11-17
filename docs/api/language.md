@@ -1,5 +1,5 @@
 ---
-description: Language API — symbols, tables, fields, aliases, metadata, and scanners.
+description: Language API - symbols, tables, fields, aliases, metadata, and scanners.
 ---
 
 # Language
@@ -31,7 +31,7 @@ external_scanner: ?ExternalScanner
 ## Methods
 
 ```zig
-pub fn validate(self: Language) Error!void   // error.IncompatibleAbiVersion outside ABI 13–15
+pub fn validate(self: Language) Error!void   // error.IncompatibleAbiVersion outside ABI 13-15
 pub fn symbolCount(self: Language) usize
 pub fn symbolInfo(self: Language, id: u16) ?SymbolInfo
 pub fn symbolName(self: Language, id: u16) []const u8
@@ -58,8 +58,8 @@ Scanner state is caller-owned (`treesitter.OutlineScanState`): copy the outline 
 
 ## Ownership
 
-Always borrowed — typically comptime-known statics. The runtime never frees language data.
+Always borrowed - typically comptime-known statics. The runtime never frees language data.
 
 ## Related APIs
 
-[Parser](/api/parser) — `setLanguage`, [Symbols](/api/symbols), [Fields](/api/fields)
+[Parser](/api/parser) - `setLanguage`, [Symbols](/api/symbols), [Fields](/api/fields)

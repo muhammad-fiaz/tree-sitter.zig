@@ -1,5 +1,5 @@
 ---
-description: Input examples — chunked callbacks and UTF-16 stream sources.
+description: Input examples - chunked callbacks and UTF-16 stream sources.
 ---
 
 # Input Sources
@@ -183,9 +183,9 @@ parsed from reader: base_price * (1 + tax_rate) error=false
 
 ## API used
 
-- [Input](/api/input) — `Input`, `InputEncoding`
-- [Parser](/api/parser) — `Parser.parseWithInput`, `Parser.parseStream`, `Parser.parseReader`
-- [Input & I/O Reference](/reference/input-io) — `ReaderSource`, `std.Io.Reader`
+- [Input](/api/input) - `Input`, `InputEncoding`
+- [Parser](/api/parser) - `Parser.parseWithInput`, `Parser.parseStream`, `Parser.parseReader`
+- [Input & I/O Reference](/reference/input-io) - `ReaderSource`, `std.Io.Reader`
 
 ## Related guides
 

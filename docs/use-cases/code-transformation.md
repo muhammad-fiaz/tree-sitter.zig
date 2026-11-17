@@ -1,5 +1,5 @@
 ---
-description: Code transformation — structured rewrites with verification.
+description: Code transformation - structured rewrites with verification.
 ---
 
 # Code Transformation

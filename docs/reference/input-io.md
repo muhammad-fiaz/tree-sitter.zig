@@ -1,5 +1,5 @@
 ---
-description: Input and I/O reference — sources, lifetimes, buffering, std.Io polymorphic contexts, and multi-threading.
+description: Input and I/O reference - sources, lifetimes, buffering, std.Io polymorphic contexts, and multi-threading.
 ---
 
 # Input & I/O

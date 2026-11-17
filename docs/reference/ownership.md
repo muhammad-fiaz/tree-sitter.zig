@@ -1,5 +1,5 @@
 ---
-description: Ownership reference — exact owners for parsers, trees, nodes, cursors, and queries.
+description: Ownership reference - exact owners for parsers, trees, nodes, cursors, and queries.
 ---
 
 # Ownership
@@ -10,11 +10,11 @@ Owns: state/value stacks, token scratch, reuse-candidate list, included-range li
 
 ## Tree
 
-Owns: source byte copy, `SubtreePool` (nodes + child indices). Borrows: allocator, `Language`. `copy()` duplicates all owned storage with the tree's allocator. `applyEdit` mutates positions in place — no ownership change.
+Owns: source byte copy, `SubtreePool` (nodes + child indices). Borrows: allocator, `Language`. `copy()` duplicates all owned storage with the tree's allocator. `applyEdit` mutates positions in place - no ownership change.
 
 ## Node
 
-Owns nothing. Two words. Invalid after its tree's `deinit` (use-after-free if misused — the test suite guards the boundary with explicit lifetimes, never with runtime checks, for speed).
+Owns nothing. Two words. Invalid after its tree's `deinit` (use-after-free if misused - the test suite guards the boundary with explicit lifetimes, never with runtime checks, for speed).
 
 ## TreeCursor
 

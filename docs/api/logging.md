@@ -1,5 +1,5 @@
 ---
-description: Logging API — levels, Logger, and parse tracing.
+description: Logging API - levels, Logger, and parse tracing.
 ---
 
 # Logging
@@ -22,7 +22,7 @@ pub const Logger = struct {
 pub const null_logger: Logger  // .off
 ```
 
-Default `.off` costs one integer comparison per site. The parser logs lifecycle (`info`: parse start/end with sizes and reuse counts), reuse/error spans (`debug`), recovery skips (`trace`), and every shift/reduce (`trace`) — all client-controlled via `Parser.setLogger`. Levels can be flipped mid-session; `.off` silences everything.
+Default `.off` costs one integer comparison per site. The parser logs lifecycle (`info`: parse start/end with sizes and reuse counts), reuse/error spans (`debug`), recovery skips (`trace`), and every shift/reduce (`trace`) - all client-controlled via `Parser.setLogger`. Levels can be flipped mid-session; `.off` silences everything.
 
 ## Tracer
 
@@ -40,4 +40,4 @@ Attach with `Parser.setTracer(&tracer)` (borrowed: the caller owns it and keeps 
 
 ## Related pages
 
-[Logging](/guide/logging), [Parser](/api/parser) — `setLogger`
+[Logging](/guide/logging), [Parser](/api/parser) - `setLogger`

@@ -1,7 +1,7 @@
 const std = @import("std");
-const core = @import("../core/core.zig");
-const input_mod = @import("../input/input.zig");
-const unicode_mod = @import("../unicode/unicode.zig");
+const core = @import("../core/root.zig");
+const input_mod = @import("../input/root.zig");
+const unicode_mod = @import("../unicode/root.zig");
 
 pub const ChunkReader = struct {
     source: input_mod.source.Source,

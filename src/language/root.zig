@@ -1,0 +1,935 @@
+const std = @import("std");
+const symbols_mod = @import("symbols.zig");
+const tables_mod = @import("tables.zig");
+const fields_mod = @import("fields.zig");
+const aliases_mod = @import("aliases.zig");
+const metadata_mod = @import("metadata.zig");
+pub const node_types = @import("node_types.zig");
+pub const abi = @import("abi.zig");
+
+pub const symbols = @import("symbols.zig");
+pub const tables = @import("tables.zig");
+pub const fields = @import("fields.zig");
+pub const aliases = @import("aliases.zig");
+pub const metadata = @import("metadata.zig");
+pub const NodeTypes = node_types.NodeTypes;
+pub const NodeType = node_types.NodeType;
+
+pub const TokenMatchFn = *const fn (source: []const u8, start: usize) ?usize;
+
+pub const TokenMatcher = struct {
+    symbol: u16,
+    match: TokenMatchFn,
+};
+
+pub const ExternalScanner = struct {
+    payload: ?*anyopaque = null,
+    scan: *const fn (payload: ?*anyopaque, source: []const u8, start: usize, valid_symbols: []const bool) ?ExternalToken,
+    reset: ?*const fn (payload: ?*anyopaque) void = null,
+    serialize: ?*const fn (payload: ?*anyopaque, buffer: []u8) usize = null,
+    deserialize: ?*const fn (payload: ?*anyopaque, buffer: []const u8) void = null,
+    create: ?*const fn (allocator: std.mem.Allocator) ?*anyopaque = null,
+    destroy: ?*const fn (allocator: std.mem.Allocator, payload: ?*anyopaque) void = null,
+
+    pub const ExternalToken = struct {
+        symbol: u16,
+        length: usize,
+    };
+};
+
+pub const SymbolType = enum {
+    regular,
+    anonymous,
+    supertype,
+    auxiliary,
+};
+
+pub const LookaheadIterator = struct {
+    language: Language,
+    state: u16,
+    index: usize = 0,
+    current_symbol: u16 = 0,
+
+    pub fn init(language: Language, state: u16) ?LookaheadIterator {
+        if (state >= language.stateCount()) return null;
+        return .{
+            .language = language,
+            .state = state,
+            .index = 0,
+            .current_symbol = language.table.error_symbol,
+        };
+    }
+
+    pub fn resetState(self: *LookaheadIterator, state: u16) bool {
+        if (state >= self.language.stateCount()) return false;
+        self.state = state;
+        self.index = 0;
+        self.current_symbol = self.language.table.error_symbol;
+        return true;
+    }
+
+    pub fn reset(self: *LookaheadIterator, language: Language, state: u16) bool {
+        if (state >= language.stateCount()) return false;
+        self.language = language;
+        self.state = state;
+        self.index = 0;
+        self.current_symbol = language.table.error_symbol;
+        return true;
+    }
+
+    pub fn getLanguage(self: LookaheadIterator) Language {
+        return self.language;
+    }
+
+    pub fn currentSymbol(self: LookaheadIterator) u16 {
+        return self.current_symbol;
+    }
+
+    pub fn currentSymbolName(self: LookaheadIterator) []const u8 {
+        return self.language.symbolName(self.current_symbol);
+    }
+
+    pub fn next(self: *LookaheadIterator) bool {
+        if (self.state >= self.language.stateCount()) return false;
+        const parse_state = self.language.table.states[self.state];
+        while (self.index < parse_state.actions.len) {
+            const entry = parse_state.actions[self.index];
+            self.index += 1;
+            if (!entry.action.isNone()) {
+                self.current_symbol = entry.symbol;
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+/// Grammar definition for a Tree-sitter language.
+///
+/// **Ownership**: `Language` is a value type wrapping pointers to static,
+/// compile-time-allocated grammar tables.  It is safe to copy by value and
+/// to share between threads without synchronisation.
+///
+/// **Concurrency**: fully thread-safe for reading (symbol lookups, field
+/// lookups, ABI validation).  No mutable internal state.
+///
+/// **Exception - external scanners**: the `external_scanner` field contains
+/// a `payload` pointer that is usually `null` for built-in grammars.  When
+/// you attach a stateful scanner, that payload is mutable and exclusive:
+/// copy the `Language` value, set `external_scanner.?.payload` to a
+/// caller-owned `OutlineScanState`, and keep that copy and state
+/// single-threaded.  Do not share a `Language` copy that has a live payload
+/// between threads.
+pub const Language = struct {
+    metadata: metadata_mod.Metadata = .{},
+    symbols: []const symbols_mod.SymbolInfo = &.{},
+    token_matchers: []const TokenMatcher = &.{},
+    extra_symbols: []const u16 = &.{},
+    word_token: u16 = 0,
+    table: tables_mod.ParseTable = .{},
+    fields: fields_mod.FieldMap = .{},
+    aliases: aliases_mod.AliasMap = .{},
+    supertypes: []const u16 = &.{},
+    /// Maps a supertype symbol to the subtype symbols it covers. Used
+    /// by query matching: a pattern naming a supertype also matches any
+    /// of its listed subtypes (subtype expansion).
+    supertype_map: []const SupertypeEntry = &.{},
+    external_scanner: ?ExternalScanner = null,
+    ts_language: ?*const abi.TSLanguage = null,
+
+    pub const Error = error{
+        IncompatibleAbiVersion,
+        InvalidSymbol,
+    };
+
+    pub fn fromTSLanguage(ts: *const abi.TSLanguage) Language {
+        return .{
+            .metadata = .{
+                .name = if (ts.name) |n| std.mem.span(n) else "unknown",
+                .abi_version = ts.abi_version,
+                .symbol_count = @as(u16, @intCast(@min(ts.symbol_count, std.math.maxInt(u16)))),
+                .state_count = @as(u16, @intCast(@min(ts.state_count, std.math.maxInt(u16)))),
+                .field_count = @as(u16, @intCast(@min(ts.field_count, std.math.maxInt(u16)))),
+            },
+            .ts_language = ts,
+        };
+    }
+
+    pub fn symbolCount(self: Language) usize {
+        if (self.ts_language) |ts| return ts.symbol_count;
+        return self.symbols.len;
+    }
+
+    pub fn stateCount(self: Language) usize {
+        if (self.ts_language) |ts| return ts.state_count;
+        return self.table.stateCount();
+    }
+
+    pub fn fieldCount(self: Language) usize {
+        if (self.ts_language) |ts| return ts.field_count;
+        return self.fields.fields.len;
+    }
+
+    pub fn abiVersion(self: Language) u32 {
+        if (self.ts_language) |ts| return ts.abi_version;
+        return self.metadata.abi_version;
+    }
+
+    pub fn isParseable(self: Language) bool {
+        if (self.ts_language) |ts| return ts.state_count > 0;
+        return self.table.stateCount() > 0;
+    }
+
+    pub fn symbolType(self: Language, id: u16) SymbolType {
+        if (self.symbolIsNamed(id) and self.symbolIsVisible(id)) {
+            return .regular;
+        } else if (self.symbolIsVisible(id)) {
+            return .anonymous;
+        } else if (self.symbolIsSupertype(id)) {
+            return .supertype;
+        } else {
+            return .auxiliary;
+        }
+    }
+
+    pub fn lookaheadIterator(self: Language, state: u16) ?LookaheadIterator {
+        return LookaheadIterator.init(self, state);
+    }
+
+    pub fn validate(self: Language) Error!void {
+        if (self.ts_language) |ts| {
+            if (!ts.isValid()) return error.IncompatibleAbiVersion;
+            return;
+        }
+        if (!self.metadata.isCompatible()) return error.IncompatibleAbiVersion;
+    }
+
+    pub fn symbolInfo(self: Language, id: u16) ?symbols_mod.SymbolInfo {
+        for (self.symbols) |s| {
+            if (s.id == id) return s;
+        }
+        if (self.ts_language) |ts| {
+            if (id < ts.symbol_count) {
+                var meta = symbols_mod.SymbolMetadata{};
+                if (ts.symbol_metadata) |sm| {
+                    meta.visible = sm[id].visible;
+                    meta.named = sm[id].named;
+                    meta.supertype = sm[id].supertype;
+                }
+                return symbols_mod.SymbolInfo{
+                    .id = id,
+                    .name = ts.getSymbolName(id),
+                    .metadata = meta,
+                };
+            }
+        }
+        return null;
+    }
+
+    pub fn symbolName(self: Language, id: u16) []const u8 {
+        if (self.ts_language) |ts| {
+            return ts.getSymbolName(id);
+        }
+        return if (self.symbolInfo(id)) |info| info.name else "(unknown)";
+    }
+
+    pub fn symbolIsNamed(self: Language, id: u16) bool {
+        if (self.ts_language) |ts| {
+            if (ts.symbol_metadata) |sm| {
+                if (id < ts.symbol_count) return sm[id].named;
+            }
+            return false;
+        }
+        return if (self.symbolInfo(id)) |info| info.metadata.named else false;
+    }
+
+    pub fn symbolIsVisible(self: Language, id: u16) bool {
+        if (self.ts_language) |ts| {
+            if (ts.symbol_metadata) |sm| {
+                if (id < ts.symbol_count) return sm[id].visible;
+            }
+            return true;
+        }
+        return if (self.symbolInfo(id)) |info| info.metadata.visible else true;
+    }
+
+    pub fn symbolIsExtra(self: Language, id: u16) bool {
+        if (self.symbolInfo(id)) |info| {
+            if (info.metadata.extra) return true;
+        }
+        for (self.extra_symbols) |e| {
+            if (e == id) return true;
+        }
+        return false;
+    }
+
+    pub fn symbolIsSupertype(self: Language, id: u16) bool {
+        if (self.ts_language) |ts| {
+            if (ts.supertype_symbols) |supertypes| {
+                for (supertypes[0..ts.supertype_count]) |s| {
+                    if (s == id) return true;
+                }
+            }
+            if (ts.symbol_metadata) |sm| {
+                if (id < ts.symbol_count) return sm[id].supertype;
+            }
+            return false;
+        }
+        if (self.symbolInfo(id)) |info| {
+            if (info.metadata.supertype) return true;
+        }
+        for (self.supertypes) |s| {
+            if (s == id) return true;
+        }
+        return false;
+    }
+
+    pub fn symbolForName(self: Language, name: []const u8, is_named: bool) ?u16 {
+        if (self.ts_language) |ts| {
+            var i: u16 = 0;
+            while (i < ts.symbol_count) : (i += 1) {
+                const sname = ts.getSymbolName(i);
+                if (std.mem.eql(u8, sname, name)) {
+                    if (ts.symbol_metadata) |sm| {
+                        if (sm[i].named == is_named) return i;
+                    } else return i;
+                }
+            }
+            i = 0;
+            while (i < ts.symbol_count) : (i += 1) {
+                const sname = ts.getSymbolName(i);
+                if (std.mem.eql(u8, sname, name)) return i;
+            }
+            return null;
+        }
+        for (self.symbols) |s| {
+            if (std.mem.eql(u8, s.name, name) and s.metadata.named == is_named) return s.id;
+        }
+        for (self.symbols) |s| {
+            if (std.mem.eql(u8, s.name, name)) return s.id;
+        }
+        return null;
+    }
+
+    pub fn fieldIdForName(self: Language, name: []const u8) ?u16 {
+        if (self.ts_language) |ts| {
+            if (ts.field_names) |fnames| {
+                var i: u16 = 1;
+                while (i <= ts.field_count) : (i += 1) {
+                    if (fnames[i]) |fname| {
+                        if (std.mem.eql(u8, std.mem.span(fname), name)) return i;
+                    }
+                }
+            }
+            return null;
+        }
+        return self.fields.fieldIdForName(name);
+    }
+
+    pub fn fieldNameForId(self: Language, field_id: u16) ?[]const u8 {
+        if (self.ts_language) |ts| {
+            if (ts.field_names) |fnames| {
+                if (field_id <= ts.field_count and fnames[field_id] != null) {
+                    return std.mem.span(fnames[field_id]);
+                }
+            }
+            return null;
+        }
+        return self.fields.fieldName(field_id);
+    }
+
+    pub fn nextState(self: Language, state: u16, symbol: u16) u16 {
+        if (self.ts_language) |ts| {
+            return ts.lookup(state, symbol);
+        }
+        return self.table.gotoState(state, symbol) orelse 0;
+    }
+
+    pub fn actionFor(self: Language, state: u16, symbol: u16) tables_mod.Action {
+        if (self.ts_language) |ts| {
+            const entry_idx = ts.lookup(state, symbol);
+            if (entry_idx == 0) return .none;
+            const entries = ts.parse_actions orelse return .none;
+            const entry = entries[entry_idx];
+            if (entry.entry.count == 0) return .none;
+            const action_ptr = @as([*]const abi.TSParseAction, @ptrCast(entries + entry_idx + 1));
+            const act = action_ptr[0];
+            return switch (act.type) {
+                .shift => if (act.params.shift.extra) .extra else .{ .shift = act.params.shift.state },
+                .reduce => .{
+                    .reduce = .{
+                        .symbol = act.params.reduce.symbol,
+                        .child_count = act.params.reduce.child_count,
+                        .dynamic_precedence = act.params.reduce.dynamic_precedence,
+                        .production_id = act.params.reduce.production_id,
+                    },
+                },
+                .accept => .accept,
+                .recover => .{ .recover = act.params.shift.state },
+            };
+        }
+        return self.table.actionFor(state, symbol);
+    }
+
+    /// Alias substitution: returns the rename applied to the child at
+    /// `child_index` of `production_id`, or null when the child keeps
+    /// its own symbol. Applied by the parser when a rule is reduced.
+    pub fn aliasFor(self: Language, production_id: u16, child_index: usize) ?aliases_mod.Alias {
+        return self.aliases.aliasFor(production_id, child_index);
+    }
+
+    /// Subtype expansion: returns the subtype symbols covered by a
+    /// supertype symbol, or an empty slice when the symbol has no
+    /// registered subtypes.
+    pub fn subtypesOf(self: Language, supertype: u16) []const u16 {
+        for (self.supertype_map) |entry| {
+            if (entry.supertype == supertype) return entry.subtypes;
+        }
+        return &.{};
+    }
+};
+
+/// One supertype-to-subtypes mapping entry.
+pub const SupertypeEntry = struct {
+    supertype: u16,
+    subtypes: []const u16 = &.{},
+};
+
+// Bundled grammars
+//
+// The runtime is language-independent: it consumes table data supplied by
+// the host. Small grammars ship with the library for tests, examples,
+// benchmarks, and documentation. The expression and s-expression tables
+// live here; JSON and the outline demo live in their own modules so each
+// grammar stays navigable. Re-exported below so examples and downstream
+// users share the exact same tables the test-suite exercises.
+
+pub const json_grammar = @import("json.zig");
+pub const json_language: Language = json_grammar.json_language;
+pub const outline_grammar = @import("outline.zig");
+pub const outline_language: Language = outline_grammar.outline_language;
+pub const outline_scanner = @import("outline_scanner.zig");
+
+fn matchIdentifier(source: []const u8, start: usize) ?usize {
+    if (start >= source.len) return null;
+    const first = source[start];
+    if (!std.ascii.isAlphabetic(first) and first != '_') return null;
+    var i = start + 1;
+    while (i < source.len and (std.ascii.isAlphanumeric(source[i]) or source[i] == '_')) : (i += 1) {}
+    return i - start;
+}
+
+fn matchNumber(source: []const u8, start: usize) ?usize {
+    if (start >= source.len) return null;
+    if (!std.ascii.isDigit(source[start])) return null;
+    var i = start + 1;
+    while (i < source.len and std.ascii.isDigit(source[i])) : (i += 1) {}
+    return i - start;
+}
+
+pub fn matchChar(comptime c: u8) TokenMatchFn {
+    return struct {
+        fn match(source: []const u8, start: usize) ?usize {
+            if (start < source.len and source[start] == c) return 1;
+            return null;
+        }
+    }.match;
+}
+
+pub fn matchWhitespace(source: []const u8, start: usize) ?usize {
+    if (start >= source.len) return null;
+    if (!std.ascii.isWhitespace(source[start])) return null;
+    var i = start + 1;
+    while (i < source.len and std.ascii.isWhitespace(source[i])) : (i += 1) {}
+    return i - start;
+}
+
+pub const expr_sym_end: u16 = 0;
+pub const expr_sym_identifier: u16 = 1;
+pub const expr_sym_number: u16 = 2;
+pub const expr_sym_plus: u16 = 3;
+pub const expr_sym_minus: u16 = 4;
+pub const expr_sym_star: u16 = 5;
+pub const expr_sym_slash: u16 = 6;
+pub const expr_sym_lparen: u16 = 7;
+pub const expr_sym_rparen: u16 = 8;
+pub const expr_sym_whitespace: u16 = 9;
+pub const expr_sym_program: u16 = 10;
+pub const expr_sym_expr: u16 = 11;
+pub const expr_sym_term: u16 = 12;
+pub const expr_sym_factor: u16 = 13;
+pub const expr_sym_error: u16 = 14;
+
+const expr_symbol_table: []const symbols_mod.SymbolInfo = &.{
+    .{ .id = expr_sym_end, .name = "end", .kind = .end, .metadata = .{ .visible = false, .named = false } },
+    .{ .id = expr_sym_identifier, .name = "identifier", .kind = .terminal, .metadata = .{ .visible = true, .named = true } },
+    .{ .id = expr_sym_number, .name = "number", .kind = .terminal, .metadata = .{ .visible = true, .named = true } },
+    .{ .id = expr_sym_plus, .name = "+", .kind = .terminal, .metadata = .{ .visible = true, .named = false } },
+    .{ .id = expr_sym_minus, .name = "-", .kind = .terminal, .metadata = .{ .visible = true, .named = false } },
+    .{ .id = expr_sym_star, .name = "*", .kind = .terminal, .metadata = .{ .visible = true, .named = false } },
+    .{ .id = expr_sym_slash, .name = "/", .kind = .terminal, .metadata = .{ .visible = true, .named = false } },
+    .{ .id = expr_sym_lparen, .name = "(", .kind = .terminal, .metadata = .{ .visible = true, .named = false } },
+    .{ .id = expr_sym_rparen, .name = ")", .kind = .terminal, .metadata = .{ .visible = true, .named = false } },
+    .{ .id = expr_sym_whitespace, .name = "whitespace", .kind = .terminal, .metadata = .{ .visible = false, .named = false, .extra = true } },
+    .{ .id = expr_sym_program, .name = "program", .kind = .non_terminal, .metadata = .{ .visible = true, .named = true } },
+    .{ .id = expr_sym_expr, .name = "expression", .kind = .non_terminal, .metadata = .{ .visible = true, .named = true } },
+    .{ .id = expr_sym_term, .name = "term", .kind = .non_terminal, .metadata = .{ .visible = true, .named = true } },
+    .{ .id = expr_sym_factor, .name = "factor", .kind = .non_terminal, .metadata = .{ .visible = true, .named = true } },
+    .{ .id = expr_sym_error, .name = "ERROR", .kind = .non_terminal, .metadata = .{ .visible = true, .named = true } },
+};
+
+const expr_token_matchers: []const TokenMatcher = &.{
+    .{ .symbol = expr_sym_identifier, .match = matchIdentifier },
+    .{ .symbol = expr_sym_number, .match = matchNumber },
+    .{ .symbol = expr_sym_plus, .match = matchChar('+') },
+    .{ .symbol = expr_sym_minus, .match = matchChar('-') },
+    .{ .symbol = expr_sym_star, .match = matchChar('*') },
+    .{ .symbol = expr_sym_slash, .match = matchChar('/') },
+    .{ .symbol = expr_sym_lparen, .match = matchChar('(') },
+    .{ .symbol = expr_sym_rparen, .match = matchChar(')') },
+    .{ .symbol = expr_sym_whitespace, .match = matchWhitespace },
+};
+
+const expr_extra_symbols: []const u16 = &.{expr_sym_whitespace};
+
+const expr_s0_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = expr_sym_identifier, .action = .{ .shift = 6 } },
+    .{ .symbol = expr_sym_number, .action = .{ .shift = 5 } },
+    .{ .symbol = expr_sym_lparen, .action = .{ .shift = 7 } },
+};
+const expr_s0_gotos: []const tables_mod.GotoEntry = &.{
+    .{ .symbol = expr_sym_program, .state = 1 },
+    .{ .symbol = expr_sym_expr, .state = 2 },
+    .{ .symbol = expr_sym_term, .state = 3 },
+    .{ .symbol = expr_sym_factor, .state = 4 },
+};
+const expr_s1_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = expr_sym_end, .action = .accept },
+};
+const expr_s2_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = expr_sym_plus, .action = .{ .shift = 8 } },
+    .{ .symbol = expr_sym_minus, .action = .{ .shift = 9 } },
+    .{ .symbol = expr_sym_end, .action = .{ .reduce = .{ .symbol = expr_sym_program, .child_count = 1, .production_id = 1 } } },
+};
+const expr_s3_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = expr_sym_star, .action = .{ .shift = 10 } },
+    .{ .symbol = expr_sym_slash, .action = .{ .shift = 11 } },
+    .{ .symbol = expr_sym_plus, .action = .{ .reduce = .{ .symbol = expr_sym_expr, .child_count = 1, .production_id = 4 } } },
+    .{ .symbol = expr_sym_minus, .action = .{ .reduce = .{ .symbol = expr_sym_expr, .child_count = 1, .production_id = 4 } } },
+    .{ .symbol = expr_sym_end, .action = .{ .reduce = .{ .symbol = expr_sym_expr, .child_count = 1, .production_id = 4 } } },
+    .{ .symbol = expr_sym_rparen, .action = .{ .reduce = .{ .symbol = expr_sym_expr, .child_count = 1, .production_id = 4 } } },
+};
+const expr_s4_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = expr_sym_plus, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 1, .production_id = 7 } } },
+    .{ .symbol = expr_sym_minus, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 1, .production_id = 7 } } },
+    .{ .symbol = expr_sym_star, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 1, .production_id = 7 } } },
+    .{ .symbol = expr_sym_slash, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 1, .production_id = 7 } } },
+    .{ .symbol = expr_sym_end, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 1, .production_id = 7 } } },
+    .{ .symbol = expr_sym_rparen, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 1, .production_id = 7 } } },
+};
+const expr_s5_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = expr_sym_plus, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 1, .production_id = 8 } } },
+    .{ .symbol = expr_sym_minus, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 1, .production_id = 8 } } },
+    .{ .symbol = expr_sym_star, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 1, .production_id = 8 } } },
+    .{ .symbol = expr_sym_slash, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 1, .production_id = 8 } } },
+    .{ .symbol = expr_sym_end, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 1, .production_id = 8 } } },
+    .{ .symbol = expr_sym_rparen, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 1, .production_id = 8 } } },
+};
+const expr_s6_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = expr_sym_plus, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 1, .production_id = 9 } } },
+    .{ .symbol = expr_sym_minus, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 1, .production_id = 9 } } },
+    .{ .symbol = expr_sym_star, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 1, .production_id = 9 } } },
+    .{ .symbol = expr_sym_slash, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 1, .production_id = 9 } } },
+    .{ .symbol = expr_sym_end, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 1, .production_id = 9 } } },
+    .{ .symbol = expr_sym_rparen, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 1, .production_id = 9 } } },
+};
+const expr_s7_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = expr_sym_identifier, .action = .{ .shift = 6 } },
+    .{ .symbol = expr_sym_number, .action = .{ .shift = 5 } },
+    .{ .symbol = expr_sym_lparen, .action = .{ .shift = 7 } },
+};
+const expr_s7_gotos: []const tables_mod.GotoEntry = &.{
+    .{ .symbol = expr_sym_expr, .state = 12 },
+    .{ .symbol = expr_sym_term, .state = 3 },
+    .{ .symbol = expr_sym_factor, .state = 4 },
+};
+const expr_s8_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = expr_sym_identifier, .action = .{ .shift = 6 } },
+    .{ .symbol = expr_sym_number, .action = .{ .shift = 5 } },
+    .{ .symbol = expr_sym_lparen, .action = .{ .shift = 7 } },
+};
+const expr_s8_gotos: []const tables_mod.GotoEntry = &.{
+    .{ .symbol = expr_sym_term, .state = 13 },
+    .{ .symbol = expr_sym_factor, .state = 4 },
+};
+const expr_s14_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = expr_sym_star, .action = .{ .shift = 10 } },
+    .{ .symbol = expr_sym_slash, .action = .{ .shift = 11 } },
+    .{ .symbol = expr_sym_plus, .action = .{ .reduce = .{ .symbol = expr_sym_expr, .child_count = 3, .production_id = 3 } } },
+    .{ .symbol = expr_sym_minus, .action = .{ .reduce = .{ .symbol = expr_sym_expr, .child_count = 3, .production_id = 3 } } },
+    .{ .symbol = expr_sym_end, .action = .{ .reduce = .{ .symbol = expr_sym_expr, .child_count = 3, .production_id = 3 } } },
+    .{ .symbol = expr_sym_rparen, .action = .{ .reduce = .{ .symbol = expr_sym_expr, .child_count = 3, .production_id = 3 } } },
+};
+const expr_s15_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = expr_sym_plus, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 3, .production_id = 5 } } },
+    .{ .symbol = expr_sym_minus, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 3, .production_id = 5 } } },
+    .{ .symbol = expr_sym_star, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 3, .production_id = 5 } } },
+    .{ .symbol = expr_sym_slash, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 3, .production_id = 5 } } },
+    .{ .symbol = expr_sym_end, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 3, .production_id = 5 } } },
+    .{ .symbol = expr_sym_rparen, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 3, .production_id = 5 } } },
+};
+const expr_s16_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = expr_sym_plus, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 3, .production_id = 6 } } },
+    .{ .symbol = expr_sym_minus, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 3, .production_id = 6 } } },
+    .{ .symbol = expr_sym_star, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 3, .production_id = 6 } } },
+    .{ .symbol = expr_sym_slash, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 3, .production_id = 6 } } },
+    .{ .symbol = expr_sym_end, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 3, .production_id = 6 } } },
+    .{ .symbol = expr_sym_rparen, .action = .{ .reduce = .{ .symbol = expr_sym_term, .child_count = 3, .production_id = 6 } } },
+};
+const expr_s17_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = expr_sym_plus, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 3, .production_id = 10 } } },
+    .{ .symbol = expr_sym_minus, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 3, .production_id = 10 } } },
+    .{ .symbol = expr_sym_star, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 3, .production_id = 10 } } },
+    .{ .symbol = expr_sym_slash, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 3, .production_id = 10 } } },
+    .{ .symbol = expr_sym_end, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 3, .production_id = 10 } } },
+    .{ .symbol = expr_sym_rparen, .action = .{ .reduce = .{ .symbol = expr_sym_factor, .child_count = 3, .production_id = 10 } } },
+};
+const expr_s12_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = expr_sym_rparen, .action = .{ .shift = 17 } },
+    .{ .symbol = expr_sym_plus, .action = .{ .shift = 8 } },
+    .{ .symbol = expr_sym_minus, .action = .{ .shift = 9 } },
+};
+const expr_s9_gotos: []const tables_mod.GotoEntry = &.{
+    .{ .symbol = expr_sym_term, .state = 14 },
+    .{ .symbol = expr_sym_factor, .state = 4 },
+};
+const expr_s13_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = expr_sym_star, .action = .{ .shift = 10 } },
+    .{ .symbol = expr_sym_slash, .action = .{ .shift = 11 } },
+    .{ .symbol = expr_sym_plus, .action = .{ .reduce = .{ .symbol = expr_sym_expr, .child_count = 3, .production_id = 2 } } },
+    .{ .symbol = expr_sym_minus, .action = .{ .reduce = .{ .symbol = expr_sym_expr, .child_count = 3, .production_id = 2 } } },
+    .{ .symbol = expr_sym_end, .action = .{ .reduce = .{ .symbol = expr_sym_expr, .child_count = 3, .production_id = 2 } } },
+    .{ .symbol = expr_sym_rparen, .action = .{ .reduce = .{ .symbol = expr_sym_expr, .child_count = 3, .production_id = 2 } } },
+};
+
+const expr_parse_states: []const tables_mod.ParseState = &.{
+    .{ .actions = expr_s0_actions, .gotos = expr_s0_gotos },
+    .{ .actions = expr_s1_actions },
+    .{ .actions = expr_s2_actions },
+    .{ .actions = expr_s3_actions },
+    .{ .actions = expr_s4_actions },
+    .{ .actions = expr_s5_actions },
+    .{ .actions = expr_s6_actions },
+    .{ .actions = expr_s7_actions, .gotos = expr_s7_gotos },
+    .{ .actions = expr_s8_actions, .gotos = expr_s8_gotos },
+    .{ .actions = expr_s8_actions, .gotos = expr_s9_gotos },
+    .{ .actions = expr_s8_actions, .gotos = &.{.{ .symbol = expr_sym_factor, .state = 15 }} },
+    .{ .actions = expr_s8_actions, .gotos = &.{.{ .symbol = expr_sym_factor, .state = 16 }} },
+    .{ .actions = expr_s12_actions },
+    .{ .actions = expr_s13_actions },
+    .{ .actions = expr_s14_actions },
+    .{ .actions = expr_s15_actions },
+    .{ .actions = expr_s16_actions },
+    .{ .actions = expr_s17_actions },
+};
+
+const expr_field_names: []const []const u8 = &.{ "left", "right" };
+const expr_field_productions: []const fields_mod.FieldProduction = &.{
+    .{ .production_id = 2, .bindings = &.{ .{ .name = "left", .child_index = 0 }, .{ .name = "right", .child_index = 2 } } },
+    .{ .production_id = 3, .bindings = &.{ .{ .name = "left", .child_index = 0 }, .{ .name = "right", .child_index = 2 } } },
+    .{ .production_id = 5, .bindings = &.{ .{ .name = "left", .child_index = 0 }, .{ .name = "right", .child_index = 2 } } },
+    .{ .production_id = 6, .bindings = &.{ .{ .name = "left", .child_index = 0 }, .{ .name = "right", .child_index = 2 } } },
+};
+
+/// Bundled arithmetic expression language: identifiers, numbers, the
+/// four binary operators with `*`/`/` binding tighter than `+`/`-`,
+/// and parenthesized factors. `left`/`right` fields are bound on every
+/// binary production. Used by tests, examples, and benchmarks.
+pub const expression_language: Language = .{
+    .metadata = .{
+        .name = "expression",
+        .abi_version = metadata_mod.current_abi_version,
+        .version = "0.0.3",
+        .symbol_count = 15,
+        .state_count = 18,
+        .field_count = 2,
+    },
+    .symbols = expr_symbol_table,
+    .token_matchers = expr_token_matchers,
+    .extra_symbols = expr_extra_symbols,
+    .table = .{
+        .states = expr_parse_states,
+        .start_state = 0,
+        .end_symbol = expr_sym_end,
+        .error_symbol = expr_sym_error,
+    },
+    .fields = .{
+        .names = expr_field_names,
+        .productions = expr_field_productions,
+    },
+};
+
+//
+// program     := items
+// items       := expression | items expression
+// expression  := atom | "(" items ")" | "(" ")"
+// atom        := identifier | number
+//
+// The parenthesized production aliases its middle child to `sequence`,
+// so queries can distinguish a bare item list from a grouped list.
+
+pub const sexp_sym_end: u16 = 0;
+pub const sexp_sym_identifier: u16 = 1;
+pub const sexp_sym_number: u16 = 2;
+pub const sexp_sym_lparen: u16 = 3;
+pub const sexp_sym_rparen: u16 = 4;
+pub const sexp_sym_whitespace: u16 = 5;
+pub const sexp_sym_program: u16 = 6;
+pub const sexp_sym_items: u16 = 7;
+pub const sexp_sym_expression: u16 = 8;
+pub const sexp_sym_atom: u16 = 9;
+pub const sexp_sym_error: u16 = 10;
+pub const sexp_sym_sequence: u16 = 11;
+
+const sexp_symbol_table: []const symbols_mod.SymbolInfo = &.{
+    .{ .id = sexp_sym_end, .name = "end", .kind = .end, .metadata = .{ .visible = false, .named = false } },
+    .{ .id = sexp_sym_identifier, .name = "identifier", .kind = .terminal, .metadata = .{ .visible = true, .named = true } },
+    .{ .id = sexp_sym_number, .name = "number", .kind = .terminal, .metadata = .{ .visible = true, .named = true } },
+    .{ .id = sexp_sym_lparen, .name = "(", .kind = .terminal, .metadata = .{ .visible = true, .named = false } },
+    .{ .id = sexp_sym_rparen, .name = ")", .kind = .terminal, .metadata = .{ .visible = true, .named = false } },
+    .{ .id = sexp_sym_whitespace, .name = "whitespace", .kind = .terminal, .metadata = .{ .visible = false, .named = false, .extra = true } },
+    .{ .id = sexp_sym_program, .name = "program", .kind = .non_terminal, .metadata = .{ .visible = true, .named = true } },
+    .{ .id = sexp_sym_items, .name = "items", .kind = .non_terminal, .metadata = .{ .visible = true, .named = true } },
+    .{ .id = sexp_sym_expression, .name = "expression", .kind = .non_terminal, .metadata = .{ .visible = true, .named = true } },
+    .{ .id = sexp_sym_atom, .name = "atom", .kind = .non_terminal, .metadata = .{ .visible = true, .named = true } },
+    .{ .id = sexp_sym_error, .name = "ERROR", .kind = .non_terminal, .metadata = .{ .visible = true, .named = true } },
+    .{ .id = sexp_sym_sequence, .name = "sequence", .kind = .non_terminal, .metadata = .{ .visible = true, .named = true } },
+};
+
+const sexp_token_matchers: []const TokenMatcher = &.{
+    .{ .symbol = sexp_sym_identifier, .match = matchIdentifier },
+    .{ .symbol = sexp_sym_number, .match = matchNumber },
+    .{ .symbol = sexp_sym_lparen, .match = matchChar('(') },
+    .{ .symbol = sexp_sym_rparen, .match = matchChar(')') },
+    .{ .symbol = sexp_sym_whitespace, .match = matchWhitespace },
+};
+
+const sexp_extra_symbols: []const u16 = &.{sexp_sym_whitespace};
+
+const sexp_s0_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = sexp_sym_identifier, .action = .{ .shift = 8 } },
+    .{ .symbol = sexp_sym_number, .action = .{ .shift = 9 } },
+    .{ .symbol = sexp_sym_lparen, .action = .{ .shift = 6 } },
+};
+const sexp_s0_gotos: []const tables_mod.GotoEntry = &.{
+    .{ .symbol = sexp_sym_program, .state = 1 },
+    .{ .symbol = sexp_sym_items, .state = 2 },
+    .{ .symbol = sexp_sym_expression, .state = 3 },
+    .{ .symbol = sexp_sym_atom, .state = 4 },
+};
+const sexp_s1_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = sexp_sym_end, .action = .accept },
+};
+const sexp_s2_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = sexp_sym_identifier, .action = .{ .shift = 8 } },
+    .{ .symbol = sexp_sym_number, .action = .{ .shift = 9 } },
+    .{ .symbol = sexp_sym_lparen, .action = .{ .shift = 6 } },
+    .{ .symbol = sexp_sym_end, .action = .{ .reduce = .{ .symbol = sexp_sym_program, .child_count = 1, .production_id = 1 } } },
+};
+const sexp_s2_gotos: []const tables_mod.GotoEntry = &.{
+    .{ .symbol = sexp_sym_expression, .state = 5 },
+    .{ .symbol = sexp_sym_atom, .state = 4 },
+};
+const sexp_s6_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = sexp_sym_identifier, .action = .{ .shift = 8 } },
+    .{ .symbol = sexp_sym_number, .action = .{ .shift = 9 } },
+    .{ .symbol = sexp_sym_lparen, .action = .{ .shift = 6 } },
+    .{ .symbol = sexp_sym_rparen, .action = .{ .shift = 11 } },
+};
+const sexp_s6_gotos: []const tables_mod.GotoEntry = &.{
+    .{ .symbol = sexp_sym_items, .state = 7 },
+    .{ .symbol = sexp_sym_expression, .state = 3 },
+    .{ .symbol = sexp_sym_atom, .state = 4 },
+};
+const sexp_s7_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = sexp_sym_identifier, .action = .{ .shift = 8 } },
+    .{ .symbol = sexp_sym_number, .action = .{ .shift = 9 } },
+    .{ .symbol = sexp_sym_lparen, .action = .{ .shift = 6 } },
+    .{ .symbol = sexp_sym_rparen, .action = .{ .shift = 10 } },
+};
+const sexp_s7_gotos: []const tables_mod.GotoEntry = &.{
+    .{ .symbol = sexp_sym_expression, .state = 5 },
+    .{ .symbol = sexp_sym_atom, .state = 4 },
+};
+
+const sexp_reduce_items_1: tables_mod.Action = .{ .reduce = .{ .symbol = sexp_sym_items, .child_count = 1, .production_id = 2 } };
+const sexp_reduce_items_2: tables_mod.Action = .{ .reduce = .{ .symbol = sexp_sym_items, .child_count = 2, .production_id = 3 } };
+const sexp_reduce_expr_atom: tables_mod.Action = .{ .reduce = .{ .symbol = sexp_sym_expression, .child_count = 1, .production_id = 4 } };
+const sexp_reduce_expr_list: tables_mod.Action = .{ .reduce = .{ .symbol = sexp_sym_expression, .child_count = 3, .production_id = 5 } };
+const sexp_reduce_expr_empty: tables_mod.Action = .{ .reduce = .{ .symbol = sexp_sym_expression, .child_count = 2, .production_id = 8 } };
+const sexp_reduce_atom_num: tables_mod.Action = .{ .reduce = .{ .symbol = sexp_sym_atom, .child_count = 1, .production_id = 6 } };
+const sexp_reduce_atom_id: tables_mod.Action = .{ .reduce = .{ .symbol = sexp_sym_atom, .child_count = 1, .production_id = 7 } };
+
+const sexp_s3_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = sexp_sym_identifier, .action = sexp_reduce_items_1 },
+    .{ .symbol = sexp_sym_number, .action = sexp_reduce_items_1 },
+    .{ .symbol = sexp_sym_lparen, .action = sexp_reduce_items_1 },
+    .{ .symbol = sexp_sym_end, .action = sexp_reduce_items_1 },
+    .{ .symbol = sexp_sym_rparen, .action = sexp_reduce_items_1 },
+};
+const sexp_s4_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = sexp_sym_identifier, .action = sexp_reduce_expr_atom },
+    .{ .symbol = sexp_sym_number, .action = sexp_reduce_expr_atom },
+    .{ .symbol = sexp_sym_lparen, .action = sexp_reduce_expr_atom },
+    .{ .symbol = sexp_sym_end, .action = sexp_reduce_expr_atom },
+    .{ .symbol = sexp_sym_rparen, .action = sexp_reduce_expr_atom },
+};
+const sexp_s5_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = sexp_sym_identifier, .action = sexp_reduce_items_2 },
+    .{ .symbol = sexp_sym_number, .action = sexp_reduce_items_2 },
+    .{ .symbol = sexp_sym_lparen, .action = sexp_reduce_items_2 },
+    .{ .symbol = sexp_sym_end, .action = sexp_reduce_items_2 },
+    .{ .symbol = sexp_sym_rparen, .action = sexp_reduce_items_2 },
+};
+const sexp_s8_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = sexp_sym_identifier, .action = sexp_reduce_atom_id },
+    .{ .symbol = sexp_sym_number, .action = sexp_reduce_atom_id },
+    .{ .symbol = sexp_sym_lparen, .action = sexp_reduce_atom_id },
+    .{ .symbol = sexp_sym_end, .action = sexp_reduce_atom_id },
+    .{ .symbol = sexp_sym_rparen, .action = sexp_reduce_atom_id },
+};
+const sexp_s9_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = sexp_sym_identifier, .action = sexp_reduce_atom_num },
+    .{ .symbol = sexp_sym_number, .action = sexp_reduce_atom_num },
+    .{ .symbol = sexp_sym_lparen, .action = sexp_reduce_atom_num },
+    .{ .symbol = sexp_sym_end, .action = sexp_reduce_atom_num },
+    .{ .symbol = sexp_sym_rparen, .action = sexp_reduce_atom_num },
+};
+const sexp_s10_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = sexp_sym_identifier, .action = sexp_reduce_expr_list },
+    .{ .symbol = sexp_sym_number, .action = sexp_reduce_expr_list },
+    .{ .symbol = sexp_sym_lparen, .action = sexp_reduce_expr_list },
+    .{ .symbol = sexp_sym_end, .action = sexp_reduce_expr_list },
+    .{ .symbol = sexp_sym_rparen, .action = sexp_reduce_expr_list },
+};
+const sexp_s11_actions: []const tables_mod.ActionEntry = &.{
+    .{ .symbol = sexp_sym_identifier, .action = sexp_reduce_expr_empty },
+    .{ .symbol = sexp_sym_number, .action = sexp_reduce_expr_empty },
+    .{ .symbol = sexp_sym_lparen, .action = sexp_reduce_expr_empty },
+    .{ .symbol = sexp_sym_end, .action = sexp_reduce_expr_empty },
+    .{ .symbol = sexp_sym_rparen, .action = sexp_reduce_expr_empty },
+};
+
+const sexp_parse_states: []const tables_mod.ParseState = &.{
+    .{ .actions = sexp_s0_actions, .gotos = sexp_s0_gotos },
+    .{ .actions = sexp_s1_actions },
+    .{ .actions = sexp_s2_actions, .gotos = sexp_s2_gotos },
+    .{ .actions = sexp_s3_actions },
+    .{ .actions = sexp_s4_actions },
+    .{ .actions = sexp_s5_actions },
+    .{ .actions = sexp_s6_actions, .gotos = sexp_s6_gotos },
+    .{ .actions = sexp_s7_actions, .gotos = sexp_s7_gotos },
+    .{ .actions = sexp_s8_actions },
+    .{ .actions = sexp_s9_actions },
+    .{ .actions = sexp_s10_actions },
+    .{ .actions = sexp_s11_actions },
+};
+
+const sexp_alias_sequences: []const aliases_mod.AliasSequence = &.{
+    .{
+        .production_id = 5,
+        .child_index = 1,
+        .alias = .{ .symbol = sexp_sym_items, .value = sexp_sym_sequence, .is_named = true },
+    },
+};
+
+/// Bundled s-expression language: nested parenthesized lists of
+/// identifiers and numbers, e.g. `(add 1 (mul 2 3))`. The grouped-list
+/// production aliases its middle child to `sequence`, demonstrating
+/// alias substitution end to end.
+pub const sexp_language: Language = .{
+    .metadata = .{
+        .name = "sexp",
+        .abi_version = metadata_mod.current_abi_version,
+        .version = "0.0.3",
+        .symbol_count = 12,
+        .state_count = 12,
+        .field_count = 0,
+    },
+    .symbols = sexp_symbol_table,
+    .token_matchers = sexp_token_matchers,
+    .extra_symbols = sexp_extra_symbols,
+    .table = .{
+        .states = sexp_parse_states,
+        .start_state = 0,
+        .end_symbol = sexp_sym_end,
+        .error_symbol = sexp_sym_error,
+    },
+    .aliases = .{ .sequences = sexp_alias_sequences },
+};
+
+test "language: expression metadata validates" {
+    try expression_language.validate();
+    try std.testing.expectEqualStrings("expression", expression_language.metadata.name);
+    try std.testing.expectEqual(@as(usize, 15), expression_language.symbolCount());
+    try std.testing.expectEqual(@as(usize, 18), expression_language.table.stateCount());
+}
+
+test "language: symbol and field lookup" {
+    try std.testing.expectEqual(@as(?u16, 1), expression_language.symbolForName("identifier", true));
+    try std.testing.expectEqual(@as(?u16, 3), expression_language.symbolForName("+", false));
+    try std.testing.expect(expression_language.symbolIsExtra(expr_sym_whitespace));
+    try std.testing.expect(!expression_language.symbolIsExtra(expr_sym_plus));
+    try std.testing.expectEqual(@as(?u16, 1), expression_language.fieldIdForName("left"));
+    try std.testing.expectEqual(@as(?u16, 2), expression_language.fieldIdForName("right"));
+    try std.testing.expectEqualStrings("left", expression_language.fieldNameForId(1).?);
+    try std.testing.expect(expression_language.fieldIdForName("nope") == null);
+}
+
+test "language: incompatible ABI rejected" {
+    var bad = expression_language;
+    bad.metadata.abi_version = metadata_mod.abi_version_min - 1;
+    try std.testing.expectError(error.IncompatibleAbiVersion, bad.validate());
+}
+
+test "language: sexp alias substitution registered" {
+    const alias = sexp_language.aliasFor(5, 1);
+    try std.testing.expect(alias != null);
+    try std.testing.expectEqual(sexp_sym_sequence, alias.?.value);
+    try std.testing.expect(alias.?.is_named);
+    try std.testing.expect(sexp_language.aliasFor(5, 0) == null);
+    try std.testing.expect(sexp_language.aliasFor(2, 0) == null);
+    try std.testing.expectEqualStrings("sequence", sexp_language.symbolName(sexp_sym_sequence));
+}
+
+test "language: subtype map defaults to empty" {
+    try std.testing.expectEqual(@as(usize, 0), expression_language.subtypesOf(expr_sym_expr).len);
+    try std.testing.expect(!expression_language.symbolIsSupertype(expr_sym_expr));
+}
+
+test "language: lookahead iterator" {
+    var iter = expression_language.lookaheadIterator(0) orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(expression_language.metadata.name, iter.getLanguage().metadata.name);
+
+    var count: usize = 0;
+    while (iter.next()) {
+        const sym = iter.currentSymbol();
+        const name = iter.currentSymbolName();
+        try std.testing.expect(name.len > 0);
+        try std.testing.expectEqual(name, expression_language.symbolName(sym));
+        count += 1;
+    }
+    try std.testing.expect(count > 0);
+
+    // Resetting state
+    try std.testing.expect(iter.resetState(1));
+    var count_s1: usize = 0;
+    while (iter.next()) {
+        count_s1 += 1;
+    }
+    try std.testing.expect(count_s1 > 0);
+
+    // Invalid state
+    try std.testing.expect(!iter.resetState(9999));
+    try std.testing.expect(expression_language.lookaheadIterator(9999) == null);
+}

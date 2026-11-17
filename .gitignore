@@ -1,6 +1,7 @@
 # Zig build outputs
 .zig-cache/
 zig-out/
+zig-pkg/
 
 # Compiled artifacts (in case they ever land outside zig-out/)
 *.o
@@ -56,3 +57,6 @@ desktop.ini
 # Test and fuzz scratch output
 *.profdata
 test-results/
+
+# Reference repository
+tree-sitter/

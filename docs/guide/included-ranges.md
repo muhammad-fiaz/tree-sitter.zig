@@ -1,5 +1,5 @@
 ---
-description: Included ranges in tree-sitter.zig — enforced lexer semantics.
+description: Included ranges in tree-sitter.zig - enforced lexer semantics.
 ---
 
 # Included Ranges
@@ -40,7 +40,7 @@ defer tree.deinit();
 
 ## API used
 
-- [Parser](/api/parser) — `setIncludedRanges`, `includedRanges`; [Range](/api/range).
+- [Parser](/api/parser) - `setIncludedRanges`, `includedRanges`; [Range](/api/range).
 
 ## Related guides
 

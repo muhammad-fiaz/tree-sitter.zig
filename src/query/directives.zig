@@ -3,23 +3,20 @@ const pattern_mod = @import("pattern.zig");
 const capture_mod = @import("capture.zig");
 const predicate_mod = @import("predicate.zig");
 
-/// Application-level directive helpers, mirroring how upstream's
-/// tags/highlight crates consume `#select-adjacent!` and `#strip!`.
+/// Application-level directive helpers for query processing.
 ///
-/// Upstream architecture note: directives are parsed and exposed by the
-/// query engine but *applied* by higher-level code. This module is that
-/// layer for tree-sitter.zig: `selectAdjacent` filters captures the way
-/// the tags crate filters doc nodes, and `stripText` applies
-/// regex-replace-all the way doc strings are cleaned.
+/// Directives are parsed and exposed by the query engine and applied by
+/// consumer tools: `selectAdjacent` filters captures such as doc comment nodes,
+/// and `stripText` applies substring replacement to clean extracted strings.
+///
 /// Keep captures per `select-adjacent!` semantics: all captures are
 /// kept except those named by `target`, which survive only when they
 /// form a line-contiguous run directly above the anchor node.
 ///
-/// Concretely (mirroring `tags.rs`): let `anchor` be the last capture
-/// named `anchor_name`. Walk the `target`-named captures backward from
-/// the anchor, keeping nodes whose `end_row + 1 >= current start_row`
-/// and stepping the start row upward. A gap (blank line) stops the run.
-/// With no anchor capture, everything is kept.
+/// Concretely: let `anchor` be the last capture named `anchor_name`.
+/// Walk the `target`-named captures backward from the anchor, keeping
+/// nodes whose `end_row + 1 >= current start_row` and stepping the start row
+/// upward. A gap (blank line) stops the run. With no anchor capture, everything is kept.
 pub fn selectAdjacent(
     gpa: std.mem.Allocator,
     captures: []const capture_mod.Capture,
@@ -71,7 +68,7 @@ pub fn selectAdjacent(
 }
 
 /// Remove every non-overlapping match of the built-in regex subset
-/// from `text` (upstream `strip!` semantics: `replace_all` with `""`).
+/// from `text` (`strip!` semantics: `replace_all` with `""`).
 /// Empty matches advance one byte so stripping always terminates.
 pub fn stripText(gpa: std.mem.Allocator, text: []const u8, pattern: []const u8) std.mem.Allocator.Error![]u8 {
     var out = std.ArrayList(u8).empty;
@@ -93,9 +90,9 @@ pub fn stripText(gpa: std.mem.Allocator, text: []const u8, pattern: []const u8) 
     return out.toOwnedSlice(gpa);
 }
 
-const tree_mod = @import("../tree/tree.zig");
+const tree_mod = @import("../tree/root.zig");
 const subtree_mod = @import("../tree/subtree.zig");
-const language_mod = @import("../language/language.zig");
+const language_mod = @import("../language/root.zig");
 
 fn docTree() !tree_mod.Tree {
     var pool = subtree_mod.SubtreePool{};

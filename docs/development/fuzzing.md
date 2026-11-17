@@ -1,5 +1,5 @@
 ---
-description: Fuzzing tree-sitter.zig — the shipped fuzz target.
+description: Fuzzing tree-sitter.zig - the shipped fuzz target.
 ---
 
 # Fuzzing
@@ -14,7 +14,7 @@ zig build fuzz -- --iterations=20000 --seed=42
 ## What it covers
 
 - Random sources from an expression alphabet plus hostile bytes (`@#$.\"':;!?`, tabs, newlines) through `Parser.parseString`.
-- Pure-noise queries (rejection paths) alternating with fragment-assembled queries (`(identifier) @x`, predicates, quantifiers) that frequently compile — those also execute against the fuzzed tree, covering the matcher, predicates, and cursor iteration.
+- Pure-noise queries (rejection paths) alternating with fragment-assembled queries (`(identifier) @x`, predicates, quantifiers) that frequently compile - those also execute against the fuzzed tree, covering the matcher, predicates, and cursor iteration.
 
 Typical output:
 

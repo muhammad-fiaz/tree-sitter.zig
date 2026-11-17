@@ -1,12 +1,12 @@
 ---
-description: Refactoring tools — find, verify, and rewrite code structurally.
+description: Refactoring tools - find, verify, and rewrite code structurally.
 ---
 
 # Refactoring Tools
 
 ## Problem
 
-Renames and structural edits must touch every real occurrence and nothing else — comments and strings that merely mention a name must be left alone.
+Renames and structural edits must touch every real occurrence and nothing else - comments and strings that merely mention a name must be left alone.
 
 ## Why tree-sitter.zig helps
 

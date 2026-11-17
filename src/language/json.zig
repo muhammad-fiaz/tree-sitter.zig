@@ -1,5 +1,5 @@
 const std = @import("std");
-const language_mod = @import("language.zig");
+const language_mod = @import("root.zig");
 const symbols_mod = @import("symbols.zig");
 const tables_mod = @import("tables.zig");
 const fields_mod = @import("fields.zig");
@@ -374,7 +374,7 @@ pub const json_language: language_mod.Language = .{
     .metadata = .{
         .name = "json",
         .abi_version = metadata_mod.current_abi_version,
-        .version = "0.0.2",
+        .version = "0.0.3",
         .symbol_count = 21,
         .state_count = 27,
         .field_count = 2,

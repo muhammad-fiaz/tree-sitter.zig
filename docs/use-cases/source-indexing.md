@@ -1,5 +1,5 @@
 ---
-description: Source indexing — project-wide symbol indexes from queries.
+description: Source indexing - project-wide symbol indexes from queries.
 ---
 
 # Source Indexing

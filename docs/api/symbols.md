@@ -1,5 +1,5 @@
 ---
-description: Symbols API — ids, kinds, and metadata flags.
+description: Symbols API - ids, kinds, and metadata flags.
 ---
 
 # Symbols

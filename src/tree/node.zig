@@ -1,7 +1,7 @@
 const std = @import("std");
-const core = @import("../core/core.zig");
+const core = @import("../core/root.zig");
 const subtree_mod = @import("subtree.zig");
-const tree_mod = @import("tree.zig");
+const tree_mod = @import("root.zig");
 
 /// Lightweight handle to a node in a syntax tree.
 ///
@@ -359,8 +359,8 @@ pub const Node = struct {
     }
 };
 
-const parser_mod = @import("../parser/parser.zig");
-const language_mod = @import("../language/language.zig");
+const parser_mod = @import("../parser/root.zig");
+const language_mod = @import("../language/root.zig");
 
 test "node: children and named children" {
     var parser = parser_mod.Parser.init(std.testing.allocator);

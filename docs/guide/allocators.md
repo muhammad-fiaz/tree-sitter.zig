@@ -1,5 +1,5 @@
 ---
-description: Allocator patterns for tree-sitter.zig — pass once, inherit everywhere.
+description: Allocator patterns for tree-sitter.zig - pass once, inherit everywhere.
 ---
 
 # Allocators

@@ -1,5 +1,5 @@
 ---
-description: Testing tree-sitter.zig — suite layout, allocation-failure tests, and writing your own tests.
+description: Testing tree-sitter.zig - suite layout, allocation-failure tests, and writing your own tests.
 ---
 
 # Testing
@@ -10,7 +10,7 @@ description: Testing tree-sitter.zig — suite layout, allocation-failure tests,
 
 ## Layout
 
-Tests live inline at the bottom of the source file that implements the functionality — there is no separate `tests/` tree:
+Tests live inline at the bottom of the source file that implements the functionality - there is no separate `tests/` tree:
 
 ```text
 src/parser/parser.zig    parser, recovery, edits, changed ranges, integration, ranges, streaming, sexp, json, outline, predicates, corpus

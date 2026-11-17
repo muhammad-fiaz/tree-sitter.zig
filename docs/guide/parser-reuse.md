@@ -1,5 +1,5 @@
 ---
-description: Reuse Parser instances across parses — retained capacity and reset semantics.
+description: Reuse Parser instances across parses - retained capacity and reset semantics.
 ---
 
 # Parser Reuse
@@ -27,7 +27,7 @@ The parser keeps its state stack, token scratch space, reuse-candidate list, and
 
 ## API used
 
-- [Parser](/api/parser) — `parseString`, `parse`, `reset`.
+- [Parser](/api/parser) - `parseString`, `parse`, `reset`.
 
 ## Related guides
 

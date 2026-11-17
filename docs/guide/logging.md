@@ -16,9 +16,9 @@ parser.setLogger(.{ .level = .debug, .prefix = "my-parser" });
 parser.setLogger(.{}); // back to silent (.off is the default)
 ```
 
-Levels, in increasing verbosity: `.off`, `.err`, `.warn`, `.info`, `.debug`, `.trace`. Disabled levels compile to a cheap integer comparison — no formatting work happens when logging is off.
+Levels, in increasing verbosity: `.off`, `.err`, `.warn`, `.info`, `.debug`, `.trace`. Disabled levels compile to a cheap integer comparison - no formatting work happens when logging is off.
 
-For programmatic tracing, attach a `Tracer` (caller-owned) alongside the logger — the parser records structured `TraceEvent`s (`parse_begin`, `shift`, `reduce`, `accept`, `recover`, `lex_token`, `reuse_node`) into it:
+For programmatic tracing, attach a `Tracer` (caller-owned) alongside the logger - the parser records structured `TraceEvent`s (`parse_begin`, `shift`, `reduce`, `accept`, `recover`, `lex_token`, `reuse_node`) into it:
 
 ```zig
 var tracer = treesitter.Tracer.init(gpa, .{ .level = .off });

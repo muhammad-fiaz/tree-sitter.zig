@@ -10,7 +10,7 @@ Config formats and small DSLs still need positions for error messages and struct
 
 ## Why tree-sitter.zig helps
 
-Even a tiny grammar gets full positions, error recovery (report all errors, not just the first), and queries for validation rules. The bundled `json_language` covers JSON directly — pairs expose `key`/`value` fields, so config readers navigate without manual descent (see `examples/json_parse.zig`).
+Even a tiny grammar gets full positions, error recovery (report all errors, not just the first), and queries for validation rules. The bundled `json_language` covers JSON directly - pairs expose `key`/`value` fields, so config readers navigate without manual descent (see `examples/json_parse.zig`).
 
 ## API
 

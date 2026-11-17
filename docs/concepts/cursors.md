@@ -1,5 +1,5 @@
 ---
-description: Cursors — stateful, allocation-free tree traversal.
+description: Cursors - stateful, allocation-free tree traversal.
 ---
 
 # Cursors

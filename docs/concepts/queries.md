@@ -1,5 +1,5 @@
 ---
-description: Query concepts — structural patterns over syntax trees.
+description: Query concepts - structural patterns over syntax trees.
 ---
 
 # Queries

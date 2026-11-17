@@ -1,5 +1,5 @@
 ---
-description: Fields API — production bindings and name/id conversion.
+description: Fields API - production bindings and name/id conversion.
 ---
 
 # Fields

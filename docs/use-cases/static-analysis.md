@@ -1,5 +1,5 @@
 ---
-description: Static analysis — rule checking over syntax trees.
+description: Static analysis - rule checking over syntax trees.
 ---
 
 # Static Analysis

@@ -1,8 +1,8 @@
 const std = @import("std");
-const core = @import("../core/core.zig");
-const language_mod = @import("../language/language.zig");
+const core = @import("../core/root.zig");
+const language_mod = @import("../language/root.zig");
 const tables_mod = @import("../language/tables.zig");
-const lexer_mod = @import("../lexer/lexer.zig");
+const lexer_mod = @import("../lexer/root.zig");
 const subtree_mod = @import("../tree/subtree.zig");
 
 pub const invalid_symbol: u16 = std.math.maxInt(u16);
