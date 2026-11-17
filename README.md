@@ -700,7 +700,7 @@ zig build examples
 > **No C Compatibility Notice**:
 > This project does **NOT** maintain backward compatibility with the original C version of Tree-sitter. All grammar packages use their own pure native Zig configurations and parse tables (`parser.zig`, `scanner.zig`, `grammar.json`, `node-types.json`).
 
-The repository provides 14 modular, native Zig grammar packages under [`grammars/`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars). Each package is organized as an independent, standalone Zig project containing native parse tables (`src/parser.zig`), an external scanner (`src/scanner.zig`), AST and node schemas (`src/grammar.json`, `src/node-types.json`), syntax queries (`queries/`), and a runnable parse demonstration (`examples/main.zig`).
+The repository provides 14 modular, native Zig grammar packages under [`grammars/`](https://github.com/muhammad-fiaz/tree-sitter.zig/tree/main/grammars).
 
 <details>
 <summary><strong>Grammar Packages Directory & File Manifest</strong> (click to expand)</summary>
